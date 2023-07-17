@@ -24,7 +24,7 @@ object FabricVision: ModInitializer {
 
     val addressField = Buffer::class.java.getDeclaredField("address")
 
-    override fun onInitialize() {
+    private fun initializeRegistries() {
         BlockCompendium.initialize()
         ItemCompendium.initialize()
         FluidCompendium.initialize()
@@ -37,6 +37,10 @@ object FabricVision: ModInitializer {
         ScreenHandlerCompendium.initialize()
         CommandCompendium.initialize()
         SoundCompendium.initialize()
+    }
+
+    override fun onInitialize() {
+        initializeRegistries()
         addressField.isAccessible = true
     }
 

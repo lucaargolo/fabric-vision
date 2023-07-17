@@ -15,11 +15,14 @@ import io.github.lucaargolo.fabricvision.common.resource.ResourceCompendium
 import io.github.lucaargolo.fabricvision.common.screenhandler.ScreenHandlerCompendium
 import io.github.lucaargolo.fabricvision.common.sound.SoundCompendium
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
+import io.github.lucaargolo.fabricvision.utils.MediaPlayerHolder
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 
 object FabricVisionClient: ClientModInitializer {
 
-    override fun onInitializeClient() {
+    private fun initializeRegistries() {
         BlockCompendium.initializeClient()
         ItemCompendium.initializeClient()
         FluidCompendium.initializeClient()
@@ -35,6 +38,18 @@ object FabricVisionClient: ClientModInitializer {
         BlockEntityRendererCompendium.initializeClient()
         EntityRendererCompendium.initializeClient()
         DynamicItemRendererCompendium.initializeClient()
+    }
+    override fun onInitializeClient() {
+        initializeRegistries()
+        ClientLifecycleEvents.CLIENT_STARTED.register {
+            MediaPlayerHolder.start()
+        }
+        ClientTickEvents.END_CLIENT_TICK.register {
+            MediaPlayerHolder.tick()
+        }
+        ClientLifecycleEvents.CLIENT_STOPPING.register {
+            MediaPlayerHolder.stop()
+        }
     }
 
 }
