@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "fabricvision",
+  "version": "${version}",
+  "name": "Fabric Vision",
+  "description": "",
+  "authors": [
+    "D4rkness_King"
+  ],
+  "icon": "assets/fabricvision/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      {
+        "value": "io.github.lucaargolo.fabricvision.client.FabricVisionClient",
+        "adapter": "kotlin"
+      }
+    ],
+    "main": [
+      {
+        "value": "io.github.lucaargolo.fabricvision.FabricVision",
+        "adapter": "kotlin"
+      }
+    ]
+  },
+  "mixins": [
+    "fabricvision.mixin.json"
+  ],
+  "accessWidener": "fabricvision.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.14.21",
+    "fabric": ">=0.84.0+1.20.1",
+    "fabric-language-kotlin": ">=1.9.6+kotlin.1.8.22",
+    "minecraft": ">=1.20.1"
+  }
+}
