@@ -6,6 +6,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.texture.NativeImage
 import net.minecraft.client.texture.NativeImageBackedTexture
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.Vec3d
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.jni.JNINativeInterface
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
@@ -37,6 +38,9 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
             internalMrl.set(value)
         }
 
+    var shouldRenew = false
+
+    var pos = Vec3d.ZERO
     var visible = true
     var playing = false
     var time = 0L
@@ -67,9 +71,11 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
     }
 
     fun clientTick() {
+
+        //Creation steps
         if (status == Status.WAITING) {
-            if (CREATING == null && LOADING == null) {
-                CREATING = this
+            if (CREATING == this && LOADING == null && ACTIVE_PLAYERS.size < MAX_SIMULTANEOUS_PLAYERS) {
+                ACTIVE_PLAYERS.add(this)
                 status = Status.CREATING
                 FACTORY.submit {
                     println("Creating player $uuid")
@@ -78,20 +84,20 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
                     player = mediaPlayer
                 }
             }
-        }
-        //Maybe this isn't necessary and we can just delete the State.WAITING and finish the CREATING step inside the Factory.submit?
-        if (status == Status.CREATING) {
+        } else if (status == Status.CREATING) {
+            //Maybe this isn't necessary, and we can just delete the State.WAITING and finish the CREATING step inside the Factory.submit?
             val mediaPlayer = player ?: return
             val state = mediaPlayer.status().state()
             if (state == State.NOTHING_SPECIAL) {
-                if (CREATING == this) {
-                    CREATING = null
-                }
                 load(true)
             }
+        }else if (CREATING == this) {
+            CREATING = null
         }
+
+        //Loading steps
         if (status == Status.LOADING) {
-            if (CREATING == null && LOADING == null) {
+            if ((CREATING == null || CREATING!!.status == Status.WAITING) && LOADING == null) {
                 val mediaPlayer = player ?: return
                 LOADING = this
                 mediaPlayer.submit {
@@ -103,8 +109,7 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
                     }
                 }
             }
-        }
-        if (status == Status.LOADED) {
+        }else if (status == Status.LOADED) {
             val mediaPlayer = player ?: return
             val validMedia = mediaPlayer.media().isValid
             status = if (validMedia) {
@@ -149,17 +154,37 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
         }
     }
 
-    fun close() {
-        texture?.image = null
-        texture?.clearGlId()
-        status = Status.CLOSED
+    fun close(clearTexture: Boolean = true) {
+        if(clearTexture) {
+            texture?.image = null
+            texture?.clearGlId()
+        }
+        status = if(player == null) {
+            Status.CLOSED
+        }else{
+            Status.CLOSING
+        }
         val mediaPlayer = player ?: return
+        player = null
         mediaPlayer.submit {
             println("Cleaning player $uuid")
             if(mediaPlayer.status().isPlaying) {
                 mediaPlayer.controls().pause()
             }
             mediaPlayer.release()
+            status = Status.CLOSED
+        }
+    }
+
+    fun closed(): Boolean {
+        ACTIVE_PLAYERS.remove(this)
+        return if(shouldRenew) {
+            //When players get disabled due to lack of resources they are marked for renew
+            shouldRenew = false
+            status = Status.WAITING
+            false
+        }else{
+            true
         }
     }
 
@@ -206,43 +231,98 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
         PLAYING_VISIBLE(true, true, true, true, { PAUSED_VISIBLE }),         // mp ready, media playing, texture updating
         PLAYING_INVISIBLE(true, true, false, true, { PLAYING_INVISIBLE }),   // mp ready, media playing, texture not updating
         TOO_FAR(true, true, false),                                                 // mp ready, media paused, texture not updating (cause player is too far/too many videos)
+        CLOSING(false, false, false),                                               // mp closed
         CLOSED(false, false, false)                                                 // mp closed
     }
 
     companion object {
+        private const val MAX_SIMULTANEOUS_PLAYERS = 4
+
         val TRANSPARENT = ModIdentifier("textures/gui/transparent.png")
 
         private var CREATING: MinecraftMediaPlayer? = null
         private var LOADING: MinecraftMediaPlayer? = null
-        private val PLAYERS = mutableMapOf<UUID, MinecraftMediaPlayer>()
+
+        private val ACTIVE_PLAYERS = mutableSetOf<MinecraftMediaPlayer>()
+        private val PLAYERS = mutableSetOf<MinecraftMediaPlayer>()
+
         private val FACTORY: MediaPlayerFactory by lazy {
             MediaPlayerFactory("--quiet")
         }
 
         private var tickedWorld = false
+        private var age = 0
 
         fun worldTick() {
             if(!tickedWorld) {
                 tickedWorld = true
-                PLAYERS.values.forEach(MinecraftMediaPlayer::worldTick)
+                PLAYERS.forEach(MinecraftMediaPlayer::worldTick)
             }
         }
 
-        fun clientTick() {
+        fun clientTick(client: MinecraftClient) {
             val iterator = PLAYERS.iterator()
+
+            var maxDistancePlayer: MinecraftMediaPlayer? = null
+            var maxDistance = Double.MIN_VALUE
+            var minDistancePlayer: MinecraftMediaPlayer? = null
+            var minDistance = Double.MAX_VALUE
+
+            val player = client.player
+
             while (iterator.hasNext()) {
                 val entry = iterator.next()
-                entry.value.clientTick()
-                if(entry.value.status == Status.CLOSED) {
-                    iterator.remove()
+                entry.clientTick()
+                if(player != null) {
+                    if(ACTIVE_PLAYERS.contains(entry)) {
+                        val distance = entry.pos.distanceTo(player.pos)
+                        if (distance > maxDistance) {
+                            maxDistancePlayer = entry
+                            maxDistance = distance
+                        }
+                    }
+                    if(entry.status == Status.WAITING) {
+                        val distance = entry.pos.distanceTo(player.pos)
+                        if (distance < minDistance) {
+                            minDistancePlayer = entry
+                            minDistance = distance
+                        }
+                    }
+                }
+
+                if(entry.status == Status.CLOSED) {
+                    if(entry.closed()) {
+                        iterator.remove()
+                    }
                 }
             }
+
+            if(CREATING != null && ACTIVE_PLAYERS.size >= MAX_SIMULTANEOUS_PLAYERS) {
+                CREATING = null
+            }
+
+            if(CREATING == null && minDistancePlayer != null) {
+                if(ACTIVE_PLAYERS.size >= MAX_SIMULTANEOUS_PLAYERS && maxDistance > minDistance) {
+                    if(maxDistancePlayer != null && maxDistancePlayer.status != Status.CLOSING && !ACTIVE_PLAYERS.contains(minDistancePlayer) && ACTIVE_PLAYERS.contains(maxDistancePlayer)) {
+                        println("Replacing player ${maxDistancePlayer.uuid} for ${minDistancePlayer.uuid}")
+                        maxDistancePlayer.shouldRenew = true
+                        maxDistancePlayer.close(clearTexture = false)
+                        CREATING = minDistancePlayer
+                    }
+                }else{
+                    CREATING = minDistancePlayer
+                }
+            }
+
+
+
             tickedWorld = false
+            age++
         }
 
         fun create(uuid: UUID): MinecraftMediaPlayer {
             val player = MinecraftMediaPlayer(uuid, "")
-            PLAYERS[uuid] = player
+            PLAYERS.add(player)
             return player
         }
 
@@ -250,7 +330,7 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
             val iterator = PLAYERS.iterator()
             while (iterator.hasNext()) {
                 val entry = iterator.next()
-                entry.value.close()
+                entry.close()
             }
             if(stop) {
                 FACTORY.release()

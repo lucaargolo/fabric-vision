@@ -42,8 +42,8 @@ object FabricVisionClient: ClientModInitializer {
     }
     override fun onInitializeClient() {
         initializeRegistries()
-        ClientTickEvents.END_CLIENT_TICK.register { _ ->
-            MinecraftMediaPlayer.clientTick()
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            MinecraftMediaPlayer.clientTick(client)
         }
         ClientTickEvents.END_WORLD_TICK.register {
             MinecraftMediaPlayer.worldTick()
