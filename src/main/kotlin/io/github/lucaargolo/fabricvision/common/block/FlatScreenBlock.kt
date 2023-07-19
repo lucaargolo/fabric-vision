@@ -101,16 +101,19 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
         }
     }
 
+    override fun <T : BlockEntity> getTicker(world: World, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? {
+        return if(world.isClient) checkType(type, BlockEntityCompendium.FLAT_SCREEN, FlatScreenBlockEntity::clientTick) else null
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult {
-        if(world.isClient) {
+        if(!world.isClient) {
             val (originalPos, _, _) = getOriginalPos(state, pos)
             world.getBlockEntity(originalPos, BlockEntityCompendium.FLAT_SCREEN).ifPresent {
-                println(it.player.status)
-                if(it.player.status == MinecraftMediaPlayer.Status.NO_MEDIA) {
-                    it.player.load("C:\\Users\\Luca\\Downloads\\video5.mp4")
+                if(player.isSneaking) {
+                    it.mrl = "C:\\Users\\Luca\\Downloads\\video.mp4"
                 }else{
-                    it.player.play()
+                    it.playing = !it.playing
                 }
             }
         }

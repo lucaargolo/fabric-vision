@@ -6,6 +6,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.texture.NativeImage
 import net.minecraft.client.texture.NativeImageBackedTexture
 import net.minecraft.util.Identifier
+import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.jni.JNINativeInterface
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import uk.co.caprica.vlcj.player.base.MediaPlayer
@@ -17,7 +18,7 @@ import java.nio.ByteBuffer
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
-class MinecraftMediaPlayer private constructor(val uuid: UUID, mrl: String) {
+class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) {
 
     private val internalStatus = AtomicReference(Status.WAITING)
     var status
@@ -29,12 +30,16 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, mrl: String) {
 
     private val internalMrl = AtomicReference("")
 
-    var mrl
+    var currentMrl
         get() = internalMrl.get()
         private set(value) {
             println("Updating $uuid mrl ${internalMrl.get()} -> $value")
             internalMrl.set(value)
         }
+
+    var visible = true
+    var playing = false
+    var time = 0L
 
     var identifier: Identifier = TRANSPARENT
         private set
@@ -42,9 +47,28 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, mrl: String) {
     private var player: MediaPlayer? = null
     private var texture: NativeImageBackedTexture? = null
 
-    fun tick() {
-        if(status == Status.WAITING) {
-            if(CREATING == null && LOADING == null) {
+    fun worldTick() {
+        if(status.acceptMedia) {
+            if(status.interactable) {
+                if((playing && !status.playing) || (!playing && status.playing)) {
+                    play()
+                }else if(playing) {
+                    if(visible && !status.visible) {
+                        status = Status.PLAYING_VISIBLE
+                    }else if(!visible && status.visible) {
+                        status = Status.PLAYING_INVISIBLE
+                    }
+                }
+            }
+            if(mrl != currentMrl) {
+                load()
+            }
+        }
+    }
+
+    fun clientTick() {
+        if (status == Status.WAITING) {
+            if (CREATING == null && LOADING == null) {
                 CREATING = this
                 status = Status.CREATING
                 FACTORY.submit {
@@ -55,51 +79,58 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, mrl: String) {
                 }
             }
         }
-        if(status == Status.CREATING) {
+        //Maybe this isn't necessary and we can just delete the State.WAITING and finish the CREATING step inside the Factory.submit?
+        if (status == Status.CREATING) {
             val mediaPlayer = player ?: return
             val state = mediaPlayer.status().state()
-            if(state == State.NOTHING_SPECIAL) {
-                if(CREATING == this) {
+            if (state == State.NOTHING_SPECIAL) {
+                if (CREATING == this) {
                     CREATING = null
                 }
-                load(mrl, true)
+                load(true)
             }
         }
-        if(status == Status.LOADED) {
-            val mediaPlayer = player ?: return
-            val validMedia = mediaPlayer.media().isValid
-            status = if(validMedia) {
-                Status.PAUSED
-            }else{
-                Status.NO_MEDIA
-            }
-        }
-        if(LOADING == this && status.acceptMedia) {
-            LOADING = null
-        }
-    }
-
-    fun load(newMrl: String, justCreated: Boolean = false): Boolean {
-        if(justCreated || status.acceptMedia) {
-            val mediaPlayer = player ?: return false
-            if (newMrl.isEmpty()) {
-                status = Status.NO_MEDIA
-                return false
-            } else {
+        if (status == Status.LOADING) {
+            if (CREATING == null && LOADING == null) {
+                val mediaPlayer = player ?: return
                 LOADING = this
-                status = Status.LOADING
                 mediaPlayer.submit {
-                    status = if (mediaPlayer.media().startPaused(newMrl)) {
-                        mrl = newMrl
+                    status = if (mediaPlayer.media().startPaused(mrl)) {
+                        currentMrl = mrl
                         Status.LOADED
                     } else {
                         Status.NO_MEDIA
                     }
                 }
-                return true
+            }
+        }
+        if (status == Status.LOADED) {
+            val mediaPlayer = player ?: return
+            val validMedia = mediaPlayer.media().isValid
+            status = if (validMedia) {
+                Status.PAUSED_VISIBLE
+            } else {
+                Status.NO_MEDIA
+            }
+        }
+        if (status.acceptMedia) {
+            if (LOADING == this) {
+                LOADING = null
+            }
+        }
+    }
+
+    fun load(justCreated: Boolean = false): Boolean {
+        return if(justCreated || status.acceptMedia) {
+            if (mrl.isEmpty()) {
+                status = Status.NO_MEDIA
+                false
+            } else {
+                status = Status.LOADING
+                true
             }
         }else{
-            return false
+            false
         }
     }
 
@@ -108,10 +139,10 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, mrl: String) {
             val mediaPlayer = player ?: return
             mediaPlayer.submit {
                 if(mediaPlayer.status().isPlaying) {
-                    status = Status.PAUSED
+                    status = status.opposite.invoke() ?: Status.PAUSED_VISIBLE
                     mediaPlayer.controls().pause()
                 }else{
-                    status = Status.PLAYING_VISIBLE
+                    status = status.opposite.invoke() ?: Status.PLAYING_VISIBLE
                     mediaPlayer.controls().play()
                 }
             }
@@ -119,7 +150,8 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, mrl: String) {
     }
 
     fun close() {
-        texture?.close()
+        texture?.image = null
+        texture?.clearGlId()
         status = Status.CLOSED
         val mediaPlayer = player ?: return
         mediaPlayer.submit {
@@ -154,46 +186,58 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, mrl: String) {
 
     inner class MinecraftRenderCallback: RenderCallback {
         override fun display(player: MediaPlayer, buffers: Array<ByteBuffer>, bufferFormat: BufferFormat) {
-            if (status.updateTexture && buffers.size == 1) texture?.image?.let { image ->
-                image.pointer = JNINativeInterface.GetDirectBufferAddress(buffers[0])
+            if (status.visible && buffers.size == 1) RenderSystem.recordRenderCall { texture?.image?.let { image ->
+                val address = JNINativeInterface.GetDirectBufferAddress(buffers[0])
+                MemoryUtil.memCopy(address, image.pointer, image.width * image.height * 4L)
                 texture?.upload()
-            }
+            } }
         }
 
     }
 
-    enum class Status(val interactable: Boolean, val acceptMedia: Boolean, val updateTexture: Boolean) {
-        WAITING(false, false, false),         // mmp just created, waiting for liberation
-        CREATING(false, false, false),        // mp requested
-        NO_MEDIA(false, true, false),         // mp ready, no media
-        LOADING(false, false, false),         // mp ready, media requested
-        LOADED(false, true, false),           // mp ready, media loaded
-        PAUSED(true, true, false),            // mp ready, media paused, texture not updating
-        PLAYING_VISIBLE(true, true, true),    // mp ready, media playing, texture updating
-        PLAYING_INVISIBLE(true, true, false), // mp ready, media playing, texture not updating
-        TOO_FAR(true, true, false),           // mp ready, media paused, texture not updating (cause player is too far/too many videos)
-        CLOSED(false, false, false)           // mp closed
+    enum class Status(val interactable: Boolean, val acceptMedia: Boolean, val visible: Boolean, val playing: Boolean = false, val opposite: () -> (Status?) = { null }) {
+        WAITING(false, false, false),                                               // mmp just created, waiting for liberation
+        CREATING(false, false, false),                                              // mp requested
+        NO_MEDIA(false, true, false),                                               // mp ready, no media
+        LOADING(false, false, false),                                               // mp ready, media requested
+        LOADED(false, true, false),                                                 // mp ready, media loaded
+        PAUSED_VISIBLE(true, true, false, false, { PLAYING_VISIBLE }),       // mp ready, media paused, texture not updating
+        PAUSED_INVISIBLE(true, true, false, false, { PLAYING_INVISIBLE }),   // mp ready, media paused, texture not updating
+        PLAYING_VISIBLE(true, true, true, true, { PAUSED_VISIBLE }),         // mp ready, media playing, texture updating
+        PLAYING_INVISIBLE(true, true, false, true, { PLAYING_INVISIBLE }),   // mp ready, media playing, texture not updating
+        TOO_FAR(true, true, false),                                                 // mp ready, media paused, texture not updating (cause player is too far/too many videos)
+        CLOSED(false, false, false)                                                 // mp closed
     }
 
     companion object {
-        private val TRANSPARENT = ModIdentifier("textures/gui/transparent.png")
+        val TRANSPARENT = ModIdentifier("textures/gui/transparent.png")
 
         private var CREATING: MinecraftMediaPlayer? = null
         private var LOADING: MinecraftMediaPlayer? = null
         private val PLAYERS = mutableMapOf<UUID, MinecraftMediaPlayer>()
         private val FACTORY: MediaPlayerFactory by lazy {
-            MediaPlayerFactory()
+            MediaPlayerFactory("--quiet")
         }
 
-        fun tick() {
+        private var tickedWorld = false
+
+        fun worldTick() {
+            if(!tickedWorld) {
+                tickedWorld = true
+                PLAYERS.values.forEach(MinecraftMediaPlayer::worldTick)
+            }
+        }
+
+        fun clientTick() {
             val iterator = PLAYERS.iterator()
             while (iterator.hasNext()) {
                 val entry = iterator.next()
-                entry.value.tick()
+                entry.value.clientTick()
                 if(entry.value.status == Status.CLOSED) {
                     iterator.remove()
                 }
             }
+            tickedWorld = false
         }
 
         fun create(uuid: UUID): MinecraftMediaPlayer {

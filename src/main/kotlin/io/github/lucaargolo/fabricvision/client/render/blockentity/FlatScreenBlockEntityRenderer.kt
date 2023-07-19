@@ -2,6 +2,7 @@ package io.github.lucaargolo.fabricvision.client.render.blockentity
 
 import io.github.lucaargolo.fabricvision.common.block.FlatScreenBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.FlatScreenBlockEntity
+import io.github.lucaargolo.fabricvision.utils.MinecraftMediaPlayer
 import net.minecraft.client.render.LightmapTextureManager
 import net.minecraft.client.render.OverlayTexture
 import net.minecraft.client.render.RenderLayer
@@ -16,8 +17,10 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
 
     override fun render(entity: FlatScreenBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
 
+        val identifier = entity.player?.identifier ?: MinecraftMediaPlayer.TRANSPARENT
+        val renderLayer = RenderLayer.getEntityTranslucent(identifier)
+        val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
 
-        val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(entity.player.identifier))
         val red = 1f
         val green = 1f
         val blue = 1f
