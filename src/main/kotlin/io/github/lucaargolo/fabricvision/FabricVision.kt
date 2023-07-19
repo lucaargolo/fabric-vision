@@ -15,14 +15,11 @@ import io.github.lucaargolo.fabricvision.common.screenhandler.ScreenHandlerCompe
 import io.github.lucaargolo.fabricvision.common.sound.SoundCompendium
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
 import net.fabricmc.api.ModInitializer
-import java.nio.Buffer
 
 object FabricVision: ModInitializer {
 
     const val MOD_ID = "fabricvision"
     const val MOD_NAME = "Fabric Vision"
-
-    val addressField = Buffer::class.java.getDeclaredField("address")
 
     private fun initializeRegistries() {
         BlockCompendium.initialize()
@@ -41,7 +38,6 @@ object FabricVision: ModInitializer {
 
     override fun onInitialize() {
         initializeRegistries()
-        addressField.isAccessible = true
     }
 
 }

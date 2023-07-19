@@ -1,10 +1,13 @@
 package io.github.lucaargolo.fabricvision.utils
 
+import net.minecraft.client.MinecraftClient
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
+import uk.co.caprica.vlcj.media.MediaRef
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 
 object MediaPlayerHolder {
 
@@ -12,25 +15,43 @@ object MediaPlayerHolder {
         MediaPlayerFactory()
     }
 
-    private val PLAYERS = mutableMapOf<UUID, MediaPlayer>()
+    private val PLAYERS = mutableMapOf<UUID, Pair<MediaPlayer, (MediaPlayer?) -> Unit>>()
     private val KEEP_ALIVE = mutableMapOf<UUID, Int>()
 
-    fun addPlayer(uuid: UUID, formatCallback: BufferFormatCallback, renderCallback: RenderCallback): MediaPlayer {
-        println("Creating player ${uuid}")
-        val mediaPlayer = FACTORY.mediaPlayers().newEmbeddedMediaPlayer()
-        val videoSurface = FACTORY.videoSurfaces().newVideoSurface(formatCallback, renderCallback, true)
-        mediaPlayer.videoSurface().set(videoSurface)
-        PLAYERS[uuid] = mediaPlayer
-        KEEP_ALIVE[uuid] = 100
-        return mediaPlayer
-    }
-    fun cleanPlayer(uuid: UUID) {
-        PLAYERS[uuid]?.let {
-            it.submit {
-                if(it.status().isPlaying) {
-                    it.controls().pause()
+    val LOCK = AtomicBoolean(false)
+
+    fun addPlayer(uuid: UUID, formatCallback: BufferFormatCallback, renderCallback: RenderCallback, returnCallback: (MediaPlayer?) -> Unit) {
+        if(!LOCK.get()) {
+            LOCK.set(true)
+            FACTORY.submit {
+                println("Creating player $uuid")
+                val mediaPlayer = FACTORY.mediaPlayers().newEmbeddedMediaPlayer()
+                val videoSurface = FACTORY.videoSurfaces().newVideoSurface(formatCallback, renderCallback, true)
+                mediaPlayer.videoSurface().set(videoSurface)
+                mediaPlayer.events().addMediaPlayerEventListener(object: MediaPlayerEventListenerImpl() {
+                    override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
+                        LOCK.set(false)
+                    }
+                })
+                MinecraftClient.getInstance().execute {
+                    PLAYERS[uuid] = mediaPlayer to returnCallback
+                    KEEP_ALIVE[uuid] = 100
+                    returnCallback.invoke(mediaPlayer)
                 }
-                it.release()
+                LOCK.set(false)
+            }
+        }
+    }
+
+    fun cleanPlayer(uuid: UUID) {
+        PLAYERS[uuid]?.let { (mediaPlayer, returnCallback) ->
+            mediaPlayer.submit {
+                println("Cleaning player $uuid")
+                returnCallback.invoke(null)
+                if(mediaPlayer.status().isPlaying) {
+                    mediaPlayer.controls().pause()
+                }
+                mediaPlayer.release()
             }
         }
         PLAYERS.remove(uuid)
@@ -51,14 +72,12 @@ object MediaPlayerHolder {
         while (iterator.hasNext()) {
             val entry = iterator.next()
             if(entry.value <= 0) {
-                println("Cleaning player ${entry.key}")
                 cleanPlayer(entry.key)
                 iterator.remove()
             }else{
                 entry.setValue(entry.value-1)
             }
         }
-        KEEP_ALIVE
     }
 
     fun start() {
@@ -69,7 +88,14 @@ object MediaPlayerHolder {
         val iterator = PLAYERS.iterator()
         while (iterator.hasNext()) {
             val entry = iterator.next()
-            entry.value.release()
+            val (mediaPlayer, returnCallback) = entry.value
+            mediaPlayer.submit {
+                returnCallback.invoke(null)
+                if(mediaPlayer.status().isPlaying) {
+                    mediaPlayer.controls().pause()
+                }
+                mediaPlayer.release()
+            }
             iterator.remove()
         }
         FACTORY.release()

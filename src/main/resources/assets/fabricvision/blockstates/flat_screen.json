@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "fabricvision:block/flat_screen",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "fabricvision:block/flat_screen"
+    },
+    "facing=south": {
+      "model": "fabricvision:block/flat_screen",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "fabricvision:block/flat_screen",
+      "y": 270
+    }
+  }
+}

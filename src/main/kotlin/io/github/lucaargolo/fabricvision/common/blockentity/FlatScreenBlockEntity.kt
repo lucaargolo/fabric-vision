@@ -12,9 +12,11 @@ import net.minecraft.client.texture.NativeImageBackedTexture
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import org.lwjgl.system.jni.JNINativeInterface
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormat
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCallback
+import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -42,18 +44,23 @@ class FlatScreenBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Bloc
             override fun allocatedBuffers(buffers: Array<ByteBuffer>) {}
         }
 
-        mediaPlayer = MediaPlayerHolder.addPlayer(uuid, formatCallback) { player, buffers, _ ->
+        val renderCallback = RenderCallback { _, buffers, _ ->
             if (buffers.size == 1) texture?.image?.let { image ->
-                buffers[0].rewind()
-                image.pointer = FabricVision.addressField.getLong(buffers[0])
+                image.pointer = JNINativeInterface.GetDirectBufferAddress(buffers[0])
                 texture?.upload()
+            }
+        }
+
+        MediaPlayerHolder.addPlayer(uuid, formatCallback, renderCallback) {
+            mediaPlayer = it
+            if(!initialized) {
+                initialized = true
+                play()
             }
         }
     }
 
     fun initialize() {
-        initialized = true
-
         if(texture == null) {
             texture = NativeImageBackedTexture(1, 1, true)
             identifier = MinecraftClient.getInstance().textureManager.registerDynamicTexture("video", texture)
@@ -61,16 +68,21 @@ class FlatScreenBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Bloc
 
         if(mediaPlayer == null || !MediaPlayerHolder.isAlive(uuid)) {
             createMediaPlayer()
-            mediaPlayer?.media()?.start("C:\\Users\\Luca\\Downloads\\video.mp4")
         }
     }
 
-    fun pause() {
+    fun play() {
         if(mediaPlayer == null || !MediaPlayerHolder.isAlive(uuid)) {
             createMediaPlayer()
-            mediaPlayer?.media()?.start("C:\\Users\\Luca\\Downloads\\video.mp4")
+        }else{
+            mediaPlayer?.submit {
+                if(mediaPlayer?.media()?.isValid == true) {
+                    mediaPlayer?.controls()?.pause()
+                }else{
+                    mediaPlayer?.media()?.startPaused("C:\\Users\\Luca\\Downloads\\video5.mp4")
+                }
+            }
         }
-        mediaPlayer?.controls()?.pause()
     }
 
     override fun markRemoved() {
