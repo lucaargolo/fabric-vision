@@ -16,11 +16,8 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
 
     override fun render(entity: FlatScreenBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
 
-        if(!entity.initialized) {
-            entity.initialize()
-        }
 
-        val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(entity.identifier))
+        val vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(entity.player.identifier))
         val red = 1f
         val green = 1f
         val blue = 1f

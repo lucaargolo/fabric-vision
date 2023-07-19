@@ -15,10 +15,12 @@ import io.github.lucaargolo.fabricvision.common.resource.ResourceCompendium
 import io.github.lucaargolo.fabricvision.common.screenhandler.ScreenHandlerCompendium
 import io.github.lucaargolo.fabricvision.common.sound.SoundCompendium
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
-import io.github.lucaargolo.fabricvision.utils.MediaPlayerHolder
+import io.github.lucaargolo.fabricvision.utils.MinecraftMediaPlayer
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 
 object FabricVisionClient: ClientModInitializer {
 
@@ -41,14 +43,14 @@ object FabricVisionClient: ClientModInitializer {
     }
     override fun onInitializeClient() {
         initializeRegistries()
-        ClientLifecycleEvents.CLIENT_STARTED.register {
-            MediaPlayerHolder.start()
+        ClientTickEvents.END_CLIENT_TICK.register { _ ->
+            MinecraftMediaPlayer.tick()
         }
-        ClientTickEvents.END_CLIENT_TICK.register {
-            MediaPlayerHolder.tick()
+        ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
+            MinecraftMediaPlayer.close(false)
         }
-        ClientLifecycleEvents.CLIENT_STOPPING.register {
-            MediaPlayerHolder.stop()
+        ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
+            MinecraftMediaPlayer.close(true)
         }
     }
 

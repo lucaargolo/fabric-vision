@@ -2,6 +2,7 @@ package io.github.lucaargolo.fabricvision.common.block
 
 import io.github.lucaargolo.fabricvision.common.blockentity.BlockEntityCompendium
 import io.github.lucaargolo.fabricvision.common.blockentity.FlatScreenBlockEntity
+import io.github.lucaargolo.fabricvision.utils.MinecraftMediaPlayer
 import io.github.lucaargolo.fabricvision.utils.VoxelShapeUtils.rotate
 import net.minecraft.block.*
 import net.minecraft.block.entity.BlockEntity
@@ -100,16 +101,17 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
         }
     }
 
-    override fun <T : BlockEntity> getTicker(world: World, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? {
-        return if(world.isClient) checkType(type, BlockEntityCompendium.FLAT_SCREEN, FlatScreenBlockEntity::clientTick) else null
-    }
-
     @Deprecated("Deprecated in Java")
     override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult {
         if(world.isClient) {
             val (originalPos, _, _) = getOriginalPos(state, pos)
             world.getBlockEntity(originalPos, BlockEntityCompendium.FLAT_SCREEN).ifPresent {
-                it.play()
+                println(it.player.status)
+                if(it.player.status == MinecraftMediaPlayer.Status.NO_MEDIA) {
+                    it.player.load("C:\\Users\\Luca\\Downloads\\video5.mp4")
+                }else{
+                    it.player.play()
+                }
             }
         }
         return ActionResult.SUCCESS
