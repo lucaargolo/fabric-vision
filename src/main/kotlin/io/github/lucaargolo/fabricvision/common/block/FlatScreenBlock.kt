@@ -110,11 +110,11 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
         if(!world.isClient) {
             val (originalPos, _, _) = getOriginalPos(state, pos)
             world.getBlockEntity(originalPos, BlockEntityCompendium.FLAT_SCREEN).ifPresent {
-                if(player.isSneaking) {
-                    it.mrl = "C:\\Users\\Luca\\Downloads\\video.mp4"
-                }else{
+                //if(player.isSneaking) {
+                //    it.mrl = "C:\\Users\\Luca\\Downloads\\video.mp4"
+                //}else{
                     it.playing = !it.playing
-                }
+                //}
             }
         }
         return ActionResult.SUCCESS

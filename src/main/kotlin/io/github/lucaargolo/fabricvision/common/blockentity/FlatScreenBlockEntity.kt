@@ -23,7 +23,7 @@ class FlatScreenBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Bloc
 
     var uuid: UUID? = null
 
-    var mrl = "C:\\Users\\Luca\\Downloads\\video5.mp4"
+    var mrl = "https://cdn.discordapp.com/attachments/253728532939669504/1131109086407163924/SaveTube.io-Rick_Astley_-_Never_Gonna_Give_You_Up_Official_Music_Video.mp4"
         set(value) {
             field = value
             markDirtyAndSync()

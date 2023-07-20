@@ -88,6 +88,8 @@ dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:${project["fabric_kotlin_version"]}")
 
     implementation("uk.co.caprica:vlcj:4.8.2")
+    include("uk.co.caprica:vlcj:4.8.2")
+    include("uk.co.caprica:vlcj-natives:4.8.1")
 
     modRuntimeOnly("com.terraformersmc:modmenu:${project["modmenu_version"]}")
     modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:${project["rei_version"]}")

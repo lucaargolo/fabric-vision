@@ -2,7 +2,11 @@ package io.github.lucaargolo.fabricvision.utils
 
 import com.mojang.blaze3d.platform.TextureUtil
 import com.mojang.blaze3d.systems.RenderSystem
+import com.sun.jna.Pointer
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.sound.SoundEngine
+import net.minecraft.client.sound.Source
+import net.minecraft.client.sound.StaticSound
 import net.minecraft.client.texture.NativeImage
 import net.minecraft.client.texture.NativeImageBackedTexture
 import net.minecraft.util.Identifier
@@ -12,12 +16,14 @@ import org.lwjgl.system.jni.JNINativeInterface
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.State
+import uk.co.caprica.vlcj.player.base.callback.AudioCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormat
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
 import java.nio.ByteBuffer
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.atomic.AtomicReference
+import javax.sound.sampled.AudioFormat
 
 class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) {
 
@@ -51,6 +57,9 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
     private var player: MediaPlayer? = null
     private var texture: NativeImageBackedTexture? = null
 
+    private var audioSource: Source? = null
+    private var audioBuffer: StaticSound? = null
+
     fun worldTick() {
         if(status.acceptMedia) {
             if(status.interactable) {
@@ -81,6 +90,8 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
                     println("Creating player $uuid")
                     val mediaPlayer = FACTORY.mediaPlayers().newEmbeddedMediaPlayer()
                     FACTORY.videoSurfaces().newVideoSurface(MinecraftBufferCallback(), MinecraftRenderCallback(), true).let(mediaPlayer.videoSurface()::set)
+                    mediaPlayer.audio().callback("S16N", 16000, 2, MinecraftAudioCallback(), true)
+                    audioSource = MinecraftClient.getInstance().soundManager.soundSystem.soundEngine.createSource(SoundEngine.RunMode.STREAMING)
                     player = mediaPlayer
                 }
             }
@@ -97,11 +108,11 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
 
         //Loading steps
         if (status == Status.LOADING) {
-            if ((CREATING == null || CREATING!!.status == Status.WAITING) && LOADING == null) {
+            if (CREATING == null && LOADING == null) {
                 val mediaPlayer = player ?: return
                 LOADING = this
                 mediaPlayer.submit {
-                    status = if (mediaPlayer.media().startPaused(mrl)) {
+                    status = if (mediaPlayer.media().startPaused(mrl, ":avcodec-hw=any")) {
                         currentMrl = mrl
                         Status.LOADED
                     } else {
@@ -158,6 +169,9 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
         if(clearTexture) {
             texture?.image = null
             texture?.clearGlId()
+            audioSource?.let {
+                MinecraftClient.getInstance().soundManager.soundSystem.soundEngine.release(it)
+            }
         }
         status = if(player == null) {
             Status.CLOSED
@@ -187,6 +201,40 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
             true
         }
     }
+    inner class MinecraftAudioCallback: AudioCallback {
+
+        override fun play(mediaPlayer: MediaPlayer, samples: Pointer, sampleCount: Int, pts: Long) {
+            if(audioSource?.isPlaying != true) {
+                //audioBuffer?.close()
+                val format = AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 16000f, 16, 2, 0, 1f, false)
+                audioBuffer = StaticSound(samples.getByteBuffer(0L, sampleCount * 4L), format)
+                audioSource?.setBuffer(audioBuffer)
+                audioSource?.play()
+            }
+
+        }
+
+        override fun pause(mediaPlayer: MediaPlayer, pts: Long) {
+
+        }
+
+        override fun resume(mediaPlayer: MediaPlayer, pts: Long) {
+
+        }
+
+        override fun flush(mediaPlayer: MediaPlayer, pts: Long) {
+
+        }
+
+        override fun drain(mediaPlayer: MediaPlayer) {
+
+        }
+
+        override fun setVolume(volume: Float, mute: Boolean) {
+
+        }
+
+    }
 
     inner class MinecraftBufferCallback: BufferFormatCallback {
         override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
@@ -195,15 +243,14 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
                 RenderSystem.recordRenderCall {
                     texture = NativeImageBackedTexture(1, 1, true)
                     identifier = MinecraftClient.getInstance().textureManager.registerDynamicTexture("video", texture)
+                    if(sourceWidth != texture?.image?.width || sourceHeight != texture?.image?.height) texture?.let{ texture ->
+                        println("Updating image $uuid (${sourceWidth}x${sourceHeight})")
+                        texture.image = NativeImage(NativeImage.Format.RGBA, sourceWidth, sourceHeight, true)
+                        TextureUtil.prepareImage(texture.glId, sourceWidth, sourceHeight)
+                    }
                 }
             }
-            if(sourceWidth != texture?.image?.width || sourceHeight != texture?.image?.height) texture?.let{ texture ->
-                println("Updating image $uuid (${sourceWidth}x${sourceHeight})")
-                RenderSystem.recordRenderCall {
-                    texture.image = NativeImage(NativeImage.Format.RGBA, sourceWidth, sourceHeight, true)
-                    TextureUtil.prepareImage(texture.glId, sourceWidth, sourceHeight)
-                }
-            }
+
             return BufferFormat("RGBA", sourceWidth, sourceHeight, intArrayOf(sourceWidth * 4), intArrayOf(sourceHeight))
         }
         override fun allocatedBuffers(buffers: Array<ByteBuffer>) {}
@@ -229,14 +276,13 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
         PAUSED_VISIBLE(true, true, false, false, { PLAYING_VISIBLE }),       // mp ready, media paused, texture not updating
         PAUSED_INVISIBLE(true, true, false, false, { PLAYING_INVISIBLE }),   // mp ready, media paused, texture not updating
         PLAYING_VISIBLE(true, true, true, true, { PAUSED_VISIBLE }),         // mp ready, media playing, texture updating
-        PLAYING_INVISIBLE(true, true, false, true, { PLAYING_INVISIBLE }),   // mp ready, media playing, texture not updating
-        TOO_FAR(true, true, false),                                                 // mp ready, media paused, texture not updating (cause player is too far/too many videos)
+        PLAYING_INVISIBLE(true, true, false, true, { PAUSED_INVISIBLE }),    // mp ready, media playing, texture not updating
         CLOSING(false, false, false),                                               // mp closed
         CLOSED(false, false, false)                                                 // mp closed
     }
 
     companion object {
-        private const val MAX_SIMULTANEOUS_PLAYERS = 4
+        private const val MAX_SIMULTANEOUS_PLAYERS = 8
 
         val TRANSPARENT = ModIdentifier("textures/gui/transparent.png")
 
@@ -261,7 +307,6 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
         }
 
         fun clientTick(client: MinecraftClient) {
-            val iterator = PLAYERS.iterator()
 
             var maxDistancePlayer: MinecraftMediaPlayer? = null
             var maxDistance = Double.MIN_VALUE
@@ -269,6 +314,15 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
             var minDistance = Double.MAX_VALUE
 
             val player = client.player
+
+            if(CREATING?.status != Status.WAITING && CREATING?.status != Status.CREATING) {
+                CREATING = null
+            }
+            if(LOADING?.status == Status.LOADING) {
+                LOADING = null
+            }
+
+            val iterator = PLAYERS.iterator()
 
             while (iterator.hasNext()) {
                 val entry = iterator.next()
@@ -302,8 +356,8 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
             }
 
             if(CREATING == null && minDistancePlayer != null) {
-                if(ACTIVE_PLAYERS.size >= MAX_SIMULTANEOUS_PLAYERS && maxDistance > minDistance) {
-                    if(maxDistancePlayer != null && maxDistancePlayer.status != Status.CLOSING && !ACTIVE_PLAYERS.contains(minDistancePlayer) && ACTIVE_PLAYERS.contains(maxDistancePlayer)) {
+                if(ACTIVE_PLAYERS.size >= MAX_SIMULTANEOUS_PLAYERS) {
+                    if(maxDistance > minDistance && maxDistancePlayer != null && maxDistancePlayer.status != Status.CLOSING && !ACTIVE_PLAYERS.contains(minDistancePlayer) && ACTIVE_PLAYERS.contains(maxDistancePlayer)) {
                         println("Replacing player ${maxDistancePlayer.uuid} for ${minDistancePlayer.uuid}")
                         maxDistancePlayer.shouldRenew = true
                         maxDistancePlayer.close(clearTexture = false)
