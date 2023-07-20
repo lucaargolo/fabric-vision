@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.TextureUtil
 import com.mojang.blaze3d.systems.RenderSystem
 import com.sun.jna.Pointer
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.sound.AudioStream
 import net.minecraft.client.sound.SoundEngine
 import net.minecraft.client.sound.Source
 import net.minecraft.client.sound.StaticSound
@@ -57,9 +58,6 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
     private var player: MediaPlayer? = null
     private var texture: NativeImageBackedTexture? = null
 
-    private var audioSource: Source? = null
-    private var audioBuffer: StaticSound? = null
-
     fun worldTick() {
         if(status.acceptMedia) {
             if(status.interactable) {
@@ -91,7 +89,6 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
                     val mediaPlayer = FACTORY.mediaPlayers().newEmbeddedMediaPlayer()
                     FACTORY.videoSurfaces().newVideoSurface(MinecraftBufferCallback(), MinecraftRenderCallback(), true).let(mediaPlayer.videoSurface()::set)
                     mediaPlayer.audio().callback("S16N", 16000, 2, MinecraftAudioCallback(), true)
-                    audioSource = MinecraftClient.getInstance().soundManager.soundSystem.soundEngine.createSource(SoundEngine.RunMode.STREAMING)
                     player = mediaPlayer
                 }
             }
@@ -169,9 +166,6 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
         if(clearTexture) {
             texture?.image = null
             texture?.clearGlId()
-            audioSource?.let {
-                MinecraftClient.getInstance().soundManager.soundSystem.soundEngine.release(it)
-            }
         }
         status = if(player == null) {
             Status.CLOSED
@@ -201,33 +195,75 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
             true
         }
     }
+
+    inner class MinecraftAudioStream : AudioStream {
+
+        private val FORMAT = AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 16000f, 16, 2, 4, 16000f, false)
+        var byteBuffer = MemoryUtil.memAlloc(16000 * 4)
+        var read = false
+
+        override fun getFormat(): AudioFormat = FORMAT
+
+        override fun getBuffer(size: Int): ByteBuffer {
+            if(!read) {
+                byteBuffer.flip()
+                read = true
+            }else{
+                byteBuffer.position(0)
+                byteBuffer.limit(0)
+            }
+            return byteBuffer
+        }
+
+        fun queueBuffer(buffer: ByteBuffer) {
+            if(read) {
+                byteBuffer.clear()
+                read = false
+            }
+            if(byteBuffer.remaining() >= buffer.remaining()) {
+                byteBuffer.put(buffer)
+            }else{
+                println("dropped audio frame")
+            }
+        }
+
+        override fun close() {
+            MemoryUtil.memFree(byteBuffer)
+        }
+
+    }
+
     inner class MinecraftAudioCallback: AudioCallback {
 
+        var audioStream: MinecraftAudioStream? = null
+        var audioSource: Source? = null
+
         override fun play(mediaPlayer: MediaPlayer, samples: Pointer, sampleCount: Int, pts: Long) {
-            if(audioSource?.isPlaying != true) {
-                //audioBuffer?.close()
-                val format = AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 16000f, 16, 2, 0, 1f, false)
-                audioBuffer = StaticSound(samples.getByteBuffer(0L, sampleCount * 4L), format)
-                audioSource?.setBuffer(audioBuffer)
+            val buffer = samples.getByteBuffer(0L, sampleCount * 4L)
+            if (audioStream == null) {
+                audioStream = MinecraftAudioStream()
+            }
+            audioStream?.queueBuffer(buffer)
+            if (audioSource == null || audioSource?.isPlaying != true) {
+                audioSource?.let { MinecraftClient.getInstance().soundManager.soundSystem.soundEngine.release(it) }
+                audioSource = MinecraftClient.getInstance().soundManager.soundSystem.soundEngine.createSource(SoundEngine.RunMode.STREAMING)
+                audioSource?.setStream(audioStream)
                 audioSource?.play()
             }
-
         }
 
         override fun pause(mediaPlayer: MediaPlayer, pts: Long) {
-
+            audioSource?.pause()
         }
 
         override fun resume(mediaPlayer: MediaPlayer, pts: Long) {
-
+            audioSource?.resume()
         }
 
         override fun flush(mediaPlayer: MediaPlayer, pts: Long) {
-
         }
 
         override fun drain(mediaPlayer: MediaPlayer) {
-
         }
 
         override fun setVolume(volume: Float, mute: Boolean) {
