@@ -1,6 +1,7 @@
 package io.github.lucaargolo.fabricvision.common.blockentity
 
-import io.github.lucaargolo.fabricvision.utils.MinecraftMediaPlayer
+import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
+import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayerHolder
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.nbt.NbtCompound
@@ -16,7 +17,7 @@ import java.util.*
 class FlatScreenBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(BlockEntityCompendium.FLAT_SCREEN, pos, state) {
 
     private val internalPlayer: MinecraftMediaPlayer by lazy {
-        MinecraftMediaPlayer.create(uuid!!)
+        MinecraftMediaPlayerHolder.create(uuid!!)
     }
     val player: MinecraftMediaPlayer?
         get() = if(uuid != null) internalPlayer else null

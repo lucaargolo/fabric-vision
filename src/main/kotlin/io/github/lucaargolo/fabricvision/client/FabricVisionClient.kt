@@ -15,7 +15,7 @@ import io.github.lucaargolo.fabricvision.common.resource.ResourceCompendium
 import io.github.lucaargolo.fabricvision.common.screenhandler.ScreenHandlerCompendium
 import io.github.lucaargolo.fabricvision.common.sound.SoundCompendium
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
-import io.github.lucaargolo.fabricvision.utils.MinecraftMediaPlayer
+import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayerHolder
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -43,16 +43,16 @@ object FabricVisionClient: ClientModInitializer {
     override fun onInitializeClient() {
         initializeRegistries()
         ClientTickEvents.END_CLIENT_TICK.register { client ->
-            MinecraftMediaPlayer.clientTick(client)
+            MinecraftMediaPlayerHolder.clientTick(client)
         }
         ClientTickEvents.END_WORLD_TICK.register {
-            MinecraftMediaPlayer.worldTick()
+            MinecraftMediaPlayerHolder.worldTick()
         }
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
-            MinecraftMediaPlayer.close(false)
+            MinecraftMediaPlayerHolder.close(false)
         }
         ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
-            MinecraftMediaPlayer.close(true)
+            MinecraftMediaPlayerHolder.close(true)
         }
     }
 

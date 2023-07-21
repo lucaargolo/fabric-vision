@@ -2,7 +2,7 @@ package io.github.lucaargolo.fabricvision.client.render.blockentity
 
 import io.github.lucaargolo.fabricvision.common.block.FlatScreenBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.FlatScreenBlockEntity
-import io.github.lucaargolo.fabricvision.utils.MinecraftMediaPlayer
+import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import net.minecraft.client.render.LightmapTextureManager
 import net.minecraft.client.render.OverlayTexture
 import net.minecraft.client.render.RenderLayer

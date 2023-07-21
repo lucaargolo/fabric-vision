@@ -2,7 +2,6 @@ package io.github.lucaargolo.fabricvision.common.block
 
 import io.github.lucaargolo.fabricvision.common.blockentity.BlockEntityCompendium
 import io.github.lucaargolo.fabricvision.common.blockentity.FlatScreenBlockEntity
-import io.github.lucaargolo.fabricvision.utils.MinecraftMediaPlayer
 import io.github.lucaargolo.fabricvision.utils.VoxelShapeUtils.rotate
 import net.minecraft.block.*
 import net.minecraft.block.entity.BlockEntity

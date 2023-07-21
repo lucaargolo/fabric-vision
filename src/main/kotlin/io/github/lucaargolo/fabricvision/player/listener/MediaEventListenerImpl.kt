@@ -1,4 +1,4 @@
-package io.github.lucaargolo.fabricvision.utils
+package io.github.lucaargolo.fabricvision.player.listener
 
 import uk.co.caprica.vlcj.media.*
 import uk.co.caprica.vlcj.player.base.State

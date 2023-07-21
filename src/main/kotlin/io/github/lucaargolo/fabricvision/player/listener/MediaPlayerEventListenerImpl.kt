@@ -1,4 +1,4 @@
-package io.github.lucaargolo.fabricvision.utils
+package io.github.lucaargolo.fabricvision.player.listener
 
 import uk.co.caprica.vlcj.media.MediaRef
 import uk.co.caprica.vlcj.media.TrackType
