@@ -40,7 +40,7 @@ object MinecraftMediaPlayerHolder {
         if(CREATING?.status != MinecraftMediaPlayer.Status.WAITING && CREATING?.status != MinecraftMediaPlayer.Status.CREATING) {
             CREATING = null
         }
-        if(LOADING?.status == MinecraftMediaPlayer.Status.LOADING) {
+        if(LOADING?.status != MinecraftMediaPlayer.Status.LOADING) {
             LOADING = null
         }
 

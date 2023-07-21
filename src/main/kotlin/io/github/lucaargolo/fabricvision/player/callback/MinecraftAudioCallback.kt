@@ -24,7 +24,7 @@ class MinecraftAudioCallback(mmp: MinecraftMediaPlayer): AudioCallback {
             if(soundSystem.started && (sourceManager == null || sourceManager?.isStopped == true)) {
                 val source = soundEngine.createSource(SoundEngine.RunMode.STREAMING)
                 if (source != null) {
-                    source.setAttenuation(16f)
+                    source.setAttenuation(instance.sound.attenuation + 0f)
                     source.setPosition(instance.pos)
                     source.setRelative(!instance.isRelative)
                     val channelSource = soundChannel.SourceManager(source)
