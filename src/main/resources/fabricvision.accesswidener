@@ -9,3 +9,6 @@ accessible field net/minecraft/client/sound/SoundSystem channel Lnet/minecraft/c
 accessible field net/minecraft/client/sound/Channel sources Ljava/util/Set;
 accessible field net/minecraft/client/sound/StaticSound sample Ljava/nio/ByteBuffer;
 accessible field net/minecraft/client/sound/StaticSound hasBuffer Z
+accessible field net/minecraft/client/sound/Source pointer I
+accessible method net/minecraft/client/sound/Source removeProcessedBuffers ()I
+accessible method net/minecraft/client/sound/Source getBufferSize (Ljavax/sound/sampled/AudioFormat;I)I
