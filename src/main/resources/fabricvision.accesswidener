@@ -2,5 +2,10 @@ accessWidener v1 named
 accessible field net/minecraft/client/texture/NativeImage pointer J
 accessible field net/minecraft/client/sound/SoundManager soundSystem Lnet/minecraft/client/sound/SoundSystem;
 accessible field net/minecraft/client/sound/SoundSystem soundEngine Lnet/minecraft/client/sound/SoundEngine;
+accessible field net/minecraft/client/sound/SoundSystem listener Lnet/minecraft/client/sound/SoundListener;
+accessible field net/minecraft/client/sound/SoundSystem soundLoader Lnet/minecraft/client/sound/SoundLoader;
+accessible field net/minecraft/client/sound/SoundSystem taskQueue Lnet/minecraft/client/sound/SoundExecutor;
+accessible field net/minecraft/client/sound/SoundSystem channel Lnet/minecraft/client/sound/Channel;
+accessible field net/minecraft/client/sound/Channel sources Ljava/util/Set;
 accessible field net/minecraft/client/sound/StaticSound sample Ljava/nio/ByteBuffer;
 accessible field net/minecraft/client/sound/StaticSound hasBuffer Z

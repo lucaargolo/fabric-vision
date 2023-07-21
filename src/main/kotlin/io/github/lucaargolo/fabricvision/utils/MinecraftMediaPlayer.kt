@@ -5,9 +5,8 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.sun.jna.Pointer
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.sound.AudioStream
+import net.minecraft.client.sound.Channel
 import net.minecraft.client.sound.SoundEngine
-import net.minecraft.client.sound.Source
-import net.minecraft.client.sound.StaticSound
 import net.minecraft.client.texture.NativeImage
 import net.minecraft.client.texture.NativeImageBackedTexture
 import net.minecraft.util.Identifier
@@ -199,31 +198,48 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
     inner class MinecraftAudioStream : AudioStream {
 
         private val FORMAT = AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 16000f, 16, 2, 4, 16000f, false)
-        var byteBuffer = MemoryUtil.memAlloc(16000 * 4)
-        var read = false
+        var byteBuffer = MemoryUtil.memAlloc(64000)
+        var reading = false
 
         override fun getFormat(): AudioFormat = FORMAT
 
-        override fun getBuffer(size: Int): ByteBuffer {
-            if(!read) {
-                byteBuffer.flip()
-                read = true
+        override fun getBuffer(size: Int): ByteBuffer? {
+            byteBuffer.flip()
+            if(byteBuffer.remaining() <= size) {
+                return if(byteBuffer.remaining() > 0) {
+                    val auxBuffer = ByteBuffer.allocateDirect(size)
+                    auxBuffer.put(byteBuffer)
+                    val print = auxBuffer.flip()
+                    print
+                }else{
+                    null
+                }
             }else{
-                byteBuffer.position(0)
-                byteBuffer.limit(0)
+                println("reduced ${uuid} audio buffer capacity ${byteBuffer.capacity()} -> ${byteBuffer.capacity()-64000}")
+                val newBuffer = MemoryUtil.memAlloc(byteBuffer.capacity() - 64000)
+                val auxBuffer = ByteBuffer.allocateDirect(size)
+                byteBuffer.limit(byteBuffer.position() + size)
+                auxBuffer.put(byteBuffer)
+                byteBuffer.limit(byteBuffer.capacity())
+                byteBuffer.position(byteBuffer.position()+size)
+                MemoryUtil.memFree(byteBuffer)
+                byteBuffer = newBuffer
+                val print = auxBuffer.flip()
+                return print
             }
-            return byteBuffer
         }
 
         fun queueBuffer(buffer: ByteBuffer) {
-            if(read) {
-                byteBuffer.clear()
-                read = false
-            }
             if(byteBuffer.remaining() >= buffer.remaining()) {
                 byteBuffer.put(buffer)
             }else{
-                println("dropped audio frame")
+                println("increased ${uuid} audio buffer capacity ${byteBuffer.capacity()} -> ${byteBuffer.capacity()+64000}")
+                val newBuffer = MemoryUtil.memAlloc(byteBuffer.capacity() + 64000)
+                byteBuffer.flip()
+                newBuffer.put(byteBuffer)
+                MemoryUtil.memFree(byteBuffer)
+                byteBuffer = newBuffer
+                byteBuffer.put(buffer)
             }
         }
 
@@ -235,29 +251,51 @@ class MinecraftMediaPlayer private constructor(val uuid: UUID, var mrl: String) 
 
     inner class MinecraftAudioCallback: AudioCallback {
 
+        private val client = MinecraftClient.getInstance()
+        private val soundManager = client.soundManager
+        private val soundSystem = soundManager.soundSystem
+
+        private val soundExecutor = soundSystem.taskQueue
+        private val soundChannel = soundSystem.channel
+        private val soundEngine = soundSystem.soundEngine
+
         var audioStream: MinecraftAudioStream? = null
-        var audioSource: Source? = null
+        var audioSource: Channel.SourceManager? = null
 
         override fun play(mediaPlayer: MediaPlayer, samples: Pointer, sampleCount: Int, pts: Long) {
             val buffer = samples.getByteBuffer(0L, sampleCount * 4L)
-            if (audioStream == null) {
-                audioStream = MinecraftAudioStream()
+            soundExecutor.execute {
+                if (audioStream == null) {
+                    audioStream = MinecraftAudioStream()
+                }
+                audioStream?.queueBuffer(buffer)
+                if (audioSource?.isStopped != false) {
+                    val source = soundEngine.createSource(SoundEngine.RunMode.STREAMING)
+                    if (source != null) {
+                        val sourceManager = soundChannel.SourceManager(source)
+                        soundChannel.sources.add(sourceManager)
+                        audioSource = sourceManager
+                    }
+                    audioSource?.run {
+                        it.setStream(audioStream)
+                        it.play()
+                    }
+                }
+
             }
-            audioStream?.queueBuffer(buffer)
-            if (audioSource == null || audioSource?.isPlaying != true) {
-                audioSource?.let { MinecraftClient.getInstance().soundManager.soundSystem.soundEngine.release(it) }
-                audioSource = MinecraftClient.getInstance().soundManager.soundSystem.soundEngine.createSource(SoundEngine.RunMode.STREAMING)
-                audioSource?.setStream(audioStream)
-                audioSource?.play()
-            }
+
         }
 
         override fun pause(mediaPlayer: MediaPlayer, pts: Long) {
-            audioSource?.pause()
+            audioSource?.run {
+                it.stop()
+            }
         }
 
         override fun resume(mediaPlayer: MediaPlayer, pts: Long) {
-            audioSource?.resume()
+            audioSource?.run {
+                it.resume()
+            }
         }
 
         override fun flush(mediaPlayer: MediaPlayer, pts: Long) {
