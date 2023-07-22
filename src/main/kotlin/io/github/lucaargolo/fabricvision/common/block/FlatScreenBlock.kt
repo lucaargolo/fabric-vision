@@ -1,7 +1,7 @@
 package io.github.lucaargolo.fabricvision.common.block
 
 import io.github.lucaargolo.fabricvision.common.blockentity.BlockEntityCompendium
-import io.github.lucaargolo.fabricvision.common.blockentity.FlatScreenBlockEntity
+import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
 import io.github.lucaargolo.fabricvision.utils.VoxelShapeUtils.rotate
 import net.minecraft.block.*
 import net.minecraft.block.entity.BlockEntity
@@ -94,14 +94,14 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
     }
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? {
         return if(state[PART] == Part.CENTER && state[LAYER] == Layer.DOWN) {
-            FlatScreenBlockEntity(pos, state)
+            MediaPlayerBlockEntity.FlatScreen(pos, state)
         }else{
             null
         }
     }
 
     override fun <T : BlockEntity> getTicker(world: World, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? {
-        return if(world.isClient) checkType(type, BlockEntityCompendium.FLAT_SCREEN, FlatScreenBlockEntity::clientTick) else null
+        return if(world.isClient) checkType(type, BlockEntityCompendium.FLAT_SCREEN, MediaPlayerBlockEntity::clientTick) else null
     }
 
     @Deprecated("Deprecated in Java")
@@ -119,12 +119,13 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
         return ActionResult.SUCCESS
     }
 
+    @Suppress("LiftReturnOrAssignment")
     @Deprecated("Deprecated in Java")
     override fun getRenderType(state: BlockState): BlockRenderType {
-        return if(state[PART] == Part.CENTER && state[LAYER] == Layer.DOWN) {
-            BlockRenderType.MODEL
+        if(state[PART] == Part.CENTER && state[LAYER] == Layer.DOWN) {
+            return BlockRenderType.MODEL
         }else{
-            BlockRenderType.INVISIBLE
+            return BlockRenderType.INVISIBLE
         }
     }
 

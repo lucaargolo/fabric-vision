@@ -1,5 +1,6 @@
 package io.github.lucaargolo.fabricvision.client.render.blockentity
 
+import io.github.lucaargolo.fabricvision.client.FabricVisionClient
 import io.github.lucaargolo.fabricvision.common.block.FlatScreenBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
@@ -13,7 +14,7 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.RotationAxis
 
-class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<MediaPlayerBlockEntity> {
+class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<MediaPlayerBlockEntity> {
 
     override fun render(entity: MediaPlayerBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
 
@@ -27,8 +28,8 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
         val alpha = 1f
         val normal = Direction.NORTH.unitVector
 
-        val x = 40.0f/16f
-        val y = 22.5f/16f
+        val x = 16f
+        val y = 9f
 
         val facing = entity.cachedState[FlatScreenBlock.FACING]
         val rotation = when(facing) {

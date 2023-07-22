@@ -71,6 +71,10 @@ repositories {
         name = "Shedaniel"
         url = uri("https://maven.shedaniel.me/")
     }
+    maven {
+        name = "ladysnake"
+        url = uri("https://maven.ladysnake.org/releases")
+    }
     mavenCentral()
     mavenLocal()
 }
@@ -86,6 +90,9 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:${project["loader_version"]}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project["fabric_version"]}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${project["fabric_kotlin_version"]}")
+
+    modImplementation("io.github.ladysnake:satin:1.13.0")
+    include("io.github.ladysnake:satin:1.13.0")
 
     implementation("uk.co.caprica:vlcj:4.8.2")
     include("uk.co.caprica:vlcj:4.8.2")

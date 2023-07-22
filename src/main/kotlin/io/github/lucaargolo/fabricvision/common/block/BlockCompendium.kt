@@ -12,6 +12,7 @@ import net.minecraft.util.Identifier
 object BlockCompendium: RegistryCompendium<Block>(Registries.BLOCK) {
 
     val FLAT_SCREEN = register("flat_screen", FlatScreenBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
+    val PROJECTOR = register("projector", ProjectorBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
 
 
     fun registerBlockItems(itemMap: MutableMap<Identifier, Item>) {

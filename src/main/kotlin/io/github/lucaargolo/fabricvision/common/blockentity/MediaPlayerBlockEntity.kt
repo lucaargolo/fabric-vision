@@ -4,6 +4,7 @@ import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayerHolder
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
+import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.listener.ClientPlayPacketListener
 import net.minecraft.network.packet.Packet
@@ -14,7 +15,7 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import java.util.*
 
-class FlatScreenBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(BlockEntityCompendium.FLAT_SCREEN, pos, state) {
+abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlockEntity>, pos: BlockPos, state: BlockState) : BlockEntity(type, pos, state) {
 
     private val internalPlayer: MinecraftMediaPlayer by lazy {
         MinecraftMediaPlayerHolder.create(uuid!!)
@@ -87,9 +88,15 @@ class FlatScreenBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Bloc
         }
     }
 
+    class FlatScreen(pos: BlockPos, state: BlockState): MediaPlayerBlockEntity(BlockEntityCompendium.FLAT_SCREEN, pos, state)
+    class Projector(pos: BlockPos, state: BlockState): MediaPlayerBlockEntity(BlockEntityCompendium.PROJECTOR, pos, state)
+
+
     companion object {
 
-        fun clientTick(world: World, pos: BlockPos, state: BlockState, blockEntity: FlatScreenBlockEntity) {
+
+
+        fun clientTick(world: World, pos: BlockPos, state: BlockState, blockEntity: MediaPlayerBlockEntity) {
             blockEntity.player?.pos = Vec3d.ofCenter(pos)
             blockEntity.player?.mrl = blockEntity.mrl
             blockEntity.player?.time = blockEntity.time
