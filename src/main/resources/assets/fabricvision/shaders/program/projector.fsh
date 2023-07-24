@@ -36,7 +36,7 @@ vec4 calcEyeFromWindow(in float depth, mat4 inverseTransformMatrix) {
 
 vec2 calcViewportFromEye(vec4 eyePos, mat4 transformMatrix) {
     vec4 clipPos = transformMatrix * eyePos;
-    vec3 ndcPos = clipPos.xyz * clipPos.w;
+    vec3 ndcPos = clipPos.xyz / clipPos.w;
 
     vec2 viewportCoord = (ndcPos.xy + 1.0) * 0.5 * ViewPort.zw + ViewPort.xy;
     return viewportCoord;
@@ -50,8 +50,6 @@ void main() {
 
     vec4 mainEyePos = calcEyeFromWindow(mainDepth, MainInverseTransformMatrix);
     mainEyePos.xyz += CameraPosition;
-    vec3 mainPixelPosition = mainEyePos.xyz;
-
     mainEyePos.xyz -= ProjectorPosition;
 
     vec2 projectorViewport = calcViewportFromEye(mainEyePos, ProjectorTransformMatrix);
@@ -59,7 +57,10 @@ void main() {
 
     vec4 projectorTexture = texture(ProjectorSampler, projectorTexCoords);
 
-    float projectorDepth = texture(ProjectorDepthSampler, projectorTexCoords).r;
+    //float projectorDepth = texture(ProjectorDepthSampler, projectorTexCoords).r;
+    //vec4 projectorEyePos = calcEyeFromWindow(projectorDepth, ProjectorInverseTransformMatrix);
+    //projectorEyePos.xyz -= CameraPosition;
+    //distance(mainEyePos.xyz, ProjectorPosition) <= distance(projectorEyePos.xyz, ProjectorPosition)
 
     //Imagino q a solução aqui seja usar o calcEyeFromWindow com os parametros do projetor para pegar o projectorPixelPosition e fazer as comparações de distancia contra ProjectorPosition...
     //Entretanto se eu fizer isso o projectorPixelPosition vai ficar em um espaço diferente do mainPixelPosition... (Um ta no espaço da Camera e o outro do Projetor)
