@@ -1,6 +1,5 @@
 package io.github.lucaargolo.fabricvision.client
 
-import com.mojang.blaze3d.systems.RenderSystem
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import ladysnake.satin.api.event.PostWorldRenderCallbackV2
 import ladysnake.satin.api.event.ShaderEffectRenderCallback
@@ -25,21 +24,25 @@ object ProjectorShader: PostWorldRenderCallbackV2, ShaderEffectRenderCallback {
         val client = MinecraftClient.getInstance()
         ShaderEffectManager.getInstance().manage(PROJECTOR_SHADER) { shader: ManagedShaderEffect ->
             shader.setSamplerUniform("MainSampler", client.framebuffer.colorAttachment)
+            shader.setSamplerUniform("MainDepthSampler", (client.framebuffer as ReadableDepthFramebuffer).stillDepthMap)
             shader.setSamplerUniform("ProjectorSampler", client.textureManager.getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).glId)
+            shader.setSamplerUniform("ProjectorDepthSampler", (FabricVisionClient.projectorFramebuffer as ReadableDepthFramebuffer).stillDepthMap)
         }
     }
 
-    private val projectorProjMat = projectorShader.findUniformMat4("ProjectorProjMat")
-    private val projectorViewMat = projectorShader.findUniformMat4("ProjectorViewMat")
+    private val mainInverseTransformMatrix = projectorShader.findUniformMat4("MainInverseTransformMatrix")
+    private val projectorTransformMatrix = projectorShader.findUniformMat4("ProjectorTransformMatrix")
 
-    private val inverseViewMat = projectorShader.findUniformMat4("InverseViewMat")
+    private val viewPort = projectorShader.findUniform4i("ViewPort")
 
+    private val outMat = Matrix4f()
     override fun onWorldRendered(matrices: MatrixStack, camera: Camera, tickDelta: Float, nanoTime: Long) {
+        val client = MinecraftClient.getInstance()
+        viewPort.set(0, 0, client.window.framebufferWidth + 0, client.window.framebufferHeight + 0)
         if (FabricVisionClient.isRenderingProjector) {
-            projectorProjMat.set(RenderSystem.getProjectionMatrix())
-            projectorViewMat.set(camera.viewMatrix)
+            projectorTransformMatrix.set(GlMatrices.getInverseTransformMatrix(outMat).invert())
         } else {
-            inverseViewMat.set(camera.viewMatrix.invert())
+            mainInverseTransformMatrix.set(GlMatrices.getInverseTransformMatrix(outMat))
         }
     }
 

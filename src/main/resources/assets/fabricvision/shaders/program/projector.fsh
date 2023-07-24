@@ -1,33 +1,58 @@
 #version 150
 
 in vec2 texCoord0;
+in vec4 vertexPos;
 
 uniform sampler2D MainSampler;
+uniform sampler2D MainDepthSampler;
+
 uniform sampler2D ProjectorSampler;
+uniform sampler2D ProjectorDepthSampler;
 
-uniform mat4 ProjectorProjMat;
-uniform mat4 ProjectorViewMat;
+uniform mat4 MainInverseTransformMatrix;
+uniform mat4 ProjectorTransformMatrix;
 
-uniform mat4 InverseViewMat;
+uniform ivec4 ViewPort;
 
 out vec4 fragColor;
 
+vec4 calcEyeFromWindow(in float depth, vec2 viewPortCoord, mat4 inverseTransformMatrix) {
+    vec3 ndcPos;
+    ndcPos.xy = ((2.0 * gl_FragCoord.xy) - (2.0 * ViewPort.xy)) / (ViewPort.zw) - 1;
+    ndcPos.z = (2.0 * depth - gl_DepthRange.near - gl_DepthRange.far) / (gl_DepthRange.far - gl_DepthRange.near);
+    vec4 clipPos = vec4(ndcPos, 1.);
+    vec4 homogeneous = inverseTransformMatrix * clipPos;
+    vec4 eyePos = vec4(homogeneous.xyz / homogeneous.w, homogeneous.w);
+    return eyePos;
+}
+
+vec3 calcWindowFromEye(vec4 eyePos, mat4 transformMatrix) {
+    vec4 clipPos = transformMatrix * eyePos;
+    vec3 ndcPos = clipPos.xyz / clipPos.w;
+
+    float depth = ((ndcPos.z * 0.5) + 0.5) * (gl_DepthRange.far - gl_DepthRange.near) + gl_DepthRange.near;
+    vec2 viewportCoord = (ndcPos.xy + 1.0) * 0.5 * ViewPort.zw + ViewPort.xy;
+
+    return vec3(viewportCoord, depth);
+}
+
+
 void main() {
-    // Sample the main texture (your scene's rendered image)
-    vec4 mainColor = texture(MainSampler, texCoord0);
 
-    // Convert the fragment's screen-space coordinates to projector clip-space coordinates
-    vec4 clipSpacePos = InverseViewMat * vec4(2.0 * texCoord0 - 1.0, 0.0, 1.0);
-    vec4 projClipSpacePos = ProjectorProjMat * ProjectorViewMat * clipSpacePos;
+    vec4 mainTexture = texture(MainSampler, texCoord0);
 
-    // Normalize the projector clip-space coordinates to get projector texture coordinates
-    vec2 projTexCoord = projClipSpacePos.xy / projClipSpacePos.w * 0.5 + 0.5;
+    float mainDepth = texture(MainDepthSampler, texCoord0).x;
 
-    // Sample the projected image
-    vec4 projectorColor = texture(ProjectorSampler, projTexCoord);
+    vec4 eyePos = calcEyeFromWindow(mainDepth, texCoord0, MainInverseTransformMatrix);
 
-    // Blend the projected color with the main color based on the projector opacity
-    vec4 blendedColor = mix(mainColor, projectorColor, 0.5);
+    vec3 projectorWindow = calcWindowFromEye(eyePos, ProjectorTransformMatrix);
+    vec2 projectorTexCoords = clamp(projectorWindow.xy / ViewPort.zw, 0.0, 1.0);
+    vec4 projectorTexture = texture(ProjectorSampler, projectorTexCoords);
 
-    fragColor = blendedColor;
+    if(projectorTexture.a > 0.0) {
+        fragColor = projectorTexture;
+    }else{
+        fragColor = mainTexture;
+    }
+
 }
