@@ -26,7 +26,7 @@ public abstract class GameRendererMixin {
     @Inject(at = @At("HEAD"), method = "getFov", cancellable = true)
     public void getProjectorFov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Double> cir) {
         if(FabricVisionClient.INSTANCE.isRenderingProjector()) {
-            cir.setReturnValue(90.0);
+            cir.setReturnValue(30.0);
         }
     }
 
