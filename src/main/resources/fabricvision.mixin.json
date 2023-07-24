@@ -6,7 +6,14 @@
   "mixins": [
   ],
   "client": [
-    "SoundSystemMixin"
+    "BlockEntityRenderDispatcherMixin",
+    "ClientWorldMixin",
+    "EntityRenderDispatcherMixin",
+    "GameRendererMixin",
+    "LightingProviderMixin",
+    "MinecraftClientMixin",
+    "SoundSystemMixin",
+    "WorldRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

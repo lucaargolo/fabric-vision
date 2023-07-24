@@ -2,9 +2,16 @@ package io.github.lucaargolo.fabricvision.common.blockentity
 
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayerHolder
+import io.github.lucaargolo.fabricvision.utils.FramebufferTexture
+import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gl.SimpleFramebuffer
+import net.minecraft.client.render.Camera
+import net.minecraft.command.argument.EntityAnchorArgumentType
+import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.listener.ClientPlayPacketListener
 import net.minecraft.network.packet.Packet
@@ -89,7 +96,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
     }
 
     class FlatScreen(pos: BlockPos, state: BlockState): MediaPlayerBlockEntity(BlockEntityCompendium.FLAT_SCREEN, pos, state)
-    class Projector(pos: BlockPos, state: BlockState): MediaPlayerBlockEntity(BlockEntityCompendium.PROJECTOR, pos, state)
+    class Projector(pos: BlockPos, state: BlockState): ProjectorBlockEntity(pos, state)
 
 
     companion object {

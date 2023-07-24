@@ -1,25 +1,37 @@
 package io.github.lucaargolo.fabricvision.client.render.blockentity
 
+import com.mojang.blaze3d.systems.RenderSystem
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient
 import io.github.lucaargolo.fabricvision.common.block.FlatScreenBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
-import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
-import net.minecraft.client.render.LightmapTextureManager
-import net.minecraft.client.render.OverlayTexture
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.VertexConsumerProvider
+import io.github.lucaargolo.fabricvision.mixed.WorldRendererMixed
+import ladysnake.satin.api.util.GlMatrices
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.render.*
 import net.minecraft.client.render.block.entity.BlockEntityRenderer
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.RotationAxis
 
-class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<MediaPlayerBlockEntity> {
+class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<MediaPlayerBlockEntity.Projector> {
 
-    override fun render(entity: MediaPlayerBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
+    //TODO: Disable projector on fabulous.
+    override fun render(entity: MediaPlayerBlockEntity.Projector, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
+        val client = MinecraftClient.getInstance()
 
-        val identifier = entity.player?.identifier ?: MinecraftMediaPlayer.TRANSPARENT
-        val renderLayer = RenderLayer.getEntityTranslucent(identifier)
+        if(FabricVisionClient.isRenderingProjector) {
+            return
+        }
+
+        val cameraEntityBackup = client.cameraEntity
+        client.cameraEntity = entity.cameraEntity
+        renderProjectorWorld(1f, 0L, MatrixStack())
+        client.cameraEntity = cameraEntityBackup
+        client.gameRenderer.camera.update(client.world, if (client.getCameraEntity() == null) client.player else client.getCameraEntity(), !client.options.perspective.isFirstPerson, client.options.perspective.isFrontView, tickDelta)
+
+        //val identifier = entity.player?.identifier ?: MinecraftMediaPlayer.TRANSPARENT
+        val renderLayer = RenderLayer.getEntityTranslucent(FabricVisionClient.colorTexture)
         val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
 
         val red = 1f
@@ -28,8 +40,8 @@ class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.C
         val alpha = 1f
         val normal = Direction.NORTH.unitVector
 
-        val x = 16f
-        val y = 9f
+        val x = 16/2.0f
+        val y = 9/2.0f
 
         val facing = entity.cachedState[FlatScreenBlock.FACING]
         val rotation = when(facing) {
@@ -43,29 +55,46 @@ class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.C
 
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation))
 
-        when(facing) {
-            Direction.EAST -> matrices.translate(-28.0/16.0, 5.0/16.0, 8.55/16.0)
-            Direction.SOUTH -> matrices.translate(-28.0/16.0, 5.0/16.0, -8.55/16.0)
-            Direction.WEST -> matrices.translate(-12.0/16.0, 5.0/16.0, -7.45/16.0)
-            else -> matrices.translate(-12.0/16.0, 5.0/16.0, 7.45/16.0)
-        }
+//        when(facing) {
+//            Direction.EAST -> matrices.translate(-28.0/16.0, 5.0/16.0, 8.55/16.0)
+//            Direction.SOUTH -> matrices.translate(-28.0/16.0, 5.0/16.0, -8.55/16.0)
+//            Direction.WEST -> matrices.translate(-12.0/16.0, 5.0/16.0, -7.45/16.0)
+//            else -> matrices.translate(-12.0/16.0, 5.0/16.0, 7.45/16.0)
+//        }
 
         val entry = matrices.peek()
 
-        if(facing.axis == Direction.Axis.X) {
-            vertexConsumer?.vertex(entry.positionMatrix, x, 0f, 0f)?.color(red, green, blue, alpha)?.texture(1f, 1f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-            vertexConsumer?.vertex(entry.positionMatrix, x, y, 0f)?.color(red, green, blue, alpha)?.texture(1f, 0f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-            vertexConsumer?.vertex(entry.positionMatrix, 0f, y, 0f)?.color(red, green, blue, alpha)?.texture(0f, 0f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-            vertexConsumer?.vertex(entry.positionMatrix, 0f, 0f, 0f)?.color(red, green, blue, alpha)?.texture(0f, 1f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-        }else{
-            vertexConsumer?.vertex(entry.positionMatrix, x, 0f, 0f)?.color(red, green, blue, alpha)?.texture(0f, 1f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-            vertexConsumer?.vertex(entry.positionMatrix, x, y, 0f)?.color(red, green, blue, alpha)?.texture(0f, 0f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-            vertexConsumer?.vertex(entry.positionMatrix, 0f, y, 0f)?.color(red, green, blue, alpha)?.texture(1f, 0f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-            vertexConsumer?.vertex(entry.positionMatrix, 0f, 0f, 0f)?.color(red, green, blue, alpha)?.texture(1f, 1f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-        }
+        vertexConsumer?.vertex(entry.positionMatrix, x, 0f, 0f)?.color(red, green, blue, alpha)?.texture(0f, 0f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
+        vertexConsumer?.vertex(entry.positionMatrix, x, y, 0f)?.color(red, green, blue, alpha)?.texture(0f, 1f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
+        vertexConsumer?.vertex(entry.positionMatrix, 0f, y, 0f)?.color(red, green, blue, alpha)?.texture(1f, 1f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
+        vertexConsumer?.vertex(entry.positionMatrix, 0f, 0f, 0f)?.color(red, green, blue, alpha)?.texture(1f, 0f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
 
         matrices.pop()
 
+    }
+
+    //TODO: Cancel nausea
+    private fun renderProjectorWorld(tickDelta: Float, limitTime: Long, matrices: MatrixStack) {
+        val client = MinecraftClient.getInstance()
+        val gameRenderer = client.gameRenderer
+        FabricVisionClient.isRenderingProjector = true
+        FabricVisionClient.projectorFramebuffer.beginWrite(true)
+        val backupRenderHand: Boolean = gameRenderer.renderHand
+        gameRenderer.renderHand = false
+        val backupViewDistance: Float = gameRenderer.viewDistance
+        gameRenderer.viewDistance = 16f
+        RenderSystem.backupProjectionMatrix()
+        val backup = RenderSystem.getInverseViewRotationMatrix()
+        (client.worldRenderer as WorldRendererMixed).backup()
+        client.worldRenderer.bufferBuilders = FabricVisionClient.projectorBufferBuilders
+        gameRenderer.renderWorld(tickDelta, limitTime, matrices)
+        (client.worldRenderer as WorldRendererMixed).restore()
+        RenderSystem.setInverseViewRotationMatrix(backup)
+        RenderSystem.restoreProjectionMatrix()
+        gameRenderer.viewDistance = backupViewDistance
+        gameRenderer.renderHand = backupRenderHand
+        FabricVisionClient.isRenderingProjector = false
+        client.framebuffer.beginWrite(true)
     }
 
 }

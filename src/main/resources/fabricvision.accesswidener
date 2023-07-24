@@ -10,3 +10,8 @@ accessible method net/minecraft/client/sound/Source removeProcessedBuffers ()I
 accessible field net/minecraft/client/sound/Channel$SourceManager source Lnet/minecraft/client/sound/Source;
 accessible field net/minecraft/client/sound/SoundSystem sources Ljava/util/Map;
 accessible field net/minecraft/client/sound/SoundSystem started Z
+
+accessible field net/minecraft/client/render/WorldRenderer bufferBuilders Lnet/minecraft/client/render/BufferBuilderStorage;
+mutable field net/minecraft/client/render/WorldRenderer bufferBuilders Lnet/minecraft/client/render/BufferBuilderStorage;
+accessible field net/minecraft/client/render/GameRenderer renderHand Z
+accessible field net/minecraft/client/render/GameRenderer viewDistance F
