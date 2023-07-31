@@ -14,6 +14,8 @@ uniform mat4 MainInverseTransformMatrix;
 uniform mat4 ProjectorTransformMatrix;
 uniform mat4 ProjectorInverseTransformMatrix;
 
+uniform mat4 InvProjMat;
+
 uniform vec3 CameraPosition;
 uniform vec3 ProjectorPosition;
 
@@ -49,25 +51,31 @@ void main() {
     float mainDepth = texture(MainDepthSampler, texCoord0).r;
 
     vec4 mainEyePos = calcEyeFromWindow(mainDepth, MainInverseTransformMatrix);
-    mainEyePos.xyz += CameraPosition;
-    mainEyePos.xyz -= ProjectorPosition;
+    vec3 mainPixelPosition = mainEyePos.xyz + CameraPosition - ProjectorPosition;
 
-    vec2 projectorViewport = calcViewportFromEye(mainEyePos, ProjectorTransformMatrix);
+
+    vec2 projectorViewport = calcViewportFromEye(vec4(mainPixelPosition, mainEyePos.w), ProjectorTransformMatrix);
     vec2 projectorTexCoords = projectorViewport.xy / ViewPort.zw;
 
+    projectorTexCoords.y = 1 - projectorTexCoords.y;
     vec4 projectorTexture = texture(ProjectorSampler, projectorTexCoords);
+    projectorTexCoords.y = 1 - projectorTexCoords.y;
 
-    //float projectorDepth = texture(ProjectorDepthSampler, projectorTexCoords).r;
-    //vec4 projectorEyePos = calcEyeFromWindow(projectorDepth, ProjectorInverseTransformMatrix);
-    //projectorEyePos.xyz -= CameraPosition;
-    //distance(mainEyePos.xyz, ProjectorPosition) <= distance(projectorEyePos.xyz, ProjectorPosition)
+    float projectorDepth = texture(ProjectorDepthSampler, projectorTexCoords).r;
+    vec4 projectorEyePos = calcEyeFromWindow(projectorDepth, ProjectorInverseTransformMatrix);
+    vec3 projectorPixelPosition = projectorEyePos.xyz + ProjectorPosition;
 
-    //Imagino q a solução aqui seja usar o calcEyeFromWindow com os parametros do projetor para pegar o projectorPixelPosition e fazer as comparações de distancia contra ProjectorPosition...
-    //Entretanto se eu fizer isso o projectorPixelPosition vai ficar em um espaço diferente do mainPixelPosition... (Um ta no espaço da Camera e o outro do Projetor)
-    //Tenho que fazer alguma alteração de matriz
+    float mainDistance = distance(mainPixelPosition, ProjectorPosition);
+    float projectorDistance = distance(projectorPixelPosition, ProjectorPosition);
 
     if(projectorTexCoords.x >= 0.0 && projectorTexCoords.x <= 1.0 && projectorTexCoords.y >= 0.0 && projectorTexCoords.y <= 1.0 && projectorTexture.a > 0.0) {
+//        if(mainDistance <= projectorDistance) {
+//            fragColor = mix(projectorTexture, mainTexture, 0.5);
+//        }else{
+//            fragColor = mainTexture;
+//        }
         fragColor = mix(projectorTexture, mainTexture, 0.5);
+
     }else{
         fragColor = mainTexture;
     }

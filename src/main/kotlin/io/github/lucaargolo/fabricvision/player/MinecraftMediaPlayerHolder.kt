@@ -1,8 +1,13 @@
 package io.github.lucaargolo.fabricvision.player
 
+import com.sun.jna.NativeLibrary
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
+import uk.co.caprica.vlcj.binding.support.runtime.RuntimeUtil
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
+import java.io.File
 import java.util.*
+import kotlin.io.path.pathString
 
 object MinecraftMediaPlayerHolder {
 
@@ -15,6 +20,8 @@ object MinecraftMediaPlayerHolder {
     val ACTIVE_PLAYERS = mutableSetOf<MinecraftMediaPlayer>()
 
     val FACTORY: MediaPlayerFactory by lazy {
+        val path = FabricLoader.getInstance().gameDir.pathString + File.separator + ".libvlc"
+        NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), path)
         MediaPlayerFactory("--quiet")
     }
 

@@ -20,7 +20,7 @@ open class ProjectorBlockEntity(pos: BlockPos, state: BlockState): MediaPlayerBl
         super.setWorld(world)
         cameraEntity = EntityType.ARROW.create(world)
         cameraEntity?.setPosition(Vec3d.ofCenter(pos.up().up()))
-        cameraEntity?.updatePositionAndAngles(38.5, 64.0, 46.5, 90.0f, 0.0f)
+        cameraEntity?.updatePositionAndAngles(38.5, 64.5, 46.5, 90.0f, 0.0f)
     }
 
 }

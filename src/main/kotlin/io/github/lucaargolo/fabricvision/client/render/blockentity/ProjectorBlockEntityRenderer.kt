@@ -30,6 +30,7 @@ class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.C
         client.cameraEntity = cameraEntityBackup
         client.gameRenderer.camera.update(client.world, if (client.getCameraEntity() == null) client.player else client.getCameraEntity(), !client.options.perspective.isFirstPerson, client.options.perspective.isFrontView, tickDelta)
 
+        return
         //val identifier = entity.player?.identifier ?: MinecraftMediaPlayer.TRANSPARENT
         val renderLayer = RenderLayer.getEntityTranslucent(FabricVisionClient.colorTexture)
         val vertexConsumer = vertexConsumers.getBuffer(renderLayer)

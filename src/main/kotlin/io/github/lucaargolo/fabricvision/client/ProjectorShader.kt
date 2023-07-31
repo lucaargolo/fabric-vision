@@ -1,5 +1,6 @@
 package io.github.lucaargolo.fabricvision.client
 
+import com.mojang.blaze3d.systems.RenderSystem
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import ladysnake.satin.api.event.PostWorldRenderCallbackV2
 import ladysnake.satin.api.event.ShaderEffectRenderCallback
@@ -34,6 +35,8 @@ object ProjectorShader: PostWorldRenderCallbackV2, ShaderEffectRenderCallback {
     private val mainInverseTransformMatrix = projectorShader.findUniformMat4("MainInverseTransformMatrix")
     private val projectorTransformMatrix = projectorShader.findUniformMat4("ProjectorTransformMatrix")
     private val projectorInverseTransformMatrix = projectorShader.findUniformMat4("ProjectorInverseTransformMatrix")
+
+    private val invProjMat = projectorShader.findUniformMat4("InvProjMat")
 
     private val cameraPosition = projectorShader.findUniform3f("CameraPosition")
     private val projectorPosition = projectorShader.findUniform3f("ProjectorPosition")
