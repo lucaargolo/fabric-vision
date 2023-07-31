@@ -69,10 +69,10 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
             if (HOLDER.CREATING == this && HOLDER.LOADING == null && HOLDER.ACTIVE_PLAYERS.size < HOLDER.MAX_SIMULTANEOUS_PLAYERS) {
                 HOLDER.ACTIVE_PLAYERS.add(this)
                 status = Status.CREATING
-                HOLDER.FACTORY.submit {
+                HOLDER.FACTORY?.submit {
                     println("Creating player $uuid")
-                    val mediaPlayer = HOLDER.FACTORY.mediaPlayers().newEmbeddedMediaPlayer()
-                    HOLDER.FACTORY.videoSurfaces().newVideoSurface(MinecraftBufferCallback(this), MinecraftRenderCallback(this), true).let(mediaPlayer.videoSurface()::set)
+                    val mediaPlayer = HOLDER.FACTORY!!.mediaPlayers().newEmbeddedMediaPlayer()
+                    HOLDER.FACTORY!!.videoSurfaces().newVideoSurface(MinecraftBufferCallback(this), MinecraftRenderCallback(this), true).let(mediaPlayer.videoSurface()::set)
                     mediaPlayer.audio().callback("S16N", 128000, 1, MinecraftAudioCallback(this), true)
                     player = mediaPlayer
                 }

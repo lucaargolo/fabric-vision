@@ -14,6 +14,7 @@ import io.github.lucaargolo.fabricvision.common.resource.ResourceCompendium
 import io.github.lucaargolo.fabricvision.common.screenhandler.ScreenHandlerCompendium
 import io.github.lucaargolo.fabricvision.common.sound.SoundCompendium
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
+import io.github.lucaargolo.fabricvision.player.SetupLibVLC
 import net.fabricmc.api.ModInitializer
 
 object FabricVision: ModInitializer {
@@ -38,6 +39,7 @@ object FabricVision: ModInitializer {
 
     override fun onInitialize() {
         initializeRegistries()
+        SetupLibVLC.initialize()
     }
 
 }

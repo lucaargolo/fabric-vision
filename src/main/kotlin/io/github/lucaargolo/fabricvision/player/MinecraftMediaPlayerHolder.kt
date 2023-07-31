@@ -19,11 +19,7 @@ object MinecraftMediaPlayerHolder {
     private val PLAYERS = mutableSetOf<MinecraftMediaPlayer>()
     val ACTIVE_PLAYERS = mutableSetOf<MinecraftMediaPlayer>()
 
-    val FACTORY: MediaPlayerFactory by lazy {
-        val path = FabricLoader.getInstance().gameDir.pathString + File.separator + ".libvlc"
-        NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), path)
-        MediaPlayerFactory("--quiet")
-    }
+    var FACTORY: MediaPlayerFactory? = null
 
     private var tickedWorld = false
     private var age = 0
@@ -116,7 +112,7 @@ object MinecraftMediaPlayerHolder {
             entry.close()
         }
         if(stop) {
-            FACTORY.release()
+            FACTORY?.release()
         }
     }
 
