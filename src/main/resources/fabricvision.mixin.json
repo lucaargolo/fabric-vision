@@ -6,6 +6,7 @@
   "mixins": [
   ],
   "client": [
+    "BackgroundRendererMixin",
     "BlockEntityRenderDispatcherMixin",
     "ClientWorldMixin",
     "EntityRenderDispatcherMixin",

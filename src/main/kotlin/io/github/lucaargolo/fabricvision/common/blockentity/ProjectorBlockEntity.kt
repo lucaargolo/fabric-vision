@@ -1,11 +1,6 @@
 package io.github.lucaargolo.fabricvision.common.blockentity
 
-import io.github.lucaargolo.fabricvision.utils.FramebufferTexture
-import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import net.minecraft.block.BlockState
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gl.SimpleFramebuffer
-import net.minecraft.command.argument.EntityAnchorArgumentType
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.util.math.BlockPos
@@ -19,8 +14,7 @@ open class ProjectorBlockEntity(pos: BlockPos, state: BlockState): MediaPlayerBl
     override fun setWorld(world: World?) {
         super.setWorld(world)
         cameraEntity = EntityType.ARROW.create(world)
-        cameraEntity?.setPosition(Vec3d.ofCenter(pos.up().up()))
-        cameraEntity?.updatePositionAndAngles(38.5, 64.5, 46.5, 90.0f, 0.0f)
+        cameraEntity?.updatePositionAndAngles(pos.x + 0.5, pos.y + 0.5 - 1.625, pos.z + 0.5, 90.0f, 0.0f)
     }
 
 }

@@ -36,11 +36,11 @@ vec4 calcEyeFromWindow(in float depth, mat4 inverseTransformMatrix) {
     return eyePos;
 }
 
-vec2 calcViewportFromEye(vec4 eyePos, mat4 transformMatrix) {
+vec3 calcViewportFromEye(vec4 eyePos, mat4 transformMatrix) {
     vec4 clipPos = transformMatrix * eyePos;
     vec3 ndcPos = clipPos.xyz / clipPos.w;
 
-    vec2 viewportCoord = (ndcPos.xy + 1.0) * 0.5 * ViewPort.zw + ViewPort.xy;
+    vec3 viewportCoord = vec3((ndcPos.xy + 1.0) * 0.5 * ViewPort.zw + ViewPort.xy, (ndcPos.z + 1.0) * 0.5);
     return viewportCoord;
 }
 
@@ -54,27 +54,20 @@ void main() {
     vec3 mainPixelPosition = mainEyePos.xyz + CameraPosition - ProjectorPosition;
 
 
-    vec2 projectorViewport = calcViewportFromEye(vec4(mainPixelPosition, mainEyePos.w), ProjectorTransformMatrix);
+    vec3 projectorViewport = calcViewportFromEye(vec4(mainPixelPosition, mainEyePos.w), ProjectorTransformMatrix);
     vec2 projectorTexCoords = projectorViewport.xy / ViewPort.zw;
 
     projectorTexCoords.y = 1 - projectorTexCoords.y;
     vec4 projectorTexture = texture(ProjectorSampler, projectorTexCoords);
-    projectorTexCoords.y = 1 - projectorTexCoords.y;
 
-    float projectorDepth = texture(ProjectorDepthSampler, projectorTexCoords).r;
-    vec4 projectorEyePos = calcEyeFromWindow(projectorDepth, ProjectorInverseTransformMatrix);
-    vec3 projectorPixelPosition = projectorEyePos.xyz + ProjectorPosition;
-
-    float mainDistance = distance(mainPixelPosition, ProjectorPosition);
-    float projectorDistance = distance(projectorPixelPosition, ProjectorPosition);
+    float projectorTextureDepth = texture(ProjectorDepthSampler, projectorTexCoords).r;
 
     if(projectorTexCoords.x >= 0.0 && projectorTexCoords.x <= 1.0 && projectorTexCoords.y >= 0.0 && projectorTexCoords.y <= 1.0 && projectorTexture.a > 0.0) {
-//        if(mainDistance <= projectorDistance) {
-//            fragColor = mix(projectorTexture, mainTexture, 0.5);
-//        }else{
-//            fragColor = mainTexture;
-//        }
-        fragColor = mix(projectorTexture, mainTexture, 0.5);
+        if(projectorViewport.z <= projectorTextureDepth) {
+            fragColor = mix(projectorTexture, mainTexture, 0.5);
+        }else{
+            fragColor = mainTexture;
+        }
 
     }else{
         fragColor = mainTexture;

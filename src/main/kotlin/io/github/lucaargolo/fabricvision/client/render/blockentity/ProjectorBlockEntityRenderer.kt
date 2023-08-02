@@ -25,10 +25,17 @@ class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.C
         }
 
         val cameraEntityBackup = client.cameraEntity
+
+        val cameraLastYBackup = client.gameRenderer.camera.lastCameraY
+        val cameraYBackup = client.gameRenderer.camera.cameraY
+
         client.cameraEntity = entity.cameraEntity
-        renderProjectorWorld(1f, 0L, MatrixStack())
+        renderProjectorWorld(tickDelta, 0L, MatrixStack())
         client.cameraEntity = cameraEntityBackup
         client.gameRenderer.camera.update(client.world, if (client.getCameraEntity() == null) client.player else client.getCameraEntity(), !client.options.perspective.isFirstPerson, client.options.perspective.isFrontView, tickDelta)
+
+        client.gameRenderer.camera.lastCameraY = cameraLastYBackup
+        client.gameRenderer.camera.cameraY = cameraYBackup
 
         return
         //val identifier = entity.player?.identifier ?: MinecraftMediaPlayer.TRANSPARENT

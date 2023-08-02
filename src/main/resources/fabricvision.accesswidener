@@ -15,3 +15,6 @@ accessible field net/minecraft/client/render/WorldRenderer bufferBuilders Lnet/m
 mutable field net/minecraft/client/render/WorldRenderer bufferBuilders Lnet/minecraft/client/render/BufferBuilderStorage;
 accessible field net/minecraft/client/render/GameRenderer renderHand Z
 accessible field net/minecraft/client/render/GameRenderer viewDistance F
+
+accessible field net/minecraft/client/render/Camera cameraY F
+accessible field net/minecraft/client/render/Camera lastCameraY F

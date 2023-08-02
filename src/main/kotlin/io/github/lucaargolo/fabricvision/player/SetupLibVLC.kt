@@ -35,7 +35,6 @@ object SetupLibVLC {
         override fun onNotFound() {
             println("Vlc not found in system")
             val path = FabricLoader.getInstance().gameDir.pathString + File.separator + ".libvlc"
-            NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), path)
 
             val strategies = strategiesField.get(this) as Array<*>
 
@@ -50,58 +49,97 @@ object SetupLibVLC {
             }
 
             if(!success) {
-                val downloadUrl = "https://download.videolan.org/pub/vlc/3.0.18/win64/vlc-3.0.18-win64.zip"
-                val downloadedFileName = downloadUrl.split("/").last()
-                val extractedFolderName = downloadedFileName.split("-").filterNot { it.endsWith(".zip") }.joinToString("-") { s -> s }
 
                 println("Oops gotta download it")
-                val folder = File(path)
-                folder.mkdirs()
-                val downloadedFile = File(folder, downloadedFileName)
-                println("Downloading file from: $downloadUrl")
-                URL(downloadUrl).openStream().use { input ->
-                    FileOutputStream(downloadedFile).use { output ->
-                        input.copyTo(output)
+
+                val vlcVersion = "3.0.18"
+                val (vlcPlatform, vlcArchitecture) = if(Platform.isWindows() && Platform.isIntel()) {
+                    if (Platform.is64Bit()) {
+                        "win64" to "win64"
+                    }else {
+                        "win32" to "win32"}
+                }else if(Platform.isMac() && Platform.is64Bit()){
+                    if(Platform.isIntel()) {
+                        "macosx" to "intel64" }
+                    else if(Platform.isARM()) {
+                        "macosx" to "arm64"}
+                    else{
+                        null to null
                     }
+                }else {
+                    null to null
                 }
-                println("Download completed.")
-                println("Extracting file: ${downloadedFile.name}")
-                ZipInputStream(downloadedFile.inputStream()).use { zipInputStream ->
-                    while (true) {
-                        val entry = zipInputStream.nextEntry ?: break
-                        val entryFile = File(folder, entry.name)
-                        if (entry.isDirectory) {
-                            entryFile.mkdirs()
-                        } else {
-                            entryFile.parentFile.mkdirs()
-                            entryFile.outputStream().use { output ->
-                                zipInputStream.copyTo(output)
+
+                if(vlcPlatform != null && vlcArchitecture != null) {
+                    val vlcExtension = if(vlcPlatform.startsWith("mac")) "dmg" else "zip"
+
+                    val downloadUrl = "https://download.videolan.org/pub/vlc/$vlcVersion/$vlcPlatform/vlc-$vlcVersion-$vlcArchitecture.$vlcExtension"
+
+                    val downloadedFileName = downloadUrl.split("/").last()
+                    val extractedFolderName = if(vlcPlatform.startsWith("mac")) {
+                        "VLC media player" + File.separator + "VLC.app" + File.separator + "Contents" + File.separator + "MacOS"
+                    }else{
+                        downloadedFileName.split("-").filterNot { it.endsWith(".$vlcExtension") }.joinToString("-") { s -> s }
+                    }
+
+                    val folder = File(path)
+                    folder.mkdirs()
+                    val downloadedFile = File(folder, downloadedFileName)
+                    println("Downloading file from: $downloadUrl")
+                    URL(downloadUrl).openStream().use { input ->
+                        FileOutputStream(downloadedFile).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    println("Download completed.")
+                    println("Extracting file: ${downloadedFile.name}")
+                    if(vlcExtension == "zip") {
+                        ZipInputStream(downloadedFile.inputStream()).use { zipInputStream ->
+                            while (true) {
+                                val entry = zipInputStream.nextEntry ?: break
+                                val entryFile = File(folder, entry.name)
+                                if (entry.isDirectory) {
+                                    entryFile.mkdirs()
+                                } else {
+                                    entryFile.parentFile.mkdirs()
+                                    entryFile.outputStream().use { output ->
+                                        zipInputStream.copyTo(output)
+                                    }
+                                }
+                                zipInputStream.closeEntry()
                             }
                         }
-                        zipInputStream.closeEntry()
                     }
-                }
-                println("Extraction completed.")
-                val extractedFolder = File(folder, extractedFolderName)
-                println("Copying files to destination folder.")
-                extractedFolder.walkTopDown().forEach { file ->
-                    if(file.isFile && file.nameWithoutExtension == "libvlc" || file.nameWithoutExtension == "libvlccore") {
-                        val destinationPath = File(folder, file.name)
-                        file.copyTo(destinationPath, true)
-                    }else if(file.isDirectory && file.name == "plugins"){
-                        val destinationPath = File(folder, "plugins")
-                        file.copyRecursively(destinationPath, true)
+                    println("Extraction completed.")
+                    val extractedFolder = File(folder, extractedFolderName)
+                    println("Copying files to destination folder.")
+                    extractedFolder.walkTopDown().forEach { file ->
+                        if(file.isFile && file.nameWithoutExtension == "libvlc" || file.nameWithoutExtension == "libvlccore") {
+                            val destinationPath = File(folder, file.name)
+                            file.copyTo(destinationPath, true)
+                        }else if(file.isDirectory && file.name == "plugins"){
+                            val destinationPath = File(folder, "plugins")
+                            file.copyRecursively(destinationPath, true)
+                        }else if(file.isDirectory && file.name == "lib") {
+                            file.copyRecursively(folder, true)
+                        }
                     }
+                    println("Files copied to destination folder.")
+                    println("Cleaning up temporary files.")
+                    downloadedFile.delete()
+                    extractedFolder.deleteRecursively()
+                    println("Cleanup completed.")
+                }else{
+                    println("Unknown platform")
                 }
-                println("Files copied to destination folder.")
-                println("Cleaning up temporary files.")
-                downloadedFile.delete()
-                extractedFolder.deleteRecursively()
-                println("Cleanup completed.")
+
             }else{
                 println("Already downloaded")
             }
 
+            NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), path)
+            NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcCoreLibraryName(), path)
+            NativeLibrary.getInstance(RuntimeUtil.getLibVlcCoreLibraryName())
         }
 
     }
