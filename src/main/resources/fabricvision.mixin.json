@@ -10,6 +10,7 @@
     "BlockEntityRenderDispatcherMixin",
     "ClientWorldMixin",
     "EntityRenderDispatcherMixin",
+    "EntityRendererMixin",
     "GameRendererMixin",
     "LightingProviderMixin",
     "MinecraftClientMixin",

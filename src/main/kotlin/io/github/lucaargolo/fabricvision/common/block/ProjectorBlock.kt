@@ -32,7 +32,7 @@ class ProjectorBlock(settings: Settings) : BlockWithEntity(settings) {
     }
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState? {
-        val direction = ctx.horizontalPlayerFacing.opposite
+        val direction = ctx.horizontalPlayerFacing
         return defaultState.with(FACING, direction)
     }
 

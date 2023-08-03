@@ -18,9 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
 
-    @Shadow @Final private MinecraftClient client;
-
-    @Shadow @Final private Camera camera;
+    @Shadow @Final MinecraftClient client;
 
     @Inject(at = @At("HEAD"), method = "updateTargetedEntity", cancellable = true)
     public void cancelProjectorEntityUpdate(float tickDelta, CallbackInfo ci) {
@@ -36,13 +34,14 @@ public abstract class GameRendererMixin {
         }
     }
 
+    @SuppressWarnings("InvalidInjectorMethodSignature")
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;update(Lnet/minecraft/world/BlockView;Lnet/minecraft/entity/Entity;ZZF)V", shift = At.Shift.AFTER), method = "renderWorld", locals = LocalCapture.CAPTURE_FAILSOFT)
     public void fixProjectorCamera(float tickDelta, long limitTime, MatrixStack matrices, CallbackInfo ci, boolean bl, Camera camera) {
         if(FabricVisionClient.INSTANCE.isRenderingProjector()) {
             Entity cameraEntity = this.client.getCameraEntity();
             if(cameraEntity != null) {
                 camera.update(this.client.world, cameraEntity, false, false, tickDelta);
-                camera.setPos(cameraEntity.getPos().add(0.0, 1.62F, 0.0));
+                camera.setPos(cameraEntity.getPos());
             }
         }
     }

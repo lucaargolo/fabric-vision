@@ -6,6 +6,8 @@ import io.github.lucaargolo.fabricvision.mixed.WorldRendererMixed;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
@@ -17,10 +19,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(WorldRenderer.class)
-public class WorldRendererMixin implements WorldRendererMixed {
+public abstract class WorldRendererMixin implements WorldRendererMixed {
 
 
     @Shadow @Final private MinecraftClient client;
@@ -42,6 +43,7 @@ public class WorldRendererMixin implements WorldRendererMixed {
 
     private BufferBuilderStorage fabricVision_bufferBuilders;
 
+    @Shadow protected abstract void renderEntity(Entity entity, double cameraX, double cameraY, double cameraZ, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers);
 
     @Override
     public void backup() {
@@ -92,6 +94,18 @@ public class WorldRendererMixin implements WorldRendererMixed {
     protected void canDrawEntityOutlines(CallbackInfoReturnable<Boolean> cir) {
         if(FabricVisionClient.INSTANCE.isRenderingProjector()) {
             cir.setReturnValue(false);
+        }
+    }
+
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;drawCurrentLayer()V", ordinal = 0), method = "render")
+    public void renderClientPlayerInProjector(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
+        if(FabricVisionClient.INSTANCE.isRenderingProjector()) {
+            Vec3d vec3d = camera.getPos();
+            double d = vec3d.getX();
+            double e = vec3d.getY();
+            double f = vec3d.getZ();
+            VertexConsumerProvider.Immediate immediate = this.bufferBuilders.getEntityVertexConsumers();
+            renderEntity(client.player, d, e, f, tickDelta, matrices, immediate);
         }
     }
 
