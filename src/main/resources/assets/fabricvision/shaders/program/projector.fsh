@@ -26,55 +26,35 @@ uniform ivec4 ViewPort;
 
 out vec4 fragColor;
 
-vec4 calcEyeFromWindow(in float depth, mat4 inverseTransformMatrix) {
-    vec3 ndcPos;
-    ndcPos.xy = ((2.0 * gl_FragCoord.xy) - (2.0 * ViewPort.xy)) / (ViewPort.zw) - 1;
-    ndcPos.z = (2.0 * depth - gl_DepthRange.near - gl_DepthRange.far) / (gl_DepthRange.far - gl_DepthRange.near);
-    vec4 clipPos = vec4(ndcPos, 1.0);
-    vec4 homogeneous = inverseTransformMatrix * clipPos;
-    vec4 eyePos = vec4(homogeneous.xyz / homogeneous.w, homogeneous.w);
-    return eyePos;
-}
-
-vec3 calcViewportFromEye(vec4 eyePos, mat4 transformMatrix) {
-    vec4 clipPos = transformMatrix * eyePos;
-    vec3 ndcPos = clipPos.xyz / clipPos.w;
-
-    vec3 viewportCoord = vec3((ndcPos.xy + 1.0) * 0.5 * ViewPort.zw + ViewPort.xy, (ndcPos.z + 1.0) * 0.5);
-    return viewportCoord;
-}
-
 void main() {
+	vec4 mainTexture = texelFetch(MainSampler, ivec2(gl_FragCoord.xy), 0);
+	float mainDepth = texelFetch(MainDepthSampler, ivec2(gl_FragCoord.xy), 0).r;
 
-    vec4 mainTexture = texture(MainSampler, texCoord0);
+	vec3 windowPos = vec3(gl_FragCoord.xy, mainDepth);
+	vec3 ndc = vec3(
+		windowPos.xy / ViewPort.zw * 2.0 - 1.0,
+		windowPos.z * 2.0 - 1.0
+	);
+	vec4 world0 = MainInverseTransformMatrix * vec4(ndc, 1.0);
+	vec3 world = world0.xyz / world0.w;
 
-    float mainDepth = texture(MainDepthSampler, texCoord0).r;
+	vec3 worldProjector = world + CameraPosition - ProjectorPosition;
+	vec4 ndcProjector0 = ProjectorTransformMatrix * vec4(worldProjector, 1.0);
+	vec3 ndcProjector = ndcProjector0.xyz / ndcProjector0.w;
 
-    vec4 mainEyePos = calcEyeFromWindow(mainDepth, MainInverseTransformMatrix);
-    vec3 mainPixelPosition = mainEyePos.xyz + CameraPosition - ProjectorPosition;
+	vec2 projectorTexCoords = ndcProjector.xy * 0.5 + 0.5;
 
+	vec4 projectorTexture = texture(ProjectorSampler, vec2(projectorTexCoords.x, 1.0 - projectorTexCoords.y));
+	float projectorTextureDepth = texture(ProjectorDepthSampler, projectorTexCoords).r;
 
-    vec3 projectorViewport = calcViewportFromEye(vec4(mainPixelPosition, mainEyePos.w), ProjectorTransformMatrix);
-    vec2 projectorTexCoords = projectorViewport.xy / ViewPort.zw;
-
-    projectorTexCoords.y = 1 - projectorTexCoords.y;
-    vec4 projectorTexture = texture(ProjectorSampler, projectorTexCoords);
-
-    float projectorTextureDepth = texture(ProjectorDepthSampler, projectorTexCoords).r;
-
-    if(projectorTexCoords.x >= 0.0 && projectorTexCoords.x <= 1.0 && projectorTexCoords.y >= 0.0 && projectorTexCoords.y <= 1.0 && projectorTexture.a > 0.0) {
-        if(projectorViewport.z <= projectorTextureDepth) {
-            fragColor = mix(projectorTexture, mainTexture, 0.5);
-        }else{
-            fragColor = mainTexture;
-        }
-
-    }else{
-        fragColor = mainTexture;
-    }
+	if(
+		all(lessThanEqual(abs(ndcProjector), vec3(1.0))) &&
+		projectorTexture.a > 0.0 &&
+		ndcProjector.z * 0.5 + 0.5 - 0.000001 /* to avoid z-fighting */ <= projectorTextureDepth
+	) {
+		fragColor = mix(projectorTexture, mainTexture, 0.5);
+	} else {
+		fragColor = mainTexture;
+	}
 
 }
-
-
-
-
