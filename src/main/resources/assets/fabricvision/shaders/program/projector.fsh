@@ -12,6 +12,8 @@ uniform mat4 ProjectorTransformMatrix;
 uniform vec3 CameraPosition;
 uniform vec3 ProjectorPosition;
 
+uniform float ProjectionFallout;
+
 uniform ivec4 ViewPort;
 
 out vec4 fragColor;
@@ -35,7 +37,8 @@ void main() {
 	float projectorTextureDepth = texture(ProjectorDepthSampler, projectorTexCoords).r;
 
 	if(all(lessThanEqual(abs(ndcProjector), vec3(1.0))) && projectorTexture.a > 0.0 && ndcProjector.z * 0.5 + 0.5 - 0.00001 <= projectorTextureDepth) {
-		fragColor = mix(projectorTexture, mainTexture, 0.5);
+		float d = 1.0 - (min(ProjectionFallout, abs(distance(ndcProjector, worldProjector)))/ProjectionFallout);
+		fragColor = mix(mainTexture, projectorTexture, d);
 	} else {
 		fragColor = mainTexture;
 	}

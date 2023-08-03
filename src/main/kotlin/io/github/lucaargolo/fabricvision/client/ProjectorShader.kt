@@ -1,6 +1,5 @@
 package io.github.lucaargolo.fabricvision.client
 
-import com.mojang.blaze3d.systems.RenderSystem
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import ladysnake.satin.api.event.PostWorldRenderCallbackV2
 import ladysnake.satin.api.event.ShaderEffectRenderCallback
@@ -10,12 +9,8 @@ import ladysnake.satin.api.managed.ShaderEffectManager
 import ladysnake.satin.api.util.GlMatrices
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.Camera
-import net.minecraft.client.texture.SpriteAtlasTexture
 import net.minecraft.client.util.math.MatrixStack
 import org.joml.Matrix4f
-import org.joml.Vector3f
-import kotlin.math.cos
-import kotlin.math.sin
 
 object ProjectorShader: PostWorldRenderCallbackV2, ShaderEffectRenderCallback {
 
@@ -38,6 +33,8 @@ object ProjectorShader: PostWorldRenderCallbackV2, ShaderEffectRenderCallback {
     private val projectorPosition = projectorShader.findUniform3f("ProjectorPosition")
 
     private val viewPort = projectorShader.findUniform4i("ViewPort")
+
+    private val projectionFallout = projectorShader.findUniform1f("ProjectionFallout")
 
 
     private val outMat = Matrix4f()

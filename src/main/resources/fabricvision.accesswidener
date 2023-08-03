@@ -18,3 +18,5 @@ accessible field net/minecraft/client/render/GameRenderer viewDistance F
 
 accessible field net/minecraft/client/render/Camera cameraY F
 accessible field net/minecraft/client/render/Camera lastCameraY F
+
+accessible method net/minecraft/client/render/Camera setPos (Lnet/minecraft/util/math/Vec3d;)V

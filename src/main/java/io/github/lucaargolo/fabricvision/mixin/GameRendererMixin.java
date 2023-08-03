@@ -5,7 +5,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.EntityPose;
+import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -39,11 +39,11 @@ public abstract class GameRendererMixin {
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;update(Lnet/minecraft/world/BlockView;Lnet/minecraft/entity/Entity;ZZF)V", shift = At.Shift.AFTER), method = "renderWorld", locals = LocalCapture.CAPTURE_FAILSOFT)
     public void fixProjectorCamera(float tickDelta, long limitTime, MatrixStack matrices, CallbackInfo ci, boolean bl, Camera camera) {
         if(FabricVisionClient.INSTANCE.isRenderingProjector()) {
-            //TODO: change player to originalCamerEntity
-            var ata = client.player.getEyeHeight(EntityPose.STANDING) - client.player.getStandingEyeHeight();
-            //camera.lastCameraY += ata;
-            //camera.cameraY += ata;
-            camera.update(this.client.world, this.client.getCameraEntity(), false, false, tickDelta);
+            Entity cameraEntity = this.client.getCameraEntity();
+            if(cameraEntity != null) {
+                camera.update(this.client.world, cameraEntity, false, false, tickDelta);
+                camera.setPos(cameraEntity.getPos().add(0.0, 1.62F, 0.0));
+            }
         }
     }
 
