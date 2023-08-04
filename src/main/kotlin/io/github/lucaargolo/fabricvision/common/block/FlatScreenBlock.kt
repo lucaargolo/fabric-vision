@@ -12,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.item.ItemStack
 import net.minecraft.state.StateManager
+import net.minecraft.state.property.BooleanProperty
 import net.minecraft.state.property.DirectionProperty
 import net.minecraft.state.property.EnumProperty
 import net.minecraft.state.property.Properties
@@ -33,11 +34,11 @@ import java.util.stream.Stream
 class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
 
     init {
-        defaultState = defaultState.with(FACING, Direction.NORTH).with(PART, Part.CENTER).with(LAYER, Layer.DOWN)
+        defaultState = defaultState.with(WALL, false).with(FACING, Direction.NORTH).with(PART, Part.CENTER).with(LAYER, Layer.DOWN)
     }
 
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
-        builder.add(FACING, PART, LAYER)
+        builder.add(WALL, FACING, PART, LAYER)
     }
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState? {
@@ -54,17 +55,20 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
             }
         }
 
-        return defaultState.with(FACING, direction)
+        val wall = ctx.side.axis != Direction.Axis.Y
+        return defaultState.with(WALL, wall).with(FACING, direction)
     }
 
     override fun onPlaced(world: World, pos: BlockPos, state: BlockState, placer: LivingEntity?, itemStack: ItemStack) {
         if(state[PART] == Part.CENTER && state[LAYER] == Layer.DOWN) {
+            val wall = state[WALL]
             val direction = state[FACING]
             val left = direction.rotateYClockwise()
             val right = direction.rotateYCounterclockwise()
 
             listOf(pos.up(), pos.up().offset(left), pos.up().offset(right), pos.offset(left), pos.offset(right)).forEach {
                 world.setBlockState(it, state
+                    .with(WALL, wall)
                     .with(LAYER, if(it.y > pos.y) Layer.UP else Layer.DOWN)
                     .with(PART, when {
                         (it.y > pos.y && it.offset(left.opposite) == pos.up()) || it.offset(left.opposite) == pos -> Part.LEFT
@@ -90,7 +94,7 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
 
     @Deprecated("Deprecated in Java", ReplaceWith("getShape(state[FACING], state[LAYER], state[PART])", "io.github.lucaargolo.fabricvision.common.block.FlatScreenBlock.Companion.getShape", "io.github.lucaargolo.fabricvision.common.block.FlatScreenBlock.Companion.FACING", "io.github.lucaargolo.fabricvision.common.block.FlatScreenBlock.Companion.LAYER", "io.github.lucaargolo.fabricvision.common.block.FlatScreenBlock.Companion.PART"))
     override fun getOutlineShape(state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext): VoxelShape {
-        return getShape(state[FACING], state[LAYER], state[PART])
+        return getShape(state[WALL], state[FACING], state[LAYER], state[PART])
     }
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? {
         return if(state[PART] == Part.CENTER && state[LAYER] == Layer.DOWN) {
@@ -147,6 +151,7 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
 
     companion object {
 
+        val WALL: BooleanProperty = BooleanProperty.of("wall")
         val FACING: DirectionProperty = Properties.HORIZONTAL_FACING
         enum class Part: StringIdentifiable {
             CENTER, LEFT, RIGHT;
@@ -181,11 +186,20 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
             createCuboidShape(-12.0, 5.0, 8.5, 28.0, 27.5, 10.5)
         ).reduce { v1, v2 -> VoxelShapes.combineAndSimplify(v1, v2, BooleanBiFunction.OR) }.get()
 
-        class FacingShapeHolder(direction: Direction) {
+        private val WALL_SHAPE = Stream.of(
+            createCuboidShape(-12.0, 5.0, 13.5, 28.0, 27.5, 14.5),
+            createCuboidShape(-12.0, 5.0, 14.5, 28.0, 27.5, 16.5),
+            createCuboidShape(28.0, 5.0, 13.0, 30.0, 27.5, 15.0),
+            createCuboidShape(-14.0, 27.5, 13.0, 30.0, 29.5, 15.0),
+            createCuboidShape(-14.0, 5.0, 13.0, -12.0, 27.5, 15.0),
+            createCuboidShape(-14.0, 3.0, 13.0, 30.0, 5.0, 15.0)
+        ).reduce { v1, v2 -> VoxelShapes.combineAndSimplify(v1, v2, BooleanBiFunction.OR) }.get()
+
+        class FacingShapeHolder(mainShape: VoxelShape, direction: Direction) {
 
             private val shapes: MutableMap<Pair<Layer, Part>, VoxelShape>
             init {
-                val shape = Companion.MAIN_SHAPE.rotate(direction)
+                val shape = mainShape.rotate(direction)
                 val left = Vec3d(direction.rotateYClockwise().unitVector)
                 val right = Vec3d(direction.rotateYCounterclockwise().unitVector)
                 shapes = mutableMapOf(
@@ -204,15 +218,22 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
 
         }
 
-        private val facingShapes = mutableMapOf(
-            Direction.NORTH to FacingShapeHolder(Direction.NORTH),
-            Direction.SOUTH to FacingShapeHolder(Direction.SOUTH),
-            Direction.EAST to FacingShapeHolder(Direction.EAST),
-            Direction.WEST to FacingShapeHolder(Direction.WEST)
+        private val mainFacingShapes = mutableMapOf(
+            Direction.NORTH to FacingShapeHolder(MAIN_SHAPE, Direction.NORTH),
+            Direction.SOUTH to FacingShapeHolder(MAIN_SHAPE, Direction.SOUTH),
+            Direction.EAST to FacingShapeHolder(MAIN_SHAPE, Direction.EAST),
+            Direction.WEST to FacingShapeHolder(MAIN_SHAPE, Direction.WEST)
         )
 
-        fun getShape(facing: Direction, layer: Layer, part: Part): VoxelShape {
-            return facingShapes[facing]!!.getShape(layer, part)
+        private val wallFacingShapes = mutableMapOf(
+            Direction.NORTH to FacingShapeHolder(WALL_SHAPE, Direction.NORTH),
+            Direction.SOUTH to FacingShapeHolder(WALL_SHAPE, Direction.SOUTH),
+            Direction.EAST to FacingShapeHolder(WALL_SHAPE, Direction.EAST),
+            Direction.WEST to FacingShapeHolder(WALL_SHAPE, Direction.WEST)
+        )
+
+        fun getShape(wall: Boolean, facing: Direction, layer: Layer, part: Part): VoxelShape {
+            return if(wall) wallFacingShapes[facing]!!.getShape(layer, part) else mainFacingShapes[facing]!!.getShape(layer, part)
         }
 
     }

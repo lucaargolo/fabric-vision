@@ -30,6 +30,7 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
         val x = 40.0f/16f
         val y = 22.5f/16f
 
+        val wall = entity.cachedState[FlatScreenBlock.WALL]
         val facing = entity.cachedState[FlatScreenBlock.FACING]
         val rotation = when(facing) {
             Direction.EAST -> 90f
@@ -42,11 +43,20 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
 
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation))
 
-        when(facing) {
-            Direction.EAST -> matrices.translate(-28.0/16.0, 5.0/16.0, 8.55/16.0)
-            Direction.SOUTH -> matrices.translate(-28.0/16.0, 5.0/16.0, -8.55/16.0)
-            Direction.WEST -> matrices.translate(-12.0/16.0, 5.0/16.0, -7.45/16.0)
-            else -> matrices.translate(-12.0/16.0, 5.0/16.0, 7.45/16.0)
+        if(wall) {
+            when(facing) {
+                Direction.EAST -> matrices.translate(-28.0/16.0, 5.0/16.0, 2.55/16.0)
+                Direction.SOUTH -> matrices.translate(-28.0/16.0, 5.0/16.0, -2.55/16.0)
+                Direction.WEST -> matrices.translate(-12.0/16.0, 5.0/16.0, -13.45/16.0)
+                else -> matrices.translate(-12.0/16.0, 5.0/16.0, 13.45/16.0)
+            }
+        }else{
+            when(facing) {
+                Direction.EAST -> matrices.translate(-28.0/16.0, 5.0/16.0, 8.55/16.0)
+                Direction.SOUTH -> matrices.translate(-28.0/16.0, 5.0/16.0, -8.55/16.0)
+                Direction.WEST -> matrices.translate(-12.0/16.0, 5.0/16.0, -7.45/16.0)
+                else -> matrices.translate(-12.0/16.0, 5.0/16.0, 7.45/16.0)
+            }
         }
 
         val entry = matrices.peek()
