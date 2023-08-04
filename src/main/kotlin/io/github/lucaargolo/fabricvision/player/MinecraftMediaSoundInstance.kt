@@ -10,7 +10,7 @@ import net.minecraft.util.math.Vec3d
 
 class MinecraftMediaSoundInstance(val pos: Vec3d): SoundInstance {
 
-    private val sound = Sound("${FabricVision.MOD_ID}:libvlc_sound", { 1f }, { 1f }, 1, Sound.RegistrationType.SOUND_EVENT, true, false, 16)
+    private val sound = Sound("${FabricVision.MOD_ID}:libvlc_sound", { 1f }, { 1f }, 1, Sound.RegistrationType.SOUND_EVENT, true, false, 32)
 
     override fun getAttenuationType() = SoundInstance.AttenuationType.LINEAR
 

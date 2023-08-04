@@ -3,30 +3,52 @@ package io.github.lucaargolo.fabricvision.client.render.blockentity
 import com.mojang.blaze3d.systems.RenderSystem
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient
 import io.github.lucaargolo.fabricvision.client.ProjectorProgram
+import io.github.lucaargolo.fabricvision.common.block.BlockCompendium
+import io.github.lucaargolo.fabricvision.common.block.ProjectorBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
 import io.github.lucaargolo.fabricvision.compat.IrisCompat
 import io.github.lucaargolo.fabricvision.mixed.WorldRendererMixed
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.block.entity.BlockEntityRenderer
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory
 import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.screen.PlayerScreenHandler
+import net.minecraft.util.math.RotationAxis
+import net.minecraft.util.math.RotationPropertyHelper
 import net.minecraft.util.math.Vec3d
 
 class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<MediaPlayerBlockEntity.Projector> {
 
-    //TODO: Disable projector on fabulous.
     override fun render(entity: MediaPlayerBlockEntity.Projector, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
         val client = MinecraftClient.getInstance()
 
-        if(FabricVisionClient.isRenderingProjector || IrisCompat.INSTANCE.isRenderingShadowPass()) {
+        matrices.push()
+
+        val yaw = RotationPropertyHelper.toDegrees(entity.cachedState[ProjectorBlock.ROTATION]) +180f
+        matrices.translate(0.5, 0.0, 0.5)
+        matrices.multiply(RotationAxis.NEGATIVE_Y.rotationDegrees(yaw))
+        matrices.translate(-0.5, 0.0, -0.5)
+        val model = client.bakedModelManager.blockModels.getModel(BlockCompendium.PROJECTOR.defaultState)
+        client.blockRenderManager.modelRenderer.render(matrices.peek(), vertexConsumers.getBuffer(RenderLayer.getEntitySolid(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE)), null, model, 1f, 1f, 1f, light, overlay)
+
+        matrices.pop()
+
+        if(MinecraftClient.isFabulousGraphicsOrBetter() || FabricVisionClient.isRenderingProjector || IrisCompat.INSTANCE.isRenderingShadowPass()) {
             return
         }
 
         entity.projectorProgram?.updateTexture(entity.player)
         val cameraEntityBackup = client.cameraEntity
         client.cameraEntity = entity.cameraEntity
+        val nauseaIntensityBackup = client.player?.nauseaIntensity ?: 0f
+        val prevNauseaIntensityBackup = client.player?.nauseaIntensity ?: 0f
+        client.player?.nauseaIntensity = 0f
+        client.player?.prevNauseaIntensity = 0f
         renderProjectorWorld(entity, tickDelta, 0L, MatrixStack())
+        client.player?.nauseaIntensity = nauseaIntensityBackup
+        client.player?.prevNauseaIntensity = prevNauseaIntensityBackup
         client.cameraEntity = cameraEntityBackup
         client.gameRenderer.camera.update(client.world, if (client.getCameraEntity() == null) client.player else client.getCameraEntity(), !client.options.perspective.isFirstPerson, client.options.perspective.isFrontView, tickDelta)
     }

@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.RotationPropertyHelper
 import net.minecraft.world.World
 
 open class ProjectorBlockEntity(pos: BlockPos, state: BlockState): MediaPlayerBlockEntity(BlockEntityCompendium.PROJECTOR, pos, state) {
@@ -17,9 +18,9 @@ open class ProjectorBlockEntity(pos: BlockPos, state: BlockState): MediaPlayerBl
         super.setWorld(world)
         if(world?.isClient == true) {
             projectorProgram = ProjectorProgram()
-            val direction = cachedState[ProjectorBlock.FACING]
+            val rotation = cachedState[ProjectorBlock.ROTATION]
             cameraEntity = EntityType.ARROW.create(world)
-            cameraEntity?.updatePositionAndAngles(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, direction.asRotation(), 0.0f)
+            cameraEntity?.updatePositionAndAngles(pos.x + 0.5, pos.y + 0.16 , pos.z + 0.5, RotationPropertyHelper.toDegrees(rotation), 0.0f)
         }
     }
 
