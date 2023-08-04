@@ -27,11 +27,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 object FabricVisionClient: ClientModInitializer {
 
     var renderingProjector: ProjectorProgram? = null
-
-    val projectorFramebuffer
-        get() = renderingProjector?.framebuffer
-    val projectorBufferBuilders
-        get() = renderingProjector?.bufferBuilders
     val isRenderingProjector
         get() = renderingProjector != null
 

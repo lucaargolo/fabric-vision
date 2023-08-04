@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient
 import io.github.lucaargolo.fabricvision.client.ProjectorProgram
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
+import io.github.lucaargolo.fabricvision.compat.IrisCompat
 import io.github.lucaargolo.fabricvision.mixed.WorldRendererMixed
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.VertexConsumerProvider
@@ -18,7 +19,7 @@ class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.C
     override fun render(entity: MediaPlayerBlockEntity.Projector, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
         val client = MinecraftClient.getInstance()
 
-        if(FabricVisionClient.isRenderingProjector) {
+        if(FabricVisionClient.isRenderingProjector || IrisCompat.INSTANCE.isRenderingShadowPass()) {
             return
         }
 
@@ -31,10 +32,11 @@ class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.C
     }
 
     private fun renderProjectorWorld(entity: MediaPlayerBlockEntity.Projector, tickDelta: Float, limitTime: Long, matrices: MatrixStack) {
+        val projectorProgram = entity.projectorProgram ?: return
         val client = MinecraftClient.getInstance()
         val gameRenderer = client.gameRenderer
+        projectorProgram.framebuffer.beginWrite(true)
         ProjectorProgram.setRendering(entity.projectorProgram)
-        FabricVisionClient.projectorFramebuffer?.beginWrite(true)
         if(FabricVisionClient.isRenderingProjector) {
             val backupRenderHand: Boolean = gameRenderer.renderHand
             gameRenderer.renderHand = false
@@ -43,8 +45,10 @@ class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.C
             RenderSystem.backupProjectionMatrix()
             val backup = RenderSystem.getInverseViewRotationMatrix()
             (client.worldRenderer as WorldRendererMixed).backup()
-            client.worldRenderer.bufferBuilders = FabricVisionClient.projectorBufferBuilders
+            client.worldRenderer.bufferBuilders = projectorProgram.bufferBuilders
+            IrisCompat.INSTANCE.setupProjectorWorldRender()
             gameRenderer.renderWorld(tickDelta, limitTime, matrices)
+            IrisCompat.INSTANCE.endProjectorWorldRender(client.worldRenderer)
             client.worldRenderer.bufferBuilders = client.bufferBuilders
             (client.worldRenderer as WorldRendererMixed).restore()
             RenderSystem.setInverseViewRotationMatrix(backup)

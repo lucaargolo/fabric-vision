@@ -2,6 +2,7 @@ package io.github.lucaargolo.fabricvision.mixin;
 
 
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient;
+import io.github.lucaargolo.fabricvision.client.ProjectorProgram;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,7 +16,10 @@ public class MinecraftClientMixin {
     @Inject(at = @At("HEAD"), method = "getFramebuffer", cancellable = true)
     public void getProjectorFramebuffer(CallbackInfoReturnable<Framebuffer> cir) {
         if(FabricVisionClient.INSTANCE.isRenderingProjector()) {
-            cir.setReturnValue(FabricVisionClient.INSTANCE.getProjectorFramebuffer());
+            ProjectorProgram program = FabricVisionClient.INSTANCE.getRenderingProjector();
+            if(program != null) {
+                cir.setReturnValue(program.getFramebuffer());
+            }
         }
     }
 

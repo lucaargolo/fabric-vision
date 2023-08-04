@@ -1,7 +1,7 @@
 package io.github.lucaargolo.fabricvision.mixin;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient;
+import io.github.lucaargolo.fabricvision.compat.IrisCompat;
 import io.github.lucaargolo.fabricvision.mixed.WorldRendererMixed;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
@@ -67,6 +67,13 @@ public abstract class WorldRendererMixin implements WorldRendererMixed {
         capturedFrustumPosition.y = fabricVision_capturedFrustumPosition.y;
         capturedFrustumPosition.z = fabricVision_capturedFrustumPosition.z;
         bufferBuilders = fabricVision_bufferBuilders;
+    }
+
+    @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderGameTime(JF)V", shift = At.Shift.AFTER), method = "render")
+    public void irisCompat(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
+        if(FabricVisionClient.INSTANCE.isRenderingProjector()) {
+            IrisCompat.Companion.getINSTANCE().startProjectorWorldRender((WorldRenderer) (Object) this);
+        }
     }
 
     @Inject(at = @At("HEAD"), method = "renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V", cancellable = true)

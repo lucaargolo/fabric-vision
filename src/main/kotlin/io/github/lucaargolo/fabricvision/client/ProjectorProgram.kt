@@ -13,7 +13,7 @@ import net.minecraft.client.render.Camera
 import net.minecraft.client.util.math.MatrixStack
 import org.joml.Matrix4f
 
-class ProjectorProgram() {
+class ProjectorProgram {
 
     private var texture = MinecraftClient.getInstance().textureManager.getTexture(MinecraftMediaPlayer.TRANSPARENT).glId
 

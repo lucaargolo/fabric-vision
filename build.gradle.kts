@@ -98,6 +98,8 @@ dependencies {
     include("uk.co.caprica:vlcj:4.8.2")
     include("uk.co.caprica:vlcj-natives:4.8.1")
 
+    modCompileOnly(files("libs/iris-mc1.20-1.6.4.jar"))
+
     modRuntimeOnly("com.terraformersmc:modmenu:${project["modmenu_version"]}")
     modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:${project["rei_version"]}")
 }
