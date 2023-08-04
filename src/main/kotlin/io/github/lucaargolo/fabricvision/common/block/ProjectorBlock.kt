@@ -2,6 +2,7 @@ package io.github.lucaargolo.fabricvision.common.block
 
 import io.github.lucaargolo.fabricvision.common.blockentity.BlockEntityCompendium
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
+import io.github.lucaargolo.fabricvision.common.blockentity.ProjectorBlockEntity
 import io.github.lucaargolo.fabricvision.utils.VoxelShapeUtils.rotate
 import net.minecraft.block.*
 import net.minecraft.block.entity.BlockEntity
@@ -52,7 +53,7 @@ class ProjectorBlock(settings: Settings) : BlockWithEntity(settings) {
         return state.with(SkullBlock.ROTATION, mirror.mirror(state[ROTATION], MAX_ROTATIONS))
     }
 
-    override fun createBlockEntity(pos: BlockPos, state: BlockState) = MediaPlayerBlockEntity.Projector(pos, state)
+    override fun createBlockEntity(pos: BlockPos, state: BlockState) = ProjectorBlockEntity(pos, state)
 
     override fun <T : BlockEntity> getTicker(world: World, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? {
         return if(world.isClient) checkType(type, BlockEntityCompendium.PROJECTOR, MediaPlayerBlockEntity::clientTick) else null

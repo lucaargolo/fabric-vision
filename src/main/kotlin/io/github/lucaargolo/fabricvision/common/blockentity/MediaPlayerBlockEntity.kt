@@ -24,11 +24,16 @@ import java.util.*
 
 abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlockEntity>, pos: BlockPos, state: BlockState) : BlockEntity(type, pos, state) {
 
-    private val internalPlayer: MinecraftMediaPlayer by lazy {
-        MinecraftMediaPlayerHolder.create(uuid!!)
-    }
-    val player: MinecraftMediaPlayer?
-        get() = if(uuid != null) internalPlayer else null
+    var player: MinecraftMediaPlayer? = null
+        get() {
+            val uuid = uuid
+            if(field == null && uuid != null && enabled) {
+                field = MinecraftMediaPlayerHolder.create(uuid)
+            }
+            return field
+        }
+
+    var enabled = true
 
     var uuid: UUID? = null
 
@@ -51,6 +56,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         }
 
     override fun writeNbt(nbt: NbtCompound) {
+        nbt.putBoolean("enabled", enabled)
         if(uuid != null) {
             nbt.putUuid("uuid", uuid)
         }
@@ -60,6 +66,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
     }
 
     override fun readNbt(nbt: NbtCompound) {
+        enabled = nbt.getBoolean("enabled")
         uuid = if(nbt.contains("uuid")) {
             nbt.getUuid("uuid")
         }else{
@@ -95,19 +102,21 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         }
     }
 
-    class FlatScreen(pos: BlockPos, state: BlockState): MediaPlayerBlockEntity(BlockEntityCompendium.FLAT_SCREEN, pos, state)
-    class Projector(pos: BlockPos, state: BlockState): ProjectorBlockEntity(pos, state)
-
-
     companion object {
 
-
-
         fun clientTick(world: World, pos: BlockPos, state: BlockState, blockEntity: MediaPlayerBlockEntity) {
-            blockEntity.player?.pos = Vec3d.ofCenter(pos)
-            blockEntity.player?.mrl = blockEntity.mrl
-            blockEntity.player?.time = blockEntity.time
-            blockEntity.player?.playing = blockEntity.playing
+            val player = blockEntity.player
+            if(player != null) {
+                if(blockEntity.enabled) {
+                    player.pos = Vec3d.ofCenter(pos)
+                    player.mrl = blockEntity.mrl
+                    player.time = blockEntity.time
+                    player.playing = blockEntity.playing
+                }else{
+                    player.close()
+                    blockEntity.player = null
+                }
+            }
         }
 
     }

@@ -8,6 +8,7 @@ object BlockEntityRendererCompendium {
     fun initializeClient() {
         BlockEntityRendererFactories.register(BlockEntityCompendium.FLAT_SCREEN, ::FlatScreenBlockEntityRenderer)
         BlockEntityRendererFactories.register(BlockEntityCompendium.PROJECTOR, ::ProjectorBlockEntityRenderer)
+        BlockEntityRendererFactories.register(BlockEntityCompendium.PANEL, ::PanelBlockEntityRenderer)
     }
 
 }

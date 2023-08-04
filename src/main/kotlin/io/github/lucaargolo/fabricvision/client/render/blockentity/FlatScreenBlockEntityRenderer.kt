@@ -1,6 +1,7 @@
 package io.github.lucaargolo.fabricvision.client.render.blockentity
 
 import io.github.lucaargolo.fabricvision.common.block.FlatScreenBlock
+import io.github.lucaargolo.fabricvision.common.blockentity.FlatScreenBlockEntity
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import net.minecraft.client.render.LightmapTextureManager
@@ -13,9 +14,9 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.RotationAxis
 
-class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<MediaPlayerBlockEntity> {
+class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<FlatScreenBlockEntity> {
 
-    override fun render(entity: MediaPlayerBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
+    override fun render(entity: FlatScreenBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
 
         val identifier = entity.player?.identifier ?: MinecraftMediaPlayer.TRANSPARENT
         val renderLayer = RenderLayer.getEntityTranslucent(identifier)

@@ -1,6 +1,7 @@
 package io.github.lucaargolo.fabricvision.common.block
 
 import io.github.lucaargolo.fabricvision.common.blockentity.BlockEntityCompendium
+import io.github.lucaargolo.fabricvision.common.blockentity.FlatScreenBlockEntity
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
 import io.github.lucaargolo.fabricvision.utils.VoxelShapeUtils.rotate
 import net.minecraft.block.*
@@ -98,7 +99,7 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
     }
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? {
         return if(state[PART] == Part.CENTER && state[LAYER] == Layer.DOWN) {
-            MediaPlayerBlockEntity.FlatScreen(pos, state)
+            FlatScreenBlockEntity(pos, state)
         }else{
             null
         }
