@@ -6,17 +6,20 @@ import io.github.lucaargolo.fabricvision.player.MinecraftMediaSoundInstance
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.sound.*
 import org.lwjgl.openal.AL10
+import org.lwjgl.openal.AL11
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.callback.AudioCallback
 import javax.sound.sampled.AudioFormat
 
-class MinecraftAudioCallback(mmp: MinecraftMediaPlayer): AudioCallback {
+class MinecraftAudioCallback(val player: MinecraftMediaPlayer): AudioCallback {
 
+    //TODO: Add support to stereo audio when audioMaxDist == 0
     private val format = AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 128000f, 16, 1, 4, 128000f, false)
 
-    private val instance = MinecraftMediaSoundInstance(mmp.pos)
-
+    private val instance = MinecraftMediaSoundInstance(player::volume)
     private var sourceManager: Channel.SourceManager? = null
+
+    private var lastVolume = player.volume
 
     override fun play(mediaPlayer: MediaPlayer, samples: Pointer, sampleCount: Int, pts: Long) {
         val buffer = samples.getByteBuffer(0L, sampleCount * 2L)
@@ -24,9 +27,6 @@ class MinecraftAudioCallback(mmp: MinecraftMediaPlayer): AudioCallback {
             if(soundSystem.started && (sourceManager == null || sourceManager?.isStopped == true)) {
                 val source = soundEngine.createSource(SoundEngine.RunMode.STREAMING)
                 if (source != null) {
-                    source.setAttenuation(instance.sound.attenuation + 0f)
-                    source.setPosition(instance.pos)
-                    source.setRelative(!instance.isRelative)
                     val channelSource = soundChannel.SourceManager(source)
                     soundChannel.sources.add(channelSource)
                     soundSystem.sources[instance] = channelSource
@@ -35,6 +35,8 @@ class MinecraftAudioCallback(mmp: MinecraftMediaPlayer): AudioCallback {
             }
         }
         sourceManager?.run { source ->
+            configureSource(source)
+
             source.removeProcessedBuffers()
 
             StaticSound(buffer, format).takeStreamBufferPointer().ifPresent { buffer ->
@@ -71,6 +73,24 @@ class MinecraftAudioCallback(mmp: MinecraftMediaPlayer): AudioCallback {
 
     override fun setVolume(volume: Float, mute: Boolean) {
 
+    }
+
+    private fun configureSource(source: Source) {
+        if(player.audioMaxDist > 0f) {
+            AL10.alSourcei(source.pointer, AL10.AL_DISTANCE_MODEL, AL11.AL_LINEAR_DISTANCE)
+            AL10.alSourcef(source.pointer, AL10.AL_MAX_DISTANCE, player.audioMaxDist)
+            AL10.alSourcef(source.pointer, AL10.AL_ROLLOFF_FACTOR, 1.0f)
+            AL10.alSourcef(source.pointer, AL10.AL_REFERENCE_DISTANCE, player.audioRefDist)
+        }
+        if(lastVolume != player.volume) {
+            val adjustedVolume = soundSystem.getAdjustedVolume(instance)
+            if (adjustedVolume <= 0.0f) {
+                source.stop()
+            } else {
+                source.setVolume(adjustedVolume)
+            }
+        }
+        source.setPosition(player.pos)
     }
 
     companion object {

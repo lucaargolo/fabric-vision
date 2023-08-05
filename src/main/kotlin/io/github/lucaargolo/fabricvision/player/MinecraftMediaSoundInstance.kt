@@ -8,9 +8,9 @@ import net.minecraft.sound.SoundCategory
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
 
-class MinecraftMediaSoundInstance(val pos: Vec3d): SoundInstance {
+class MinecraftMediaSoundInstance(private val volumeSupplier: () -> Float): SoundInstance {
 
-    private val sound = Sound("${FabricVision.MOD_ID}:libvlc_sound", { 1f }, { 1f }, 1, Sound.RegistrationType.SOUND_EVENT, true, false, 32)
+    private val sound = Sound("${FabricVision.MOD_ID}:libvlc_sound", { 1f }, { 1f }, 1, Sound.RegistrationType.SOUND_EVENT, true, false, 0)
 
     override fun getAttenuationType() = SoundInstance.AttenuationType.LINEAR
 
@@ -20,15 +20,15 @@ class MinecraftMediaSoundInstance(val pos: Vec3d): SoundInstance {
 
     override fun isRelative() = true
 
-    override fun getVolume() = 1f
+    override fun getVolume() = volumeSupplier.invoke()
 
     override fun getPitch() = 1f
 
-    override fun getX() = pos.x
+    override fun getX() = 0.0
 
-    override fun getY() = pos.y
+    override fun getY() = 0.0
 
-    override fun getZ() = pos.z
+    override fun getZ() = 0.0
 
     override fun getId(): Identifier = sound.identifier
 

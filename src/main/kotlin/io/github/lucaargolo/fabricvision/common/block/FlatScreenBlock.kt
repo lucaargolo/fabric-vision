@@ -32,7 +32,7 @@ import net.minecraft.world.World
 import java.util.stream.Stream
 
 
-class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
+class FlatScreenBlock(settings: Settings) : MediaPlayerBlock({ BlockEntityCompendium.FLAT_SCREEN }, settings) {
 
     init {
         defaultState = defaultState.with(WALL, false).with(FACING, Direction.NORTH).with(PART, Part.CENTER).with(LAYER, Layer.DOWN)
@@ -85,7 +85,7 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
     @Deprecated("Deprecated in Java")
     override fun onStateReplaced(state: BlockState, world: World, pos: BlockPos, newState: BlockState, moved: Boolean) {
         if(!state.isOf(newState.block)) {
-            val (originalPos, left, right) = getOriginalPos(state, pos)
+            val (originalPos, left, right) = getInternalOriginalPos(state, pos)
             listOf(originalPos, originalPos.up(), originalPos.up().offset(left), originalPos.up().offset(right), originalPos.offset(left), originalPos.offset(right)).forEach {
                 world.setBlockState(it, Blocks.AIR.defaultState)
             }
@@ -105,25 +105,6 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
         }
     }
 
-    override fun <T : BlockEntity> getTicker(world: World, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? {
-        return if(world.isClient) checkType(type, BlockEntityCompendium.FLAT_SCREEN, MediaPlayerBlockEntity::clientTick) else null
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult {
-        if(!world.isClient) {
-            val (originalPos, _, _) = getOriginalPos(state, pos)
-            world.getBlockEntity(originalPos, BlockEntityCompendium.FLAT_SCREEN).ifPresent {
-                //if(player.isSneaking) {
-                //    it.mrl = "C:\\Users\\Luca\\Downloads\\video.mp4"
-                //}else{
-                    it.playing = !it.playing
-                //}
-            }
-        }
-        return ActionResult.SUCCESS
-    }
-
     @Suppress("LiftReturnOrAssignment")
     @Deprecated("Deprecated in Java")
     override fun getRenderType(state: BlockState): BlockRenderType {
@@ -134,7 +115,11 @@ class FlatScreenBlock(settings: Settings) : BlockWithEntity(settings){
         }
     }
 
-    private fun getOriginalPos(state: BlockState, pos: BlockPos): Triple<BlockPos, Direction, Direction> {
+    override fun getOriginalPos(state: BlockState, pos: BlockPos): BlockPos {
+        return getInternalOriginalPos(state, pos).first
+    }
+
+    private fun getInternalOriginalPos(state: BlockState, pos: BlockPos): Triple<BlockPos, Direction, Direction> {
         val direction = state[FACING]
         val left = direction.rotateYClockwise()
         val right = direction.rotateYCounterclockwise()

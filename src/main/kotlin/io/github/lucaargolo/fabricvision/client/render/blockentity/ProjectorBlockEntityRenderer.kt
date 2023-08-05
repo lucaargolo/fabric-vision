@@ -58,7 +58,7 @@ class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.C
         val projectorProgram = entity.projectorProgram ?: return
         val client = MinecraftClient.getInstance()
         val gameRenderer = client.gameRenderer
-        projectorProgram.framebuffer.beginWrite(true)
+        projectorProgram.framebuffer.beginWrite(false)
         ProjectorProgram.setRendering(entity.projectorProgram)
         if(FabricVisionClient.isRenderingProjector) {
             val backupRenderHand: Boolean = gameRenderer.renderHand

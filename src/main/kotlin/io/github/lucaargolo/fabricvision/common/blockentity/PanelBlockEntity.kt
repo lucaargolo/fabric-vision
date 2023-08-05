@@ -8,7 +8,6 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockBox
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
-import net.minecraft.world.World
 import kotlin.jvm.optionals.getOrNull
 
 class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntity(BlockEntityCompendium.PANEL, pos, state) {
@@ -59,6 +58,22 @@ class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntit
             currentYSize = nbt.getInt("currentYSize")
             currentMinPos = BlockPos.fromLong(nbt.getLong("currentMinPos"))
             currentMaxPos = BlockPos.fromLong(nbt.getLong("currentMaxPos"))
+        }
+    }
+
+    override fun play() {
+        if(activePanel == this) {
+            super.play()
+        }else{
+            activePanel?.play()
+        }
+    }
+
+    override fun pause() {
+        if(activePanel == this) {
+            super.pause()
+        }else{
+            activePanel?.pause()
         }
     }
 

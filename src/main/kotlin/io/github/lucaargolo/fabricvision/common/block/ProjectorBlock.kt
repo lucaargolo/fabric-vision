@@ -1,35 +1,26 @@
 package io.github.lucaargolo.fabricvision.common.block
 
 import io.github.lucaargolo.fabricvision.common.blockentity.BlockEntityCompendium
-import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
 import io.github.lucaargolo.fabricvision.common.blockentity.ProjectorBlockEntity
 import io.github.lucaargolo.fabricvision.utils.VoxelShapeUtils.rotate
 import net.minecraft.block.*
-import net.minecraft.block.entity.BlockEntity
-import net.minecraft.block.entity.BlockEntityTicker
-import net.minecraft.block.entity.BlockEntityType
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.IntProperty
 import net.minecraft.state.property.Properties
-import net.minecraft.util.ActionResult
 import net.minecraft.util.BlockMirror
 import net.minecraft.util.BlockRotation
-import net.minecraft.util.Hand
 import net.minecraft.util.function.BooleanBiFunction
-import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.RotationPropertyHelper
 import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView
-import net.minecraft.world.World
 import java.util.stream.Stream
 
 
-class ProjectorBlock(settings: Settings) : BlockWithEntity(settings) {
+class ProjectorBlock(settings: Settings) : MediaPlayerBlock({ BlockEntityCompendium.PROJECTOR }, settings) {
 
     init {
         defaultState = defaultState.with(ROTATION, 0)
@@ -55,23 +46,9 @@ class ProjectorBlock(settings: Settings) : BlockWithEntity(settings) {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState) = ProjectorBlockEntity(pos, state)
 
-    override fun <T : BlockEntity> getTicker(world: World, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? {
-        return if(world.isClient) checkType(type, BlockEntityCompendium.PROJECTOR, MediaPlayerBlockEntity::clientTick) else null
-    }
-
     @Deprecated("Deprecated in Java", ReplaceWith("getShape(state[ROTATION])", "io.github.lucaargolo.fabricvision.common.block.ProjectorBlock.Companion.getShape", "io.github.lucaargolo.fabricvision.common.block.ProjectorBlock.Companion.ROTATION"))
     override fun getOutlineShape(state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext): VoxelShape {
         return getShape(state[ROTATION])
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult {
-        if(!world.isClient) {
-            world.getBlockEntity(pos, BlockEntityCompendium.PROJECTOR).ifPresent {
-                it.playing = !it.playing
-            }
-        }
-        return ActionResult.SUCCESS
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("BlockRenderType.ENTITYBLOCK_ANIMATED", "net.minecraft.block.BlockRenderType"))

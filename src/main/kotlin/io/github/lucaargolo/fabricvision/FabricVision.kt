@@ -15,7 +15,10 @@ import io.github.lucaargolo.fabricvision.common.screenhandler.ScreenHandlerCompe
 import io.github.lucaargolo.fabricvision.common.sound.SoundCompendium
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
 import io.github.lucaargolo.fabricvision.player.SetupLibVLC
+import io.github.lucaargolo.fabricvision.utils.ModConfig
 import net.fabricmc.api.ModInitializer
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 object FabricVision: ModInitializer {
 
@@ -39,6 +42,7 @@ object FabricVision: ModInitializer {
 
     override fun onInitialize() {
         initializeRegistries()
+        ModConfig.getInstance()
         SetupLibVLC.initialize()
     }
 

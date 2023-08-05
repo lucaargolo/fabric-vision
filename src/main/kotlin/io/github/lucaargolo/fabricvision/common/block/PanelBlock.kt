@@ -25,7 +25,7 @@ import net.minecraft.util.shape.VoxelShape
 import net.minecraft.world.BlockView
 import net.minecraft.world.World
 
-class PanelBlock(settings: Settings) : BlockWithEntity(settings) {
+class PanelBlock(settings: Settings) : MediaPlayerBlock({ BlockEntityCompendium.PANEL }, settings) {
 
     init {
         defaultState = defaultState.with(FACING, Direction.NORTH)
@@ -41,22 +41,6 @@ class PanelBlock(settings: Settings) : BlockWithEntity(settings) {
     }
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState) = PanelBlockEntity(pos, state)
-
-    override fun <T : BlockEntity> getTicker(world: World, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? {
-        return if(world.isClient) checkType(type, BlockEntityCompendium.PANEL, MediaPlayerBlockEntity::clientTick) else null
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult {
-        if(!world.isClient) {
-            world.getBlockEntity(pos, BlockEntityCompendium.PANEL).ifPresent { panel ->
-                panel.activePanel?.let {
-                    it.playing = !it.playing
-                }
-            }
-        }
-        return ActionResult.SUCCESS
-    }
 
     override fun onPlaced(world: World, pos: BlockPos, state: BlockState, placer: LivingEntity?, itemStack: ItemStack) {
         (world as? ServerWorld)?.let { serverWorld ->

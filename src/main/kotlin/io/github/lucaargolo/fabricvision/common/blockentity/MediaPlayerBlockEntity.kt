@@ -2,16 +2,9 @@ package io.github.lucaargolo.fabricvision.common.blockentity
 
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayerHolder
-import io.github.lucaargolo.fabricvision.utils.FramebufferTexture
-import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gl.SimpleFramebuffer
-import net.minecraft.client.render.Camera
-import net.minecraft.command.argument.EntityAnchorArgumentType
-import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.listener.ClientPlayPacketListener
 import net.minecraft.network.packet.Packet
@@ -24,6 +17,8 @@ import java.util.*
 
 abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlockEntity>, pos: BlockPos, state: BlockState) : BlockEntity(type, pos, state) {
 
+    private var uuid: UUID? = null
+
     var player: MinecraftMediaPlayer? = null
         get() {
             val uuid = uuid
@@ -33,23 +28,47 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             return field
         }
 
-    var enabled = true
+    protected var enabled = true
 
-    var uuid: UUID? = null
-
-    var mrl = "https://cdn.discordapp.com/attachments/253728532939669504/1131109086407163924/SaveTube.io-Rick_Astley_-_Never_Gonna_Give_You_Up_Official_Music_Video.mp4"
+    protected var mrl = "C:\\Users\\Luca\\Downloads\\timer.webm"
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
-    var time = 0L
+
+    protected var lastTime = System.currentTimeMillis()
+    protected var startTime = System.currentTimeMillis()
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
-    var playing = true
+    protected var playing = true
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
+
+    protected var repeating = false
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
+
+    protected var audioMaxDist = 16.0f
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
+
+    protected var audioRefDist = 0.0f
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
+
+    protected var volume = 1.0f
         set(value) {
             field = value
             markDirtyAndSync()
@@ -61,8 +80,13 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             nbt.putUuid("uuid", uuid)
         }
         nbt.putString("mrl", mrl)
-        nbt.putLong("time", time)
+        nbt.putLong("lastTime", lastTime)
+        nbt.putLong("startTime", startTime)
         nbt.putBoolean("playing", playing)
+        nbt.putBoolean("repeating", repeating)
+        nbt.putFloat("audioMaxDist", audioMaxDist)
+        nbt.putFloat("audioRefDist", audioRefDist)
+        nbt.putFloat("volume", volume)
     }
 
     override fun readNbt(nbt: NbtCompound) {
@@ -73,8 +97,22 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             UUID.randomUUID()
         }
         mrl = nbt.getString("mrl")
-        time = nbt.getLong("time")
+        lastTime = nbt.getLong("lastTime")
+        startTime = nbt.getLong("startTime")
         playing = nbt.getBoolean("playing")
+        repeating = nbt.getBoolean("repeating")
+        audioMaxDist = nbt.getFloat("audioMaxDist")
+        audioRefDist = nbt.getFloat("audioRefDist")
+        volume = nbt.getFloat("volume")
+    }
+
+    open fun play() {
+        playing = true
+        startTime = System.currentTimeMillis()
+    }
+
+    open fun pause() {
+        playing = !playing
     }
 
     override fun toInitialChunkDataNbt(): NbtCompound {
@@ -92,7 +130,19 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         sync()
     }
     fun sync() {
-        (world as? ServerWorld)?.chunkManager?.markForUpdate(this.pos)
+        val world = world ?: return
+        if(world.isClient) {
+            player?.pos = Vec3d.ofCenter(pos)
+            player?.mrl = mrl
+            player?.startTime = startTime
+            player?.playing = playing
+            player?.repeating = repeating
+            player?.audioMaxDist = audioMaxDist
+            player?.audioRefDist = audioRefDist
+            player?.volume = volume
+        }else{
+            (world as? ServerWorld)?.chunkManager?.markForUpdate(this.pos)
+        }
     }
 
     override fun markRemoved() {
@@ -104,18 +154,19 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
 
     companion object {
 
+        fun serverTick(world: World, pos: BlockPos, state: BlockState, blockEntity: MediaPlayerBlockEntity) {
+            val currentTime = System.currentTimeMillis()
+            val timeDifference = currentTime - blockEntity.lastTime
+            if(timeDifference > 100 || !blockEntity.playing) {
+                blockEntity.startTime += timeDifference
+            }
+            blockEntity.lastTime = currentTime
+        }
+
         fun clientTick(world: World, pos: BlockPos, state: BlockState, blockEntity: MediaPlayerBlockEntity) {
-            val player = blockEntity.player
-            if(player != null) {
-                if(blockEntity.enabled) {
-                    player.pos = Vec3d.ofCenter(pos)
-                    player.mrl = blockEntity.mrl
-                    player.time = blockEntity.time
-                    player.playing = blockEntity.playing
-                }else{
-                    player.close()
-                    blockEntity.player = null
-                }
+            if(blockEntity.player != null && !blockEntity.enabled) {
+                blockEntity.player?.close()
+                blockEntity.player = null
             }
         }
 

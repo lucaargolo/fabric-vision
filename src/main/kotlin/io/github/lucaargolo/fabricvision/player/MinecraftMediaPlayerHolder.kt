@@ -53,6 +53,13 @@ object MinecraftMediaPlayerHolder {
             val entry = iterator.next()
             entry.clientTick()
             if(player != null) {
+                if(client.isIntegratedServerRunning) {
+                    if(client.isPaused && !entry.clientPaused) {
+                        entry.clientPaused = true
+                    }else if(!client.isPaused && entry.clientPaused){
+                        entry.clientPaused = false
+                    }
+                }
                 if(ACTIVE_PLAYERS.contains(entry)) {
                     val distance = entry.pos.distanceTo(player.pos)
                     if (distance > maxDistance) {
