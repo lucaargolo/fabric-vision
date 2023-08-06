@@ -21,6 +21,11 @@ object PacketCompendium {
                 (player.world.getBlockEntity(pos) as? MediaPlayerBlockEntity)?.let { blockEntity ->
                     when(index) {
                         0 -> blockEntity.volume = value
+                        1 -> blockEntity.light = value
+                        2 -> blockEntity.red = value
+                        3 -> blockEntity.green = value
+                        4 -> blockEntity.blue = value
+                        5 -> blockEntity.alpha = value
                     }
                 }
             }

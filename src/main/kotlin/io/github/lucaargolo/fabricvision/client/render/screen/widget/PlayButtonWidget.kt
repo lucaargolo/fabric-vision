@@ -23,11 +23,12 @@ class PlayButtonWidget(private val parent: MediaPlayerScreen, x: Int, y: Int): B
         }
 
     private val textureV: Int
-        get() = if(hovered) 60 else 42
+        get() = if(active && hovered) 60 else 42
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.drawTexture(MediaPlayerScreen.TEXTURE, x, y, textureU, textureV, 18, 18)
-        if(hovered) {
+        active = !parent.config
+        if(active && isHovered) {
             if (!parent.mediaStatus.interactable) {
                 parent.playerTooltip.add(Text.translatable("tooltip.fabricvision.status").append(": ").formatted(parent.mediaStatus.formatting).append(Text.translatable(parent.mediaStatus.translationKey).formatted(Formatting.GRAY)).asOrderedText())
                 parent.playerTooltip.add(Text.translatable(parent.mediaStatus.descriptionKey).formatted(Formatting.GRAY).asOrderedText())

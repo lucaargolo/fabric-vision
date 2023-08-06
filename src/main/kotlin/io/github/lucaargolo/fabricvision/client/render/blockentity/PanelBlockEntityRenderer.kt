@@ -13,6 +13,7 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.RotationAxis
 import net.minecraft.util.math.Vec3d
+import kotlin.math.roundToInt
 
 class PanelBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<PanelBlockEntity> {
 
@@ -23,11 +24,13 @@ class PanelBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Conte
             val renderLayer = RenderLayer.getEntityTranslucent(identifier)
             val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
 
-            val red = 1f
-            val green = 1f
-            val blue = 1f
-            val alpha = 1f
-            val normal = Direction.NORTH.unitVector
+            val l = (entity.light * 15).roundToInt()
+            val lightmap = LightmapTextureManager.pack(l, l)
+            val red = entity.red
+            val green = entity.green
+            val blue = entity.blue
+            val alpha = entity.alpha
+            val normal = Direction.UP.unitVector
 
             val x = entity.currentXSize + 0f
             val y = entity.currentYSize + 0f
@@ -54,15 +57,15 @@ class PanelBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Conte
             val entry = matrices.peek()
 
             if (facing.axis == Direction.Axis.X) {
-                vertexConsumer?.vertex(entry.positionMatrix, x, 0f, 0f)?.color(red, green, blue, alpha)?.texture(1f, 1f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-                vertexConsumer?.vertex(entry.positionMatrix, x, y, 0f)?.color(red, green, blue, alpha)?.texture(1f, 0f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-                vertexConsumer?.vertex(entry.positionMatrix, 0f, y, 0f)?.color(red, green, blue, alpha)?.texture(0f, 0f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-                vertexConsumer?.vertex(entry.positionMatrix, 0f, 0f, 0f)?.color(red, green, blue, alpha)?.texture(0f, 1f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
+                vertexConsumer.vertex(entry.positionMatrix, x, 0f, 0f).color(red, green, blue, alpha).texture(1f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(entry.normalMatrix, normal.x, normal.y, normal.z).next()
+                vertexConsumer.vertex(entry.positionMatrix, x, y, 0f).color(red, green, blue, alpha).texture(1f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(entry.normalMatrix, normal.x, normal.y, normal.z).next()
+                vertexConsumer.vertex(entry.positionMatrix, 0f, y, 0f).color(red, green, blue, alpha).texture(0f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(entry.normalMatrix, normal.x, normal.y, normal.z).next()
+                vertexConsumer.vertex(entry.positionMatrix, 0f, 0f, 0f).color(red, green, blue, alpha).texture(0f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(entry.normalMatrix, normal.x, normal.y, normal.z).next()
             } else {
-                vertexConsumer?.vertex(entry.positionMatrix, x, 0f, 0f)?.color(red, green, blue, alpha)?.texture(0f, 1f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-                vertexConsumer?.vertex(entry.positionMatrix, x, y, 0f)?.color(red, green, blue, alpha)?.texture(0f, 0f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-                vertexConsumer?.vertex(entry.positionMatrix, 0f, y, 0f)?.color(red, green, blue, alpha)?.texture(1f, 0f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
-                vertexConsumer?.vertex(entry.positionMatrix, 0f, 0f, 0f)?.color(red, green, blue, alpha)?.texture(1f, 1f)?.overlay(OverlayTexture.DEFAULT_UV)?.light(LightmapTextureManager.MAX_LIGHT_COORDINATE)?.normal(entry.normalMatrix, normal.x, normal.y, normal.z)?.next()
+                vertexConsumer.vertex(entry.positionMatrix, x, 0f, 0f).color(red, green, blue, alpha).texture(0f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(entry.normalMatrix, normal.x, normal.y, normal.z).next()
+                vertexConsumer.vertex(entry.positionMatrix, x, y, 0f).color(red, green, blue, alpha).texture(0f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(entry.normalMatrix, normal.x, normal.y, normal.z).next()
+                vertexConsumer.vertex(entry.positionMatrix, 0f, y, 0f).color(red, green, blue, alpha).texture(1f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(entry.normalMatrix, normal.x, normal.y, normal.z).next()
+                vertexConsumer.vertex(entry.positionMatrix, 0f, 0f, 0f).color(red, green, blue, alpha).texture(1f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(entry.normalMatrix, normal.x, normal.y, normal.z).next()
             }
 
             matrices.pop()

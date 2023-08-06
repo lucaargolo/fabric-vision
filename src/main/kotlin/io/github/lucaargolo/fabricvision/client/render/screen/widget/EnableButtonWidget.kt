@@ -18,11 +18,12 @@ class EnableButtonWidget(private val parent: MediaPlayerScreen, x: Int, y: Int):
 
 
         private val textureV: Int
-            get() = if(hovered) 60 else 42
+            get() = if(active && hovered) 60 else 42
 
         override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             context.drawTexture(MediaPlayerScreen.TEXTURE, x, y, textureU, textureV, 18, 18)
-            if(isHovered) {
+            active = !parent.config
+            if(active && isHovered) {
                 //TODO: Also translate this
                 if(parent.blockEntity.enabled) {
                     parent.playerTooltip.add(Text.literal("Player On").formatted(Formatting.GREEN).asOrderedText())

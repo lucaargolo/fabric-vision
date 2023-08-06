@@ -42,6 +42,7 @@ class ProjectorProgram {
 
     private val viewPort = effect.findUniform4i("ViewPort")
 
+    //TODO: Brightness and color settings
     private val projectionFallout = effect.findUniform1f("ProjectionFallout")
 
     fun updateTexture(player: MinecraftMediaPlayer?) {

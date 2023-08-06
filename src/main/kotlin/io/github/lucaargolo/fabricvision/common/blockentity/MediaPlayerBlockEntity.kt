@@ -89,6 +89,36 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             markDirtyAndSync()
         }
 
+    var light = 1.0f
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
+
+    var red = 1.0f
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
+
+    var green = 1.0f
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
+
+    var blue = 1.0f
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
+
+    var alpha = 1.0f
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
+
     override fun writeNbt(nbt: NbtCompound) {
         nbt.putBoolean("enabled", enabled)
         if(uuid != null) {
@@ -103,6 +133,11 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         nbt.putFloat("audioMaxDist", audioMaxDist)
         nbt.putFloat("audioRefDist", audioRefDist)
         nbt.putFloat("volume", volume)
+        nbt.putFloat("light", light)
+        nbt.putFloat("red", red)
+        nbt.putFloat("green", green)
+        nbt.putFloat("blue", blue)
+        nbt.putFloat("alpha", alpha)
     }
 
     override fun readNbt(nbt: NbtCompound) {
@@ -121,6 +156,11 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         audioMaxDist = nbt.getFloat("audioMaxDist")
         audioRefDist = nbt.getFloat("audioRefDist")
         volume = nbt.getFloat("volume")
+        light = nbt.getFloat("light")
+        red = nbt.getFloat("red")
+        green = nbt.getFloat("green")
+        blue = nbt.getFloat("blue")
+        alpha = nbt.getFloat("alpha")
     }
 
     open fun play() {

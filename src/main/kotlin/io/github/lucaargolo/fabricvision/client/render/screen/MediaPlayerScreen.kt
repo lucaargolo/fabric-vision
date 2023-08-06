@@ -4,11 +4,14 @@ import io.github.lucaargolo.fabricvision.client.render.screen.widget.*
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer.Status
+import io.github.lucaargolo.fabricvision.utils.MathUtils
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -27,6 +30,16 @@ class MediaPlayerScreen(val blockEntity: MediaPlayerBlockEntity) : Screen(Text.t
     private var x = 0
     private var y = 0
 
+    var config = false
+    private val configDrawables = mutableListOf<Drawable>()
+
+
+    private val configBackgroundWidth = 48
+    private val configBackgroundHeight = 64
+
+    private var configX = 0
+    private var configY = 0
+
     var currentTime = System.currentTimeMillis()
     var startTime = blockEntity.startTime
     var mediaTime = currentTime - startTime
@@ -41,15 +54,54 @@ class MediaPlayerScreen(val blockEntity: MediaPlayerBlockEntity) : Screen(Text.t
 
     override fun shouldPause() = false
 
+    override fun shouldCloseOnEsc(): Boolean {
+        if(config) {
+            config = false
+            return false
+        }
+        return true
+    }
+
+    override fun clearChildren() {
+        super.clearChildren()
+        configDrawables.clear()
+    }
+
     override fun init() {
         x = (width - backgroundWidth) / 2
         y = height - backgroundHeight
+        configX = (width - configBackgroundWidth) / 2
+        configY = (height - configBackgroundHeight) / 2
         addDrawableChild(EnableButtonWidget(this, x, y))
+        addDrawableChild(ConfigButtonWidget(this, x+19, y+2))
         addDrawableChild(RepeatButtonWidget(this, x+34, y+2))
         addDrawableChild(NavigateButtonWidget(this, x+64, y+2, -5000L, 168))
         addDrawableChild(PlayButtonWidget(this, x+79, y))
         addDrawableChild(NavigateButtonWidget(this, x+98, y+2, 5000L, 182))
         addDrawableChild(VolumeSliderWidget(this, x+140, y+6, blockEntity.volume))
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+12, configY+4, 12, 156, 48, 157, blockEntity.volume, 0) { value ->
+            val formatting = when {
+                value > 0.9 -> Formatting.RED
+                value > 0.7 -> Formatting.YELLOW
+                else -> Formatting.GREEN
+            }
+            Text.literal("Volume: ").formatted(formatting).append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
+        }))
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+12, configY+14, 12, 166, 48, 167, blockEntity.light, 1) { value ->
+            Text.literal("Light: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFFFF00)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
+        }))
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+12, configY+24, 12, 176, 48, 177, blockEntity.red, 2) { value ->
+            Text.literal("Red: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFF0000)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
+        }))
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+12, configY+34, 12, 186, 48, 187, blockEntity.green, 3) { value ->
+            Text.literal("Green: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0x00FF00)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
+        }))
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+12, configY+44, 12, 196, 48, 197, blockEntity.blue, 4) { value ->
+            Text.literal("Blue: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0x0000FF)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
+        }))
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+12, configY+54, 12, 206, 48, 207, blockEntity.alpha, 5) { value ->
+            Text.literal("Alpha: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFFFFFF)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
+        }))
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -66,6 +118,18 @@ class MediaPlayerScreen(val blockEntity: MediaPlayerBlockEntity) : Screen(Text.t
             context.matrices.pop()
         }
         playerTooltip.clear()
+        if(config) {
+            renderBackground(context)
+            context.drawTexture(TEXTURE, configX, configY, 0, 152, configBackgroundWidth, configBackgroundHeight)
+            configDrawables.forEach {
+                (it as? ClickableWidget)?.active = true
+                it.render(context, mouseX, mouseY, delta)
+            }
+        }else{
+            configDrawables.forEach {
+                (it as? ClickableWidget)?.active = false
+            }
+        }
     }
 
     private fun getProgress(mouseX: Int, mouseY: Int, force: Boolean = false): Pair<Int, Int> {
@@ -100,7 +164,7 @@ class MediaPlayerScreen(val blockEntity: MediaPlayerBlockEntity) : Screen(Text.t
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if(mouseX in ((x+6.0)..(x+6.0+164.0)) && mouseY in (y+31.0)..(y+31.0+4.0)) {
+        if(!config && mouseX in ((x+6.0)..(x+6.0+164.0)) && mouseY in (y+31.0)..(y+31.0+4.0)) {
             draggingProgress = true
             return true
         }
@@ -138,7 +202,7 @@ class MediaPlayerScreen(val blockEntity: MediaPlayerBlockEntity) : Screen(Text.t
 
             val draggingMediaTime = getDraggingMediaTime(mouseX, mouseY)
             val showMediaTime = if(mediaTime > mediaDuration) mediaDuration else mediaTime
-            if(draggingMediaTime != mediaTime) {
+            if(!config && draggingMediaTime != mediaTime) {
                 playerTooltip.add(Text.literal("Set video time to ").formatted(Formatting.GRAY).append(Text.literal(formatTimestamp(draggingMediaTime)).styled { s -> s.withColor(0x00AFE4) }).asOrderedText())
             }
             val mediaTimeText = Text.literal(formatTimestamp(showMediaTime))
@@ -148,9 +212,10 @@ class MediaPlayerScreen(val blockEntity: MediaPlayerBlockEntity) : Screen(Text.t
             val mediaDurationText = Text.literal(formatTimestamp(mediaDuration))
             context.drawText(textRenderer, mediaDurationText, (x + 170)*2 - textRenderer.getWidth(mediaDurationText), (y + 25)*2, 0xFFFFFF, false)
 
-            val mediaTitleText = Text.literal(mediaTitle)
-            val centerX = x + (backgroundWidth/2)
-            context.drawText(textRenderer, mediaTitleText, (centerX * 2) - (textRenderer.getWidth(mediaDurationText))/2, (y + 25)*2, 0xFFFFFF, false)
+            //TODO: Fix this with big titles
+//            val mediaTitleText = Text.literal(mediaTitle)
+//            val centerX = x + (backgroundWidth/2)
+//            context.drawText(textRenderer, mediaTitleText, (centerX * 2) - (textRenderer.getWidth(mediaDurationText))/2, (y + 25)*2, 0xFFFFFF, false)
 
             context.matrices.pop()
         }

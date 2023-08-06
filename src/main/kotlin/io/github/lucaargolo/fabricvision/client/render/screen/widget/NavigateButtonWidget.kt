@@ -13,14 +13,15 @@ import net.minecraft.util.Formatting
 class NavigateButtonWidget(private val parent: MediaPlayerScreen, x: Int, y: Int, private val time: Long, private val textureU: Int): ButtonWidget(x, y, 14, 14, Text.empty(), {  }, DEFAULT_NARRATION_SUPPLIER) {
 
         private val textureV: Int
-            get() = if(hovered) 96 else 78
+            get() = if(active && hovered) 96 else 78
 
         private val realTime: Long
             get()  = if(FabricVisionClient.isSneaking) time*3 else time
 
         override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             context.drawTexture(MediaPlayerScreen.TEXTURE, x, y, textureU + if(FabricVisionClient.isSneaking) 28 else 0, textureV, 14, 14)
-            if(hovered) {
+            active = !parent.config
+            if(active && isHovered) {
                 //TODO: Use translatable here
                 if(realTime > 0) {
                     parent.playerTooltip.add(Text.literal("Forward video in ").formatted(Formatting.GRAY).append(Text.literal("${realTime/1000}s").styled { s -> s.withColor(0x00AFE4) }).asOrderedText())

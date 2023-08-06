@@ -15,7 +15,7 @@ abstract class PlayerSliderWidget(x: Int, y: Int, width: Int, private val textur
         val buttonProgress = MathHelper.lerp(value.toFloat(), 0, width-6)
         val barProgress = MathHelper.lerp(value.toFloat(), 0, width-2)
         context.drawTexture(MediaPlayerScreen.TEXTURE, x + 1, y + 1, barU, barV, barProgress, 4)
-        if(mouseX in (x+buttonProgress..x+buttonProgress+6) && mouseY in (y..y+6)) {
+        if(active && mouseX in (x+buttonProgress..x+buttonProgress+6) && mouseY in (y..y+6)) {
             context.drawTexture(MediaPlayerScreen.TEXTURE, x + buttonProgress, y, 0, 48, 6, 6)
         }else{
             context.drawTexture(MediaPlayerScreen.TEXTURE, x + buttonProgress, y, 0, 42, 6, 6)
