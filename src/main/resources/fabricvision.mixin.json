@@ -12,6 +12,7 @@
     "EntityRenderDispatcherMixin",
     "EntityRendererMixin",
     "GameRendererMixin",
+    "InGameHudMixin",
     "LightingProviderMixin",
     "MinecraftClientMixin",
     "SoundSystemMixin",

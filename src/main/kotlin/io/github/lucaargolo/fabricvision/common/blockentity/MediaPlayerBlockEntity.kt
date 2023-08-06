@@ -28,9 +28,13 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             return field
         }
 
-    protected var enabled = true
+    var enabled = true
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
 
-    protected var mrl = "C:\\Users\\Luca\\Downloads\\timer.webm"
+    protected var mrl = ""
         set(value) {
             field = value
             markDirtyAndSync()
@@ -38,19 +42,30 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
 
 
     protected var lastTime = System.currentTimeMillis()
-    protected var startTime = System.currentTimeMillis()
+    var startTime = System.currentTimeMillis()
+        set(value) {
+            field = value
+            if(playing) {
+                markDirtyAndSync()
+            }else{
+                markDirty()
+            }
+        }
+
+    var forceTimeCooldown = 0
+    var forceTime = false
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
-    protected var playing = true
+    var playing = true
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
-    protected var repeating = false
+    var repeating = false
         set(value) {
             field = value
             markDirtyAndSync()
@@ -68,7 +83,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             markDirtyAndSync()
         }
 
-    protected var volume = 1.0f
+    var volume = 1.0f
         set(value) {
             field = value
             markDirtyAndSync()
@@ -82,6 +97,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         nbt.putString("mrl", mrl)
         nbt.putLong("lastTime", lastTime)
         nbt.putLong("startTime", startTime)
+        nbt.putBoolean("forceTime", forceTime)
         nbt.putBoolean("playing", playing)
         nbt.putBoolean("repeating", repeating)
         nbt.putFloat("audioMaxDist", audioMaxDist)
@@ -99,6 +115,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         mrl = nbt.getString("mrl")
         lastTime = nbt.getLong("lastTime")
         startTime = nbt.getLong("startTime")
+        forceTime = nbt.getBoolean("forceTime")
         playing = nbt.getBoolean("playing")
         repeating = nbt.getBoolean("repeating")
         audioMaxDist = nbt.getFloat("audioMaxDist")
@@ -132,17 +149,22 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
     fun sync() {
         val world = world ?: return
         if(world.isClient) {
-            player?.pos = Vec3d.ofCenter(pos)
-            player?.mrl = mrl
-            player?.startTime = startTime
-            player?.playing = playing
-            player?.repeating = repeating
-            player?.audioMaxDist = audioMaxDist
-            player?.audioRefDist = audioRefDist
-            player?.volume = volume
+            updatePlayer()
         }else{
             (world as? ServerWorld)?.chunkManager?.markForUpdate(this.pos)
         }
+    }
+
+    fun updatePlayer() {
+        player?.pos = Vec3d.ofCenter(pos)
+        player?.mrl = mrl
+        player?.startTime = startTime
+        player?.forceTime = forceTime
+        player?.playing = playing
+        player?.repeating = repeating
+        player?.audioMaxDist = audioMaxDist
+        player?.audioRefDist = audioRefDist
+        player?.volume = volume
     }
 
     override fun markRemoved() {
@@ -161,9 +183,22 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
                 blockEntity.startTime += timeDifference
             }
             blockEntity.lastTime = currentTime
+            if(blockEntity.forceTime) {
+                if(blockEntity.forceTimeCooldown <= 0) {
+                    blockEntity.forceTime = false
+                }else{
+                    blockEntity.forceTimeCooldown--
+                }
+            }
         }
 
         fun clientTick(world: World, pos: BlockPos, state: BlockState, blockEntity: MediaPlayerBlockEntity) {
+            if(!blockEntity.playing) {
+                val currentTime = System.currentTimeMillis()
+                blockEntity.startTime += currentTime - blockEntity.lastTime
+                blockEntity.lastTime = currentTime
+                blockEntity.updatePlayer()
+            }
             if(blockEntity.player != null && !blockEntity.enabled) {
                 blockEntity.player?.close()
                 blockEntity.player = null

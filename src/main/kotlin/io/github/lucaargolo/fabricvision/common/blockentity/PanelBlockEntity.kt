@@ -13,7 +13,15 @@ import kotlin.jvm.optionals.getOrNull
 class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntity(BlockEntityCompendium.PANEL, pos, state) {
 
     var activePanelPos: BlockPos? = null
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
     var activePosSet: MutableSet<BlockPos> = mutableSetOf()
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
 
     val activePanel: PanelBlockEntity?
         get() {
@@ -123,7 +131,6 @@ class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntit
                     found.forEach { foundPos ->
                         world.getBlockEntity(foundPos, BlockEntityCompendium.PANEL).ifPresent {
                             it.activePanelPos = newActivePanel.pos
-                            it.markDirtyAndSync()
                         }
                     }
                 }

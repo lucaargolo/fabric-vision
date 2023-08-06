@@ -1,3 +1,26 @@
 {
+  "tooltip.fabricvision.status": "Status",
+  "tooltip.fabricvision.status.no_player": "No Player",
+  "tooltip.fabricvision.status.no_player.description": "Have you tried turning it off and on again?",
+  "tooltip.fabricvision.status.waiting": "Waiting",
+  "tooltip.fabricvision.status.waiting.description": "Waiting for the player to be created.",
+  "tooltip.fabricvision.status.creating": "Creating",
+  "tooltip.fabricvision.status.creating.description": "Creating the player. Please wait.",
+  "tooltip.fabricvision.status.no_media": "No Media",
+  "tooltip.fabricvision.status.no_media.description": "No valid media was found.",
+  "tooltip.fabricvision.status.loading": "Loading",
+  "tooltip.fabricvision.status.loading.description": "Loading the media.",
+  "tooltip.fabricvision.status.loaded": "Loaded",
+  "tooltip.fabricvision.status.loaded.description": "The media was loaded.",
+  "tooltip.fabricvision.status.playing": "Playing",
+  "tooltip.fabricvision.status.playing.description": "The media is playing.",
+  "tooltip.fabricvision.status.paused": "Paused",
+  "tooltip.fabricvision.status.paused.description": "The media is paused",
+  "tooltip.fabricvision.status.stopped": "Stopped",
+  "tooltip.fabricvision.status.stopped.description": "The media is stopped",
+  "tooltip.fabricvision.status.closing": "Closing",
+  "tooltip.fabricvision.status.closing.description": "The player is closing.",
+  "tooltip.fabricvision.status.closed": "Closed",
+  "tooltip.fabricvision.status.closed.description": "The player is closed."
 
 }

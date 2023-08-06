@@ -22,6 +22,10 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.option.KeyBinding
+import net.minecraft.client.util.InputUtil
+import org.lwjgl.glfw.GLFW
 
 
 object FabricVisionClient: ClientModInitializer {
@@ -29,6 +33,21 @@ object FabricVisionClient: ClientModInitializer {
     var renderingProjector: ProjectorProgram? = null
     val isRenderingProjector
         get() = renderingProjector != null
+
+    val isSneaking: Boolean
+        get() {
+            val client: MinecraftClient = MinecraftClient.getInstance()
+            val handle: Long = client.window.handle
+            val sneakKey: KeyBinding = client.options.sneakKey
+            val boundKey: InputUtil.Key = sneakKey.boundKey
+            var sneak = false
+            if (boundKey.category == InputUtil.Type.MOUSE) {
+                sneak = GLFW.glfwGetMouseButton(handle, boundKey.code) == 1
+            } else if (boundKey.category == InputUtil.Type.KEYSYM) {
+                sneak = GLFW.glfwGetKey(handle, boundKey.code) == 1
+            }
+            return sneak
+        }
 
     private fun initializeRegistries() {
         BlockCompendium.initializeClient()

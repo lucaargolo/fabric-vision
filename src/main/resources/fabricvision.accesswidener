@@ -22,3 +22,5 @@ accessible field net/minecraft/client/render/Camera lastCameraY F
 accessible method net/minecraft/client/render/Camera setPos (Lnet/minecraft/util/math/Vec3d;)V
 
 accessible method net/minecraft/client/sound/SoundSystem getAdjustedVolume (Lnet/minecraft/client/sound/SoundInstance;)F
+
+accessible field net/minecraft/client/option/KeyBinding boundKey Lnet/minecraft/client/util/InputUtil$Key;

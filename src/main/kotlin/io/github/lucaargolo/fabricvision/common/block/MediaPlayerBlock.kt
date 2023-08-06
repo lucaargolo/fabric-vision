@@ -1,11 +1,13 @@
 package io.github.lucaargolo.fabricvision.common.block
 
+import io.github.lucaargolo.fabricvision.client.render.screen.MediaPlayerScreen
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
 import net.minecraft.block.BlockState
 import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
@@ -19,10 +21,10 @@ abstract class MediaPlayerBlock(private val typeProvider: () -> BlockEntityType<
 
     @Deprecated("Deprecated in Java")
     override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult {
-        if(!world.isClient) {
-            val originalPos = getOriginalPos(state, pos)
-            world.getBlockEntity(originalPos, typeProvider.invoke()).ifPresent {
-                if(player.isSneaking) it.play() else it.pause()
+        val originalPos = getOriginalPos(state, pos)
+        world.getBlockEntity(originalPos, typeProvider.invoke()).ifPresent {
+            if(world.isClient) {
+                MinecraftClient.getInstance().setScreen(MediaPlayerScreen(it))
             }
         }
         return ActionResult.SUCCESS

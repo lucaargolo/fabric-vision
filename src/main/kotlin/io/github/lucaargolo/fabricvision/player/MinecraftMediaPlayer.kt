@@ -1,13 +1,16 @@
 package io.github.lucaargolo.fabricvision.player
 
+import io.github.lucaargolo.fabricvision.FabricVision
 import io.github.lucaargolo.fabricvision.player.callback.MinecraftAudioCallback
 import io.github.lucaargolo.fabricvision.player.callback.MinecraftBufferCallback
 import io.github.lucaargolo.fabricvision.player.callback.MinecraftRenderCallback
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import net.minecraft.client.texture.NativeImageBackedTexture
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
 import uk.co.caprica.vlcj.media.MediaType
+import uk.co.caprica.vlcj.media.Meta
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.State
 import java.util.*
@@ -39,6 +42,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
     var playing = false
     var repeating = false
     var startTime = 0L
+    var forceTime = false
 
     var audioMaxDist = 0f
     var audioRefDist = 0f
@@ -69,6 +73,24 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
             }
         }
 
+    fun updateDuration(durationConsumer: (Long) -> Unit) {
+        val mediaPlayer = player ?: return
+        mediaPlayer.submit {
+            durationConsumer.invoke(mediaPlayer.media().info().duration())
+        }
+    }
+
+    fun updateTitle(titleConsumer: (String) -> Unit) {
+        val mediaPlayer = player ?: return
+        mediaPlayer.submit {
+            if(status.interactable) {
+                titleConsumer.invoke(mediaPlayer.media().meta().get(Meta.TITLE))
+            }else{
+                titleConsumer.invoke("")
+            }
+        }
+    }
+
     fun worldTick() {
         val mediaPlayer = player ?: return
         if(clientPaused) {
@@ -80,14 +102,17 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                 if(mediaType != MediaType.STREAM) {
                     val mediaTime = mediaPlayer.media().info().duration()
                     val currentTime = System.currentTimeMillis()
-                    if (status != Status.STOPPED || repeating) {
+                    if (status != Status.STOPPED || repeating || forceTime) {
                         var presentationTime = currentTime - startTime
                         if(repeating) presentationTime %= mediaTime
 
                         val currentPresentationTime = mediaPlayer.status().time()
                         val difference = abs(presentationTime - currentPresentationTime)
-                        if (difference > 2000) {
+                        if (difference > 2000 || (forceTime && difference > 100)) {
                             mediaPlayer.controls().setTime(presentationTime)
+                            if(forceTime && playing && status != Status.PLAYING) {
+                                status = Status.PLAYING
+                            }
                         }
                         if (!repeating && currentTime - startTime >= mediaTime) {
                             status = Status.STOPPED
@@ -236,17 +261,25 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
         }
     }
 
-    enum class Status(val interactable: Boolean, val acceptMedia: Boolean) {
-        WAITING(false, false),   // mmp just created, waiting for liberation
-        CREATING(false, false),  // mp requested
-        NO_MEDIA(false, true),   // mp ready, no media
-        LOADING(false, false),   // mp ready, media requested
-        LOADED(false, true),     // mp ready, media loaded
-        PLAYING(true, true),     // mp ready, media playing
-        PAUSED(true, true),      // mp ready, media paused
-        STOPPED(true, true),     // mp ready, media stopped
-        CLOSING(false, false),   // mp closing
-        CLOSED(false, false)     // mp closed
+    enum class Status(val interactable: Boolean, val acceptMedia: Boolean, val formatting: Formatting) {
+        NO_PLAYER(false, false, Formatting.RED),    // mmp not created, used for screen
+        WAITING(false, false, Formatting.RED),      // mmp just created, waiting for liberation
+        CREATING(false, false, Formatting.RED),     // mp requested
+        NO_MEDIA(false, true, Formatting.YELLOW),   // mp ready, no media
+        LOADING(false, false, Formatting.YELLOW),   // mp ready, media requested
+        LOADED(false, true, Formatting.YELLOW),     // mp ready, media loaded
+        PLAYING(true, true, Formatting.GREEN),      // mp ready, media playing
+        PAUSED(true, true, Formatting.GREEN),       // mp ready, media paused
+        STOPPED(true, true, Formatting.GREEN),      // mp ready, media stopped
+        CLOSING(false, false, Formatting.RED),      // mp closing
+        CLOSED(false, false, Formatting.RED);       // mp closed
+
+        val translationKey: String
+            get() = "tooltip.${FabricVision.MOD_ID}.status.${name.lowercase()}"
+
+        val descriptionKey: String
+            get() = "$translationKey.description"
+
     }
 
     companion object {
