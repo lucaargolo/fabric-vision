@@ -9,7 +9,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import kotlin.math.roundToInt
 
-class VolumeSliderWidget(private val parent: MediaPlayerScreen, x: Int, y: Int, value: Float) : PlayerSliderWidget(x, y, 33, 140, 6, 0, 82, value) {
+class VolumeSliderWidget(private val parent: MediaPlayerScreen, x: Int, y: Int) : PlayerSliderWidget(x, y, 33, 140, 6, 0, 82, { parent.blockEntity.volume }) {
 
     private val formatting: Formatting
         get() = when {
@@ -20,8 +20,9 @@ class VolumeSliderWidget(private val parent: MediaPlayerScreen, x: Int, y: Int, 
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         super.renderButton(context, mouseX, mouseY, delta)
+        //TODO: Volume is glitchy when set to 0
         active = !parent.config
-        if(active && isHovered) {
+        if(active && (isHovered || isDragged)) {
             //TODO: Also translate this
             parent.playerTooltip.add(Text.literal("Volume: ").formatted(formatting).append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).asOrderedText())
         }

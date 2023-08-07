@@ -12,6 +12,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.RotationAxis
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<FlatScreenBlockEntity> {
@@ -23,11 +24,13 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
         val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
 
         val l = (entity.light * 15).roundToInt()
-        val lightmap = LightmapTextureManager.pack(l, l)
+        val block = LightmapTextureManager.getBlockLightCoordinates(light)
+        val sky = LightmapTextureManager.getSkyLightCoordinates(light)
+        val lightmap = LightmapTextureManager.pack(max(l, block), max(l, sky))
         val red = entity.red
         val green = entity.green
         val blue = entity.blue
-        val alpha = entity.alpha
+        val alpha = if(entity.enabled) entity.alpha else 0f
         val normal = Direction.UP.unitVector
 
         val x = 40.0f/16f

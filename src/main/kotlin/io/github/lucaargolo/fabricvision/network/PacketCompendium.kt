@@ -8,6 +8,7 @@ object PacketCompendium {
 
     val SET_VALUE_BUTTON_C2S = ModIdentifier("set_value_button_c2s")
     val SET_TIME_BUTTON_C2S = ModIdentifier("set_time_button_c2s")
+    val SET_RATE_BUTTON_C2S = ModIdentifier("set_rate_button_c2s")
     val ENABLE_BUTTON_C2S = ModIdentifier("enable_button_c2s")
     val REPEAT_BUTTON_C2S = ModIdentifier("repeat_button_c2s")
     val PLAY_BUTTON_C2S = ModIdentifier("play_button_c2s")
@@ -26,6 +27,21 @@ object PacketCompendium {
                         3 -> blockEntity.green = value
                         4 -> blockEntity.blue = value
                         5 -> blockEntity.alpha = value
+                    }
+                }
+            }
+        }
+        ServerPlayNetworking.registerGlobalReceiver(SET_RATE_BUTTON_C2S) { server, player, handler, buf, sender ->
+            val pos = buf.readBlockPos()
+            val rate = buf.readFloat()
+            server.execute {
+                (player.world.getBlockEntity(pos) as? MediaPlayerBlockEntity)?.let { blockEntity ->
+                    blockEntity.rate = rate
+                    if(blockEntity.playing) {
+                        blockEntity.play()
+                    }else{
+                        blockEntity.play()
+                        blockEntity.pause()
                     }
                 }
             }
@@ -71,6 +87,7 @@ object PacketCompendium {
                         blockEntity.pause()
                     }
                     if(stop) {
+                        //TODO: Clean buffer?
                         blockEntity.pause()
                     }
                 }

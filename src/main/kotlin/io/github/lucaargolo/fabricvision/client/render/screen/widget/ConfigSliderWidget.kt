@@ -7,18 +7,16 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import org.joml.Vector2i
-import kotlin.math.roundToInt
 
-class ConfigSliderWidget(private val parent: MediaPlayerScreen, x: Int, y: Int, textureU: Int, textureV: Int, barU: Int, barV: Int, value: Float, private val index: Int, private val tooltip: (Double) -> Text) : PlayerSliderWidget(x, y, 33, textureU, textureV, barU, barV, value) {
+class ConfigSliderWidget(private val parent: MediaPlayerScreen, x: Int, y: Int, textureU: Int, textureV: Int, barU: Int, barV: Int, valueSupplier: () -> Float, private val index: Int, private val tooltip: (Double) -> Text) : PlayerSliderWidget(x, y, 33, textureU, textureV, barU, barV, valueSupplier) {
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         super.renderButton(context, mouseX, mouseY, delta)
-        if(isHovered) {
+        if (isHovered || isDragged) {
             context.matrices.push()
             context.matrices.scale(0.5f, 0.5f, 0.5f)
-            context.drawTooltip(MinecraftClient.getInstance().textRenderer, listOf(tooltip.invoke(value).asOrderedText()), { _, _, x, y, _, _ -> Vector2i(x, y)}, 6+mouseX*2, -10+mouseY*2)
+            context.drawTooltip(MinecraftClient.getInstance().textRenderer, listOf(tooltip.invoke(value).asOrderedText()), { _, _, x, y, _, _ -> Vector2i(x, y) }, 6 + mouseX * 2, -10 + mouseY * 2)
             context.matrices.pop()
         }
     }

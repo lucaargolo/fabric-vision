@@ -9,6 +9,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import kotlin.math.roundToLong
 
 class NavigateButtonWidget(private val parent: MediaPlayerScreen, x: Int, y: Int, private val time: Long, private val textureU: Int): ButtonWidget(x, y, 14, 14, Text.empty(), {  }, DEFAULT_NARRATION_SUPPLIER) {
 
@@ -34,13 +35,13 @@ class NavigateButtonWidget(private val parent: MediaPlayerScreen, x: Int, y: Int
         override fun onPress() {
             val buf = PacketByteBufs.create()
             buf.writeBlockPos(parent.blockEntity.pos)
-            val n = parent.mediaTime + realTime
+            val n = parent.mediaTime + (realTime/parent.blockEntity.rate.toDouble()).roundToLong()
             val t = when {
                 n <= 0 -> -parent.mediaTime
                 !parent.blockEntity.repeating && n >= parent.mediaDuration -> {
                     parent.mediaDuration - parent.mediaTime
                 }
-                else -> realTime
+                else -> (realTime/parent.blockEntity.rate.toDouble()).roundToLong()
             }
             buf.writeLong(parent.startTime - t)
             ClientPlayNetworking.send(PacketCompendium.SET_TIME_BUTTON_C2S, buf)

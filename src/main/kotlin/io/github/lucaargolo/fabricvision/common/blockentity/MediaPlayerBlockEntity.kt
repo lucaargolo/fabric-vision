@@ -71,6 +71,13 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             markDirtyAndSync()
         }
 
+    //TODO: When change rate re-configure start-time
+    var rate = 1.0f
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
+
     protected var audioMaxDist = 16.0f
         set(value) {
             field = value
@@ -130,6 +137,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         nbt.putBoolean("forceTime", forceTime)
         nbt.putBoolean("playing", playing)
         nbt.putBoolean("repeating", repeating)
+        nbt.putFloat("rate", rate)
         nbt.putFloat("audioMaxDist", audioMaxDist)
         nbt.putFloat("audioRefDist", audioRefDist)
         nbt.putFloat("volume", volume)
@@ -153,6 +161,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         forceTime = nbt.getBoolean("forceTime")
         playing = nbt.getBoolean("playing")
         repeating = nbt.getBoolean("repeating")
+        rate = nbt.getFloat("rate")
         audioMaxDist = nbt.getFloat("audioMaxDist")
         audioRefDist = nbt.getFloat("audioRefDist")
         volume = nbt.getFloat("volume")
@@ -202,6 +211,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         player?.forceTime = forceTime
         player?.playing = playing
         player?.repeating = repeating
+        player?.rate = rate
         player?.audioMaxDist = audioMaxDist
         player?.audioRefDist = audioRefDist
         player?.volume = volume
@@ -218,30 +228,40 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
 
         fun serverTick(world: World, pos: BlockPos, state: BlockState, blockEntity: MediaPlayerBlockEntity) {
             val currentTime = System.currentTimeMillis()
-            val timeDifference = currentTime - blockEntity.lastTime
-            if(timeDifference > 100 || !blockEntity.playing) {
-                blockEntity.startTime += timeDifference
-            }
-            blockEntity.lastTime = currentTime
-            if(blockEntity.forceTime) {
-                if(blockEntity.forceTimeCooldown <= 0) {
-                    blockEntity.forceTime = false
-                }else{
-                    blockEntity.forceTimeCooldown--
+            if(blockEntity.enabled) {
+                val timeDifference = currentTime - blockEntity.lastTime
+                if (timeDifference > 100 || !blockEntity.playing) {
+                    blockEntity.startTime += timeDifference
                 }
+                blockEntity.lastTime = currentTime
+                if (blockEntity.forceTime) {
+                    if (blockEntity.forceTimeCooldown <= 0) {
+                        blockEntity.forceTime = false
+                    } else {
+                        blockEntity.forceTimeCooldown--
+                    }
+                }
+            }else{
+                blockEntity.startTime = currentTime
+                blockEntity.lastTime = currentTime
             }
         }
 
         fun clientTick(world: World, pos: BlockPos, state: BlockState, blockEntity: MediaPlayerBlockEntity) {
-            if(!blockEntity.playing) {
-                val currentTime = System.currentTimeMillis()
-                blockEntity.startTime += currentTime - blockEntity.lastTime
+            val currentTime = System.currentTimeMillis()
+            if(blockEntity.enabled) {
+                if (!blockEntity.playing) {
+                    blockEntity.startTime += currentTime - blockEntity.lastTime
+                    blockEntity.lastTime = currentTime
+                    blockEntity.updatePlayer()
+                }
+            }else{
+                blockEntity.startTime = currentTime
                 blockEntity.lastTime = currentTime
-                blockEntity.updatePlayer()
-            }
-            if(blockEntity.player != null && !blockEntity.enabled) {
-                blockEntity.player?.close()
-                blockEntity.player = null
+                if (blockEntity.player != null) {
+                    blockEntity.player?.close()
+                    blockEntity.player = null
+                }
             }
         }
 

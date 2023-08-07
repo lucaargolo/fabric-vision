@@ -6,7 +6,9 @@ import net.minecraft.client.gui.widget.SliderWidget
 import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
 
-abstract class PlayerSliderWidget(x: Int, y: Int, width: Int, private val textureU: Int, private val textureV: Int, private val barU: Int, private val barV: Int, value: Float) : SliderWidget(x, y, width, 6, Text.empty(), value.toDouble()) {
+abstract class PlayerSliderWidget(x: Int, y: Int, width: Int, private val textureU: Int, private val textureV: Int, private val barU: Int, private val barV: Int, private val valueSupplier: () -> Float) : SliderWidget(x, y, width, 6, Text.empty(), valueSupplier.invoke()+0.0) {
+
+    var isDragged: Boolean = false
 
     override fun updateMessage() = Unit
 
@@ -22,5 +24,13 @@ abstract class PlayerSliderWidget(x: Int, y: Int, width: Int, private val textur
         }
     }
 
+    override fun onDrag(mouseX: Double, mouseY: Double, deltaX: Double, deltaY: Double) {
+        isDragged = true
+        super.onDrag(mouseX, mouseY, deltaX, deltaY)
+    }
+
+    fun update() {
+        value = valueSupplier.invoke() + 0.0
+    }
 
 }

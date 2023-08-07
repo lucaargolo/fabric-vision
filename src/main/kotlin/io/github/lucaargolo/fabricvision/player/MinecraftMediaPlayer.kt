@@ -16,6 +16,7 @@ import uk.co.caprica.vlcj.player.base.State
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
+import kotlin.math.roundToLong
 
 class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
 
@@ -41,6 +42,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
     var pos = Vec3d.ZERO
     var playing = false
     var repeating = false
+    var rate = 1f
     var startTime = 0L
     var forceTime = false
 
@@ -100,11 +102,15 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
             if(status.interactable) {
                 val mediaType = mediaPlayer.media().info().type()
                 if(mediaType != MediaType.STREAM) {
+                    val mediaRate = mediaPlayer.status().rate()
+                    if(mediaRate != rate) {
+                        mediaPlayer.controls().setRate(rate)
+                    }
                     val mediaTime = mediaPlayer.media().info().duration()
                     val currentTime = System.currentTimeMillis()
                     if (status != Status.STOPPED || repeating || forceTime) {
-                        var presentationTime = currentTime - startTime
-                        if(repeating) presentationTime %= mediaTime
+                        var presentationTime = ((currentTime - startTime)*rate.toDouble()).roundToLong()
+                        if(repeating && mediaTime > 0L) presentationTime %= mediaTime
 
                         val currentPresentationTime = mediaPlayer.status().time()
                         val difference = abs(presentationTime - currentPresentationTime)
@@ -114,16 +120,21 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                                 status = Status.PLAYING
                             }
                         }
-                        if (!repeating && currentTime - startTime >= mediaTime) {
+                        if (!repeating && ((currentTime - startTime)*rate.toDouble()).roundToLong() >= mediaTime) {
                             status = Status.STOPPED
                             mediaPlayer.controls().setPause(true)
                         }
+                    }
+                }else{
+                    val mediaRate = mediaPlayer.status().rate()
+                    if(mediaRate != 1f) {
+                        mediaPlayer.controls().setRate(1f)
                     }
                 }
                 if(playing) {
                     if(status == Status.STOPPED) {
                         val currentTime = System.currentTimeMillis()
-                        val difference = abs(currentTime - startTime)
+                        val difference = abs(((currentTime - startTime)*rate.toDouble()).roundToLong())
                         if (difference < 100 || repeating) {
                             status = Status.PLAYING
                             if(!mediaPlayer.status().isPlaying) {

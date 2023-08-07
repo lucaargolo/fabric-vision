@@ -18,79 +18,68 @@ class MinecraftAudioCallback(val player: MinecraftMediaPlayer): AudioCallback {
 
     private val instance = MinecraftMediaSoundInstance(player::volume)
     private var sourceManager: Channel.SourceManager? = null
-
-    private var lastVolume = player.volume
-
     override fun play(mediaPlayer: MediaPlayer, samples: Pointer, sampleCount: Int, pts: Long) {
         val buffer = samples.getByteBuffer(0L, sampleCount * 2L)
         soundExecutor.execute {
-            if(soundSystem.started && (sourceManager == null || sourceManager?.isStopped == true)) {
+            val volume = soundSystem.getAdjustedVolume(instance)
+            if(volume > 0f && soundSystem.started && (sourceManager == null || sourceManager?.isStopped == true)) {
                 val source = soundEngine.createSource(SoundEngine.RunMode.STREAMING)
                 if (source != null) {
                     val channelSource = soundChannel.SourceManager(source)
                     soundChannel.sources.add(channelSource)
-                    soundSystem.sources[instance] = channelSource
                     sourceManager = channelSource
                 }
             }
         }
         sourceManager?.run { source ->
-            configureSource(source)
-
-            source.removeProcessedBuffers()
-
-            StaticSound(buffer, format).takeStreamBufferPointer().ifPresent { buffer ->
-                AL10.alSourceQueueBuffers(source.pointer, intArrayOf(buffer))
+            source.setPosition(player.pos)
+            if(player.audioMaxDist > 0f) {
+                AL10.alSourcei(source.pointer, AL10.AL_DISTANCE_MODEL, AL11.AL_LINEAR_DISTANCE)
+                AL10.alSourcef(source.pointer, AL10.AL_MAX_DISTANCE, player.audioMaxDist)
+                AL10.alSourcef(source.pointer, AL10.AL_ROLLOFF_FACTOR, 1.0f)
+                AL10.alSourcef(source.pointer, AL10.AL_REFERENCE_DISTANCE, player.audioRefDist)
             }
-
-            if(!source.isPlaying) {
-                source.play()
+            val adjustedVolume = soundSystem.getAdjustedVolume(instance)
+            if (adjustedVolume > 0.0f) {
+                source.setVolume(adjustedVolume)
+                source.removeProcessedBuffers()
+                StaticSound(buffer, format).takeStreamBufferPointer().ifPresent { buffer ->
+                    AL10.alSourceQueueBuffers(source.pointer, intArrayOf(buffer))
+                }
+                if(!source.isPlaying) {
+                    source.play()
+                }
+            } else {
+                clearSource()
             }
         }
     }
 
     override fun pause(mediaPlayer: MediaPlayer, pts: Long) {
-        sourceManager?.run {
-            it.pause()
-        }
+        clearSource()
     }
 
     override fun resume(mediaPlayer: MediaPlayer, pts: Long) {
-        sourceManager?.run {
-            it.resume()
-        }
+        clearSource()
     }
 
     override fun flush(mediaPlayer: MediaPlayer, pts: Long) {
-        if(soundSystem.sources.remove(instance) != null) {
-            soundChannel.sources.remove(sourceManager)
-            sourceManager?.close()
-        }
+        clearSource()
     }
 
     override fun drain(mediaPlayer: MediaPlayer) {
+        clearSource()
     }
 
-    override fun setVolume(volume: Float, mute: Boolean) {
+    override fun setVolume(volume: Float, mute: Boolean) = Unit
 
-    }
-
-    private fun configureSource(source: Source) {
-        if(player.audioMaxDist > 0f) {
-            AL10.alSourcei(source.pointer, AL10.AL_DISTANCE_MODEL, AL11.AL_LINEAR_DISTANCE)
-            AL10.alSourcef(source.pointer, AL10.AL_MAX_DISTANCE, player.audioMaxDist)
-            AL10.alSourcef(source.pointer, AL10.AL_ROLLOFF_FACTOR, 1.0f)
-            AL10.alSourcef(source.pointer, AL10.AL_REFERENCE_DISTANCE, player.audioRefDist)
+    private fun clearSource() {
+        sourceManager?.run {
+            it.stop()
         }
-        if(lastVolume != player.volume) {
-            val adjustedVolume = soundSystem.getAdjustedVolume(instance)
-            if (adjustedVolume <= 0.0f) {
-                source.stop()
-            } else {
-                source.setVolume(adjustedVolume)
-            }
+        if (soundChannel.sources.remove(sourceManager)) {
+            sourceManager?.close()
         }
-        source.setPosition(player.pos)
     }
 
     companion object {
