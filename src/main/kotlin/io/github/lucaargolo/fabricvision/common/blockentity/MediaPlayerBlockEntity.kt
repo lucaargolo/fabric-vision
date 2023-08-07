@@ -34,14 +34,15 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             markDirtyAndSync()
         }
 
-    protected var mrl = ""
+    var mrl = ""
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
 
-    protected var lastTime = System.currentTimeMillis()
+    var lastTime = System.currentTimeMillis()
+
     var startTime = System.currentTimeMillis()
         set(value) {
             field = value
@@ -53,13 +54,14 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         }
 
     var forceTimeCooldown = 0
+
     var forceTime = false
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
-    var playing = true
+    var playing = false
         set(value) {
             field = value
             markDirtyAndSync()
@@ -71,20 +73,19 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             markDirtyAndSync()
         }
 
-    //TODO: When change rate re-configure start-time
     var rate = 1.0f
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
-    protected var audioMaxDist = 16.0f
+    var audioMaxDist = 16.0f
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
-    protected var audioRefDist = 0.0f
+    var audioRefDist = 0.0f
         set(value) {
             field = value
             markDirtyAndSync()
@@ -195,6 +196,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         markDirty()
         sync()
     }
+
     fun sync() {
         val world = world ?: return
         if(world.isClient) {

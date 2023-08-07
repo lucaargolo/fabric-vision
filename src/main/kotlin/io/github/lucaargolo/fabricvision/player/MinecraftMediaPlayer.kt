@@ -5,6 +5,7 @@ import io.github.lucaargolo.fabricvision.player.callback.MinecraftAudioCallback
 import io.github.lucaargolo.fabricvision.player.callback.MinecraftBufferCallback
 import io.github.lucaargolo.fabricvision.player.callback.MinecraftRenderCallback
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
+import io.github.lucaargolo.fabricvision.utils.ModLogger
 import net.minecraft.client.texture.NativeImageBackedTexture
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
@@ -24,7 +25,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
     var status
         get() = internalStatus.get()
         private set(value) {
-            println("Updating $uuid state ${internalStatus.get()} -> $value")
+            ModLogger.info("Updating $uuid state ${internalStatus.get()} -> $value")
             internalStatus.set(value)
         }
 
@@ -33,7 +34,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
     var currentMrl
         get() = internalMrl.get()
         private set(value) {
-            println("Updating $uuid mrl ${internalMrl.get()} -> $value")
+            ModLogger.info("Updating $uuid mrl ${internalMrl.get()} -> $value")
             internalMrl.set(value)
         }
 
@@ -174,7 +175,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                 HOLDER.ACTIVE_PLAYERS.add(this)
                 status = Status.CREATING
                 HOLDER.FACTORY?.submit {
-                    println("Creating player $uuid")
+                    ModLogger.info("Creating player $uuid")
                     val mediaPlayer = HOLDER.FACTORY!!.mediaPlayers().newEmbeddedMediaPlayer()
                     HOLDER.FACTORY!!.videoSurfaces().newVideoSurface(MinecraftBufferCallback(this), MinecraftRenderCallback(this), true).let(mediaPlayer.videoSurface()::set)
                     mediaPlayer.audio().callback("S16N", 128000, 1, MinecraftAudioCallback(this), true)
@@ -251,7 +252,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
         val mediaPlayer = player ?: return
         player = null
         mediaPlayer.submit {
-            println("Cleaning player $uuid")
+            ModLogger.info("Cleaning player $uuid")
             if(mediaPlayer.status().isPlaying) {
                 mediaPlayer.controls().pause()
             }

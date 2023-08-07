@@ -2,24 +2,33 @@ package io.github.lucaargolo.fabricvision.player
 
 import com.sun.jna.NativeLibrary
 import com.sun.jna.Platform
+import io.github.lucaargolo.fabricvision.utils.ModLogger
 import net.fabricmc.loader.api.FabricLoader
 import uk.co.caprica.vlcj.binding.support.runtime.RuntimeUtil
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.factory.discovery.strategy.BaseNativeDiscoveryStrategy
+import uk.co.caprica.vlcj.factory.discovery.strategy.NativeDiscoveryStrategy
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
 import java.util.zip.ZipInputStream
 import kotlin.io.path.pathString
 
-object SetupLibVLC {
+object LibVLCInitializer {
+
+    var isLoaded = false
+        private set
+
+    var isLinux = false
+        private set
 
     fun initialize() {
         try{
             MinecraftMediaPlayerHolder.FACTORY = MediaPlayerFactory(LibVLCDiscovery(), "--quiet")
-        }catch (exception: UnsatisfiedLinkError) {
-            exception.printStackTrace()
+            isLoaded = true
+        }catch (exception: Exception) {
+            ModLogger.error("Exception while trying to load LibVLC", exception)
         }
     }
 
@@ -32,10 +41,15 @@ object SetupLibVLC {
             findMethod.isAccessible = true
         }
 
-        override fun onNotFound() {
-            println("Vlc not found in system")
-            val path = FabricLoader.getInstance().gameDir.pathString + File.separator + ".libvlc"
+        override fun onFound(path: String, strategy: NativeDiscoveryStrategy) {
+            super.onFound(path, strategy)
+            ModLogger.info("VLC found in your system at $path.")
+        }
 
+        override fun onNotFound() {
+            ModLogger.info("VLC is not installed in your system. Attempting to load local LibVLC.")
+
+            val path = FabricLoader.getInstance().gameDir.pathString + File.separator + ".libvlc"
             val strategies = strategiesField.get(this) as Array<*>
 
             var success = false
@@ -49,20 +63,22 @@ object SetupLibVLC {
             }
 
             if(!success) {
-
-                println("Oops gotta download it")
+                ModLogger.warn("Couldn't find local LibVLC. Attempting to download it.")
 
                 val vlcVersion = "3.0.18"
                 val (vlcPlatform, vlcArchitecture) = if(Platform.isWindows() && Platform.isIntel()) {
                     if (Platform.is64Bit()) {
                         "win64" to "win64"
                     }else {
-                        "win32" to "win32"}
+                        "win32" to "win32"
+                    }
                 }else if(Platform.isMac() && Platform.is64Bit()){
                     if(Platform.isIntel()) {
-                        "macosx" to "intel64" }
+                        "macosx" to "intel64"
+                    }
                     else if(Platform.isARM()) {
-                        "macosx" to "arm64"}
+                        "macosx" to "arm64"
+                    }
                     else{
                         null to null
                     }
@@ -70,10 +86,12 @@ object SetupLibVLC {
                     null to null
                 }
 
+
                 if(vlcPlatform != null && vlcArchitecture != null) {
                     val vlcExtension = if(vlcPlatform.startsWith("mac")) "dmg" else "zip"
-
                     val downloadUrl = "https://download.videolan.org/pub/vlc/$vlcVersion/$vlcPlatform/vlc-$vlcVersion-$vlcArchitecture.$vlcExtension"
+
+                    ModLogger.warn("Detected platform $vlcPlatform. Attempting to download from $downloadUrl.")
 
                     val downloadedFileName = downloadUrl.split("/").last()
                     val extractedFolderName = if(vlcPlatform.startsWith("mac")) {
@@ -84,15 +102,18 @@ object SetupLibVLC {
 
                     val folder = File(path)
                     folder.mkdirs()
+
                     val downloadedFile = File(folder, downloadedFileName)
-                    println("Downloading file from: $downloadUrl")
+                    ModLogger.warn("Starting download to ${downloadedFile.name}")
                     URL(downloadUrl).openStream().use { input ->
                         FileOutputStream(downloadedFile).use { output ->
                             input.copyTo(output)
                         }
                     }
-                    println("Download completed.")
-                    println("Extracting file: ${downloadedFile.name}")
+                    ModLogger.info("Download finished.")
+
+                    val extractedFolder = File(folder, extractedFolderName)
+                    ModLogger.warn("Extracting file to $extractedFolderName")
                     if(vlcExtension == "zip") {
                         ZipInputStream(downloadedFile.inputStream()).use { zipInputStream ->
                             while (true) {
@@ -110,9 +131,9 @@ object SetupLibVLC {
                             }
                         }
                     }
-                    println("Extraction completed.")
-                    val extractedFolder = File(folder, extractedFolderName)
-                    println("Copying files to destination folder.")
+                    ModLogger.info("Extraction completed.")
+
+                    ModLogger.warn("Copying extracted files to $folder.")
                     extractedFolder.walkTopDown().forEach { file ->
                         if(file.isFile && file.nameWithoutExtension == "libvlc" || file.nameWithoutExtension == "libvlccore") {
                             val destinationPath = File(folder, file.name)
@@ -124,17 +145,21 @@ object SetupLibVLC {
                             file.copyRecursively(folder, true)
                         }
                     }
-                    println("Files copied to destination folder.")
-                    println("Cleaning up temporary files.")
+                    ModLogger.info("Copying completed.")
+
+                    ModLogger.warn("Cleaning up temporary files.")
                     downloadedFile.delete()
                     extractedFolder.deleteRecursively()
-                    println("Cleanup completed.")
+                    ModLogger.info("Cleanup completed.")
                 }else{
-                    println("Unknown platform")
+                    if(Platform.isLinux()) {
+                        ModLogger.error("Linux detected. Please manually install VLC.")
+                    }else{
+                        ModLogger.error("Unknown platform. Please manually install VLC.")
+                    }
                 }
-
             }else{
-                println("Already downloaded")
+                ModLogger.info("Successfully found local LibVLC. Loading it.")
             }
 
             NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), path)
