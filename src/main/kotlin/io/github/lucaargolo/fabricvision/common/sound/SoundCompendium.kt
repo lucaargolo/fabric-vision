@@ -8,6 +8,9 @@ import net.minecraft.util.Identifier
 
 object SoundCompendium: RegistryCompendium<SoundEvent>(Registries.SOUND_EVENT) {
 
+    val DISK_INSERT = register("disk_insert")
+    val DISK_EXTRACT = register("disk_extract")
+
     fun register(namespace: String): SoundEvent {
         val identifier = ModIdentifier(namespace)
         return register(identifier)

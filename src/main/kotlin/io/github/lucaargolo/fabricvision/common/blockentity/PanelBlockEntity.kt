@@ -2,13 +2,11 @@ package io.github.lucaargolo.fabricvision.common.blockentity
 
 import io.github.lucaargolo.fabricvision.common.block.BlockCompendium
 import io.github.lucaargolo.fabricvision.common.block.HorizontalFacingMediaPlayerBlock
-import io.github.lucaargolo.fabricvision.common.block.PanelBlock
 import net.minecraft.block.BlockState
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.math.BlockBox
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
+import net.minecraft.util.ItemScatterer
+import net.minecraft.util.math.*
 import kotlin.jvm.optionals.getOrNull
 
 class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntity(BlockEntityCompendium.PANEL, pos, state) {
@@ -43,7 +41,20 @@ class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntit
     var currentMaxPos = BlockPos.ORIGIN
 
     init {
-        enabled = false
+        changeEnable(false)
+    }
+
+    override fun changeEnable(enabled: Boolean) {
+        if(!enabled) {
+            super.changeEnable(false)
+        }else if(activePanelPos == pos && activePosSet.contains(pos)) {
+            super.changeEnable(true)
+        }
+    }
+
+    override fun getCenterPos(): Vec3d {
+        val b = BlockBox.create(currentMinPos, currentMaxPos)
+        return Vec3d(b.minX + (b.maxX - b.minX )/2.0, b.minY + (b.maxY - b.minY)/2.0, b.minZ + (b.maxZ - b.minZ)/2.0)
     }
 
     override fun writeNbt(nbt: NbtCompound) {
@@ -60,14 +71,13 @@ class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntit
 
     override fun readNbt(nbt: NbtCompound) {
         super.readNbt(nbt)
-        if(nbt.contains("activePanelPos")) {
-            activePanelPos = BlockPos.fromLong(nbt.getLong("activePanelPos"))
-            activePosSet = nbt.getLongArray("activePosSet").map(BlockPos::fromLong).toMutableSet()
-            currentXSize = nbt.getInt("currentXSize")
-            currentYSize = nbt.getInt("currentYSize")
-            currentMinPos = BlockPos.fromLong(nbt.getLong("currentMinPos"))
-            currentMaxPos = BlockPos.fromLong(nbt.getLong("currentMaxPos"))
-        }
+        activePanelPos = if(nbt.contains("activePanelPos")) BlockPos.fromLong(nbt.getLong("activePanelPos")) else null
+        activePosSet = nbt.getLongArray("activePosSet").map(BlockPos::fromLong).toMutableSet()
+        currentXSize = nbt.getInt("currentXSize")
+        currentYSize = nbt.getInt("currentYSize")
+        currentMinPos = BlockPos.fromLong(nbt.getLong("currentMinPos"))
+        currentMaxPos = BlockPos.fromLong(nbt.getLong("currentMaxPos"))
+
     }
 
     override fun play() {
@@ -111,7 +121,6 @@ class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntit
 
             if(isValid) {
                 world.getBlockEntity(minPos, BlockEntityCompendium.PANEL).ifPresent { newActivePanel ->
-                    newActivePanel.enabled = true
                     newActivePanel.activePanelPos = newActivePanel.pos
                     newActivePanel.activePosSet = found
                     newActivePanel.currentXSize = xSize
@@ -119,19 +128,23 @@ class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntit
                     newActivePanel.currentMinPos = minPos
                     newActivePanel.currentMaxPos = maxPos
                     if(newActivePanel != nearbyPanel && nearbyPanel.activePanelPos != null) {
-                        val nbt = NbtCompound().also(nearbyPanel::writeNbt)
-                        newActivePanel.readNbt(nbt)
+                        nearbyPanel.changeEnable(false)
                         nearbyPanel.activePanelPos = newActivePanel.pos
                         nearbyPanel.activePosSet = linkedSetOf()
                         nearbyPanel.currentXSize = 0
                         nearbyPanel.currentYSize = 0
                         nearbyPanel.currentMinPos = BlockPos.ORIGIN
                         nearbyPanel.currentMaxPos = BlockPos.ORIGIN
-                        nearbyPanel.enabled = false
                     }
                     found.forEach { foundPos ->
                         world.getBlockEntity(foundPos, BlockEntityCompendium.PANEL).ifPresent {
                             it.activePanelPos = newActivePanel.pos
+                            if(it.activePanelPos != foundPos) {
+                                it.diskStack?.let { diskStack ->
+                                    ItemScatterer.spawn(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, diskStack)
+                                }
+                                it.diskStack = null
+                            }
                         }
                     }
                 }
@@ -144,40 +157,20 @@ class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntit
         }
     }
 
-    override fun markRemoved() {
-        super.markRemoved()
-        (world as? ServerWorld)?.let { world ->
-            activePanel?.disable(world)
-            val facing = cachedState[HorizontalFacingMediaPlayerBlock.FACING]
-            Direction.values().forEach { direction ->
-                if(direction.axis != facing.axis) {
-                    val state = world.getBlockState(pos.offset(direction))
-                    if(state.isOf(BlockCompendium.PANEL) && state[HorizontalFacingMediaPlayerBlock.FACING] == facing) {
-                        world.getBlockEntity(pos.offset(direction), BlockEntityCompendium.PANEL).ifPresent { nearbyPanel ->
-                            if(nearbyPanel.activePanelPos == null) {
-                                nearbyPanel.setup(world, facing, pos.offset(direction))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun disable(world: ServerWorld) {
+    fun disable(world: ServerWorld) {
         activePanelPos = null
         activePosSet.forEach { foundPos ->
             world.getBlockEntity(foundPos, BlockEntityCompendium.PANEL).ifPresent {
-                it.activePanelPos = null
+                if(it.activePanelPos != null) it.disable(world)
             }
         }
-
+        activePosSet.clear()
         currentXSize = 0
         currentYSize = 0
         currentMinPos = BlockPos.ORIGIN
         currentMaxPos = BlockPos.ORIGIN
 
-        enabled = false
+        changeEnable(false)
         markDirtyAndSync()
     }
 

@@ -8,6 +8,7 @@ import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.OrderedText
@@ -142,6 +143,7 @@ open class MediaPlayerScreen<M: MediaPlayerBlockEntity>(val blockEntity: M) : Sc
 
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
         children().forEach {
+            (it as? ButtonWidget)?.isFocused = false
             (it as? PlayerSliderWidget)?.finishDragging()
         }
         return super.mouseReleased(mouseX, mouseY, button)

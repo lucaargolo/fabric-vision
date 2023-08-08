@@ -5,6 +5,7 @@ import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayerHolder
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.listener.ClientPlayPacketListener
 import net.minecraft.network.packet.Packet
@@ -17,8 +18,6 @@ import java.util.*
 
 abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlockEntity>, pos: BlockPos, state: BlockState) : BlockEntity(type, pos, state) {
 
-    private var uuid: UUID? = null
-
     var player: MinecraftMediaPlayer? = null
         get() {
             val uuid = uuid
@@ -28,11 +27,17 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             return field
         }
 
+    var forceTimeCooldown = 0
+
     var enabled = false
-        set(value) {
+        private set(value) {
             field = value
             markDirtyAndSync()
         }
+
+    private var uuid: UUID? = null
+
+    var diskStack: ItemStack? = null
 
     var mrl = ""
         set(value) {
@@ -52,8 +57,6 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
                 markDirty()
             }
         }
-
-    var forceTimeCooldown = 0
 
     var forceTime = false
         set(value) {
@@ -127,10 +130,19 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             markDirtyAndSync()
         }
 
+    open fun changeEnable(enabled: Boolean) {
+        this.enabled = enabled
+    }
+
+    open fun getCenterPos(): Vec3d = Vec3d.ofCenter(pos)
+
     override fun writeNbt(nbt: NbtCompound) {
         nbt.putBoolean("enabled", enabled)
         if(uuid != null) {
             nbt.putUuid("uuid", uuid)
+        }
+        if(diskStack != null) {
+            nbt.put("diskStack", diskStack?.writeNbt(NbtCompound()))
         }
         nbt.putString("mrl", mrl)
         nbt.putLong("lastTime", lastTime)
@@ -155,6 +167,11 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             nbt.getUuid("uuid")
         }else{
             UUID.randomUUID()
+        }
+        diskStack = if(nbt.contains("diskStack")) {
+            ItemStack.fromNbt(nbt.getCompound("diskStack"))
+        }else{
+            null
         }
         mrl = nbt.getString("mrl")
         lastTime = nbt.getLong("lastTime")
@@ -207,8 +224,8 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
     }
 
     fun updatePlayer() {
-        player?.pos = Vec3d.ofCenter(pos)
-        player?.mrl = mrl
+        player?.pos = getCenterPos()
+        player?.mrl = diskStack?.nbt?.let { if(it.contains("mrl")) it.getString("mrl") else null } ?: mrl
         player?.startTime = startTime
         player?.forceTime = forceTime
         player?.playing = playing

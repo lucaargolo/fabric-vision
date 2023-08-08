@@ -20,7 +20,7 @@ import net.minecraft.world.BlockView
 import java.util.stream.Stream
 
 
-class ProjectorBlock(settings: Settings) : MediaPlayerBlock({ BlockEntityCompendium.PROJECTOR }, settings) {
+class ProjectorBlock(settings: Settings) : MediaPlayerBlock<ProjectorBlockEntity>({ BlockEntityCompendium.PROJECTOR }, settings) {
 
     init {
         defaultState = defaultState.with(ROTATION, 0)

@@ -21,7 +21,7 @@ import net.minecraft.util.shape.VoxelShape
 import net.minecraft.world.BlockView
 import net.minecraft.world.World
 
-abstract class HorizontalFacingMediaPlayerBlock(typeProvider: () -> BlockEntityType<out MediaPlayerBlockEntity>, settings: Settings) : MediaPlayerBlock(typeProvider, settings) {
+abstract class HorizontalFacingMediaPlayerBlock<T: MediaPlayerBlockEntity>(typeProvider: () -> BlockEntityType<T>, settings: Settings) : MediaPlayerBlock<T>(typeProvider, settings) {
 
     init {
         defaultState = defaultState.with(FACING, Direction.NORTH)

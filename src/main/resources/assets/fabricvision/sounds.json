@@ -1,2 +1,12 @@
 {
+  "disk_insert": {
+    "sounds": [
+      "fabricvision:disk_insert"
+    ]
+  },
+  "disk_extract": {
+    "sounds": [
+      "fabricvision:disk_extract"
+    ]
+  }
 }

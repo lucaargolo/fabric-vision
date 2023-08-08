@@ -14,7 +14,7 @@ import net.minecraft.text.Text
 object ItemCompendium: RegistryCompendium<Item>(Registries.ITEM) {
 
     val defaultStack: ItemStack
-        get() = Items.DIAMOND.asItem().defaultStack
+        get() = BlockCompendium.FLAT_SCREEN.asItem().defaultStack
 
     val items: Collection<Item>
         get() = map.values
@@ -22,6 +22,8 @@ object ItemCompendium: RegistryCompendium<Item>(Registries.ITEM) {
     init {
         BlockCompendium.registerBlockItems(map)
     }
+
+    val VIDEO_DISK = register("video_disk", VideoDiskItem(Item.Settings().maxCount(1)))
 
     private fun registerCreativeTab() {
         Registry.register(Registries.ITEM_GROUP, ModIdentifier("creative_tab"), FabricItemGroup

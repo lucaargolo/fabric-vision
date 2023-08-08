@@ -1,8 +1,10 @@
 package io.github.lucaargolo.fabricvision.common.block
 
 import io.github.lucaargolo.fabricvision.client.render.screen.HologramScreen
+import io.github.lucaargolo.fabricvision.client.render.screen.MediaPlayerScreen
 import io.github.lucaargolo.fabricvision.common.blockentity.BlockEntityCompendium
 import io.github.lucaargolo.fabricvision.common.blockentity.HologramBlockEntity
+import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
 import io.github.lucaargolo.fabricvision.common.blockentity.PanelBlockEntity
 import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
@@ -24,20 +26,13 @@ import net.minecraft.world.BlockView
 import net.minecraft.world.World
 import java.util.stream.Stream
 
-class HologramBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock({ BlockEntityCompendium.HOLOGRAM }, settings) {
+class HologramBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock<HologramBlockEntity>({ BlockEntityCompendium.HOLOGRAM }, settings) {
+
+    override fun getScreen(entity: HologramBlockEntity): MediaPlayerScreen<HologramBlockEntity> {
+        return HologramScreen(entity)
+    }
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState) = HologramBlockEntity(pos, state)
-
-    @Deprecated("Deprecated in Java")
-    override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult {
-        val originalPos = getOriginalPos(state, pos)
-        world.getBlockEntity(originalPos, BlockEntityCompendium.HOLOGRAM).ifPresent {
-            if(world.isClient) {
-                MinecraftClient.getInstance().setScreen(HologramScreen(it))
-            }
-        }
-        return ActionResult.SUCCESS
-    }
 
     override fun onPlaced(world: World, pos: BlockPos, state: BlockState, placer: LivingEntity?, itemStack: ItemStack) {
         (world as? ServerWorld)?.let { serverWorld ->

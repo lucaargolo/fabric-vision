@@ -79,7 +79,11 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
     fun updateDuration(durationConsumer: (Long) -> Unit) {
         val mediaPlayer = player ?: return
         mediaPlayer.submit {
-            durationConsumer.invoke(mediaPlayer.media().info().duration())
+            if(status.interactable) {
+                durationConsumer.invoke(mediaPlayer.media().info().duration())
+            }else{
+                durationConsumer.invoke(0L)
+            }
         }
     }
 
@@ -162,7 +166,8 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                         mediaPlayer.controls().setPause(true)
                     }
                 }
-            }else if(status.acceptMedia && mrl != currentMrl) {
+            }
+            if(status.acceptMedia && mrl != currentMrl) {
                 load()
             }
         }
@@ -201,8 +206,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                 val mediaPlayer = player ?: return
                 HOLDER.LOADING = this
                 mediaPlayer.submit {
-                    status = if (mediaPlayer.media().startPaused(mrl, ":avcodec-hw=any")) {
-                        currentMrl = mrl
+                    status = if (mediaPlayer.media().startPaused(currentMrl, ":avcodec-hw=any")) {
                         Status.LOADED
                     } else {
                         Status.NO_MEDIA
@@ -226,8 +230,10 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
     }
 
     fun load(justCreated: Boolean = false): Boolean {
+        player?.controls()?.stop()
         return if(justCreated || status.acceptMedia) {
-            if (mrl.isEmpty()) {
+            currentMrl = mrl
+            if (currentMrl.isEmpty()) {
                 status = Status.NO_MEDIA
                 false
             } else {

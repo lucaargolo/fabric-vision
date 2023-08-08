@@ -27,11 +27,12 @@ import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView
 import net.minecraft.world.World
+import net.minecraft.world.WorldAccess
 import java.util.stream.Stream
 import kotlin.Pair
 
 
-class FlatScreenBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock({ BlockEntityCompendium.FLAT_SCREEN }, settings) {
+class FlatScreenBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock<FlatScreenBlockEntity>({ BlockEntityCompendium.FLAT_SCREEN }, settings) {
 
     init {
         defaultState = defaultState.with(WALL, false).with(PART, Part.CENTER).with(LAYER, Layer.DOWN)
@@ -116,7 +117,7 @@ class FlatScreenBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock({ B
         }
     }
 
-    override fun getOriginalPos(state: BlockState, pos: BlockPos): BlockPos {
+    override fun getOriginalPos(world: WorldAccess, state: BlockState, pos: BlockPos): BlockPos {
         return getInternalOriginalPos(state, pos).first
     }
 

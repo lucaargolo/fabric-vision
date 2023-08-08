@@ -3,6 +3,9 @@ package io.github.lucaargolo.fabricvision.common.blockentity
 import net.minecraft.block.BlockState
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.RotationAxis
+import net.minecraft.util.math.Vec3d
+import org.joml.Vector3f
 
 class HologramBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntity(BlockEntityCompendium.HOLOGRAM, pos, state) {
 
@@ -47,6 +50,17 @@ class HologramBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEn
             field = value
             markDirtyAndSync()
         }
+
+    override fun getCenterPos(): Vec3d {
+        val startPos = Vector3f(0.5f + (width / 2f), 1.0f + (height / 2f), 0.5f)
+        val offsetPos = Vector3f(offsetX, offsetY, offsetZ)
+        val yawRot = RotationAxis.POSITIVE_Y.rotationDegrees(yaw)
+        val pitchRot = RotationAxis.POSITIVE_X.rotationDegrees(pitch)
+        startPos.rotate(yawRot).rotate(pitchRot)
+        offsetPos.rotate(yawRot).rotate(pitchRot)
+        startPos.add(offsetPos)
+        return Vec3d(startPos).add(Vec3d.of(pos))
+    }
 
     override fun writeNbt(nbt: NbtCompound) {
         super.writeNbt(nbt)

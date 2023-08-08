@@ -1,12 +1,18 @@
 package io.github.lucaargolo.fabricvision.network
 
+import io.github.lucaargolo.fabricvision.client.render.screen.VideoDiskScreen
 import io.github.lucaargolo.fabricvision.common.blockentity.HologramBlockEntity
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
+import io.github.lucaargolo.fabricvision.common.item.ItemCompendium
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.util.Hand
 import kotlin.math.roundToInt
 
 object PacketCompendium {
+
+    val SET_VIDEO_DISK_MRL_C2S = ModIdentifier("set_video_disk_mrl_c2s")
 
     val SET_VALUE_BUTTON_C2S = ModIdentifier("set_value_button_c2s")
     val SET_TIME_BUTTON_C2S = ModIdentifier("set_time_button_c2s")
@@ -16,6 +22,17 @@ object PacketCompendium {
     val PLAY_BUTTON_C2S = ModIdentifier("play_button_c2s")
 
     fun initialize() {
+        ServerPlayNetworking.registerGlobalReceiver(SET_VIDEO_DISK_MRL_C2S) { server, player, handler, buf, sender ->
+            val uuid = buf.readUuid()
+            val hand = buf.readEnumConstant(Hand::class.java)
+            val mrl = buf.readString()
+            server.execute {
+                val stack = player.getStackInHand(hand)
+                if(stack.isOf(ItemCompendium.VIDEO_DISK) && stack.nbt?.getUuid("uuid") == uuid) {
+                    stack.orCreateNbt.putString("mrl", mrl)
+                }
+            }
+        }
         ServerPlayNetworking.registerGlobalReceiver(SET_VALUE_BUTTON_C2S) { server, player, handler, buf, sender ->
             val pos = buf.readBlockPos()
             val index = buf.readInt()
@@ -77,7 +94,7 @@ object PacketCompendium {
             val enabled = buf.readBoolean()
             server.execute {
                 (player.world.getBlockEntity(pos) as? MediaPlayerBlockEntity)?.let { blockEntity ->
-                    blockEntity.enabled = enabled
+                    blockEntity.changeEnable(enabled)
                 }
             }
         }
@@ -110,8 +127,18 @@ object PacketCompendium {
         }
     }
 
-    fun initializeClient() {
+    val OPEN_VIDEO_DISK_SCREEN_S2C = ModIdentifier("open_video_disk_screen_s2c")
 
+    fun initializeClient() {
+        ClientPlayNetworking.registerGlobalReceiver(OPEN_VIDEO_DISK_SCREEN_S2C) { client, handler, buf, sender ->
+            val uuid = buf.readUuid()
+            val hand = buf.readEnumConstant(Hand::class.java)
+            client.execute {
+                val player = client?.player ?: return@execute
+                val stack = player.getStackInHand(hand)
+                client.setScreen(VideoDiskScreen(uuid, stack))
+            }
+        }
     }
 
 

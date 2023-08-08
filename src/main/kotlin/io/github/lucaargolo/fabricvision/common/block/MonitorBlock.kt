@@ -15,7 +15,7 @@ import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView
 import java.util.stream.Stream
 
-class MonitorBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock({ BlockEntityCompendium.MONITOR }, settings) {
+class MonitorBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock<MonitorBlockEntity>({ BlockEntityCompendium.MONITOR }, settings) {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState) = MonitorBlockEntity(pos, state)
 
