@@ -1,31 +1,23 @@
 package io.github.lucaargolo.fabricvision.common.block
 
 import io.github.lucaargolo.fabricvision.common.blockentity.BlockEntityCompendium
+import io.github.lucaargolo.fabricvision.common.blockentity.MonitorBlockEntity
 import io.github.lucaargolo.fabricvision.common.blockentity.PanelBlockEntity
 import io.github.lucaargolo.fabricvision.utils.VoxelShapeUtils.rotate
 import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
 import net.minecraft.block.ShapeContext
-import net.minecraft.entity.LivingEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.server.world.ServerWorld
+import net.minecraft.util.function.BooleanBiFunction
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.shape.VoxelShape
+import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView
-import net.minecraft.world.World
+import java.util.stream.Stream
 
-class PanelBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock({ BlockEntityCompendium.PANEL }, settings) {
+class MonitorBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock({ BlockEntityCompendium.MONITOR }, settings) {
 
-    override fun createBlockEntity(pos: BlockPos, state: BlockState) = PanelBlockEntity(pos, state)
-
-    override fun onPlaced(world: World, pos: BlockPos, state: BlockState, placer: LivingEntity?, itemStack: ItemStack) {
-        (world as? ServerWorld)?.let { serverWorld ->
-            serverWorld.getBlockEntity(pos, BlockEntityCompendium.PANEL).ifPresent { panelBlockEntity ->
-                panelBlockEntity.setup(serverWorld, state[FACING], pos)
-            }
-        }
-    }
+    override fun createBlockEntity(pos: BlockPos, state: BlockState) = MonitorBlockEntity(pos, state)
 
     @Deprecated("Deprecated in Java", ReplaceWith("BlockRenderType.MODEL", "net.minecraft.block.BlockRenderType"))
     override fun getRenderType(state: BlockState) = BlockRenderType.MODEL
@@ -37,7 +29,15 @@ class PanelBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock({ BlockE
 
     companion object {
 
-        private val MAIN_SHAPE = createCuboidShape(0.0, 0.0, 14.0, 16.0, 16.0, 16.0)
+        private val MAIN_SHAPE = Stream.of(
+            createCuboidShape(15.5, 5.0, 7.5, 16.0, 13.5, 8.5),
+            createCuboidShape(7.5, 1.0, 7.5, 8.5, 3.0, 8.5),
+            createCuboidShape(0.5, 5.0, 8.0, 15.5, 13.5, 9.0),
+            createCuboidShape(0.0, 3.0, 7.5, 16.0, 5.0, 8.5),
+            createCuboidShape(0.0, 13.5, 7.5, 16.0, 14.0, 8.5),
+            createCuboidShape(0.0, 5.0, 7.5, 0.5, 13.5, 8.5),
+            createCuboidShape(5.5, 0.0, 6.5, 10.5, 1.0, 9.5)
+        ).reduce { v1, v2 -> VoxelShapes.combineAndSimplify(v1, v2, BooleanBiFunction.OR) }.get();
 
         private val SHAPES = mapOf(
             Direction.NORTH to MAIN_SHAPE,

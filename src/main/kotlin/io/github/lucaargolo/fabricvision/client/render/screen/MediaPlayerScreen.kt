@@ -9,6 +9,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -18,7 +19,7 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 //TODO: Fix this title
-class MediaPlayerScreen(val blockEntity: MediaPlayerBlockEntity) : Screen(Text.translatable("media.player")) {
+open class MediaPlayerScreen<M: MediaPlayerBlockEntity>(val blockEntity: M) : Screen(Text.translatable("media.player")) {
 
     private var age = 0
 
@@ -29,13 +30,13 @@ class MediaPlayerScreen(val blockEntity: MediaPlayerBlockEntity) : Screen(Text.t
     private var y = 0
 
     var config = false
-    private val configDrawables = mutableListOf<Drawable>()
+    protected val configDrawables = mutableListOf<Drawable>()
 
-    private val configBackgroundWidth = 50
-    private val configBackgroundHeight = 91
+    protected var configBackgroundWidth = 50
+    protected val configBackgroundHeight = 91
 
-    private var configX = 0
-    private var configY = 0
+    protected var configX = 0
+    protected var configY = 0
 
     var currentTime = System.currentTimeMillis()
     var startTime = blockEntity.startTime
@@ -77,24 +78,24 @@ class MediaPlayerScreen(val blockEntity: MediaPlayerBlockEntity) : Screen(Text.t
         addDrawableChild(NavigateButtonWidget(this, x+98, y+2, 5000L, 182))
         addDrawableChild(VolumeSliderWidget(this, x+140, y+6))
         addDrawableChild(ProgressSliderWidget(this, x+5, y+30))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+12, 13, 164, 50, 165, { blockEntity.volume }, 0) { value ->
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+12, 13, 164, 50, 165, { blockEntity.volume }, 0, { value ->
             Text.literal("Volume: ").formatted(VolumeSliderWidget.getFormatting(value)).append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
-        }))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+22, 13, 174, 50, 175, { blockEntity.light }, 1) { value ->
+        })))
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+22, 13, 174, 50, 175, { blockEntity.light }, 1, { value ->
             Text.literal("Light: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFFFF00)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
-        }))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+32, 13, 184, 50, 185, { blockEntity.red }, 2) { value ->
+        })))
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+32, 13, 184, 50, 185, { blockEntity.red }, 2, { value ->
             Text.literal("Red: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFF0000)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
-        }))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+42, 13, 194, 50, 195, { blockEntity.green }, 3) { value ->
+        })))
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+42, 13, 194, 50, 195, { blockEntity.green }, 3, { value ->
             Text.literal("Green: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0x00FF00)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
-        }))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+52, 13, 204, 50, 205, { blockEntity.blue }, 4) { value ->
+        })))
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+52, 13, 204, 50, 205, { blockEntity.blue }, 4, { value ->
             Text.literal("Blue: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0x0000FF)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
-        }))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+62, 13, 214, 50, 215, { blockEntity.alpha }, 5) { value ->
+        })))
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+62, 13, 214, 50, 215, { blockEntity.alpha }, 5, { value ->
             Text.literal("Alpha: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFFFFFF)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
-        }))
+        })))
         configDrawables.add(addSelectableChild(RateButtonWidget(this, configX+8, configY+76, 0.25f, 8)))
         configDrawables.add(addSelectableChild(RateButtonWidget(this, configX+15, configY+76, 0.50f, 15)))
         configDrawables.add(addSelectableChild(RateButtonWidget(this, configX+22, configY+76, 1.00f, 22)))
@@ -117,15 +118,16 @@ class MediaPlayerScreen(val blockEntity: MediaPlayerBlockEntity) : Screen(Text.t
         }
         playerTooltip.clear()
         if(config) {
+            val configCenterX = configX + (configBackgroundWidth/2)
+            val rateCenterX = configX + (50/2)
             renderBackground(context)
             context.drawTexture(TEXTURE, configX, configY, 0, 152, configBackgroundWidth, configBackgroundHeight)
             context.matrices.push()
             context.matrices.scale(0.5f, 0.5f, 0.5f)
-            val configCenterX = configX + (configBackgroundWidth/2)
             val configText = Text.literal("Config Screen")
             context.drawText(textRenderer, configText, (configCenterX * 2) - (textRenderer.getWidth(configText)/2), (configY + 5)*2, 0xFFFFFF, false)
             val rateText = Text.literal("Rate: ").formatted(Formatting.GRAY).append(Text.literal("${blockEntity.rate}x").styled { s -> s.withColor(0x00AFE4) })
-            context.drawText(textRenderer, rateText, (configCenterX * 2) - (textRenderer.getWidth(rateText)/2), (configY + 70)*2, 0xFFFFFF, false)
+            context.drawText(textRenderer, rateText, (rateCenterX * 2) - (textRenderer.getWidth(rateText)/2), (configY + 70)*2, 0xFFFFFF, false)
             context.matrices.pop()
             configDrawables.forEach {
                 (it as? ClickableWidget)?.active = true
@@ -193,6 +195,7 @@ class MediaPlayerScreen(val blockEntity: MediaPlayerBlockEntity) : Screen(Text.t
         }
         children().forEach {
             (it as? PlayerSliderWidget)?.tick()
+            (it as? TextFieldWidget)?.tick()
         }
     }
 

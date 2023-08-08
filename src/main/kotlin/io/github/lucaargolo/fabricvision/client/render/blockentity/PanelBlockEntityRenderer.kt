@@ -1,5 +1,6 @@
 package io.github.lucaargolo.fabricvision.client.render.blockentity
 
+import io.github.lucaargolo.fabricvision.common.block.HorizontalFacingMediaPlayerBlock
 import io.github.lucaargolo.fabricvision.common.block.PanelBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.PanelBlockEntity
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
@@ -38,7 +39,7 @@ class PanelBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Conte
             val x = entity.currentXSize + 0f
             val y = entity.currentYSize + 0f
 
-            val facing = entity.cachedState[PanelBlock.FACING]
+            val facing = entity.cachedState[HorizontalFacingMediaPlayerBlock.FACING]
             val rotation = when (facing) {
                 Direction.EAST -> 90f
                 Direction.SOUTH -> 180f

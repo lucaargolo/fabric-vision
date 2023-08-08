@@ -7,8 +7,10 @@ object BlockEntityRendererCompendium {
 
     fun initializeClient() {
         BlockEntityRendererFactories.register(BlockEntityCompendium.FLAT_SCREEN, ::FlatScreenBlockEntityRenderer)
-        BlockEntityRendererFactories.register(BlockEntityCompendium.PROJECTOR, ::ProjectorBlockEntityRenderer)
+        BlockEntityRendererFactories.register(BlockEntityCompendium.MONITOR, ::MonitorBlockEntityRenderer)
         BlockEntityRendererFactories.register(BlockEntityCompendium.PANEL, ::PanelBlockEntityRenderer)
+        BlockEntityRendererFactories.register(BlockEntityCompendium.PROJECTOR, ::ProjectorBlockEntityRenderer)
+        BlockEntityRendererFactories.register(BlockEntityCompendium.HOLOGRAM, ::HologramBlockEntityRenderer)
     }
 
 }

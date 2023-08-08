@@ -1,8 +1,8 @@
 package io.github.lucaargolo.fabricvision.client.render.blockentity
 
-import io.github.lucaargolo.fabricvision.common.block.FlatScreenBlock
+import io.github.lucaargolo.fabricvision.common.block.MonitorBlock
 import io.github.lucaargolo.fabricvision.common.block.HorizontalFacingMediaPlayerBlock
-import io.github.lucaargolo.fabricvision.common.blockentity.FlatScreenBlockEntity
+import io.github.lucaargolo.fabricvision.common.blockentity.MonitorBlockEntity
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import net.minecraft.client.render.LightmapTextureManager
 import net.minecraft.client.render.OverlayTexture
@@ -16,9 +16,9 @@ import net.minecraft.util.math.RotationAxis
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<FlatScreenBlockEntity> {
+class MonitorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<MonitorBlockEntity> {
 
-    override fun render(entity: FlatScreenBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
+    override fun render(entity: MonitorBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
 
         val identifier = entity.player?.identifier ?: MinecraftMediaPlayer.TRANSPARENT
         val renderLayer = RenderLayer.getEntityTranslucent(identifier)
@@ -34,10 +34,9 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
         val alpha = if(entity.enabled) entity.alpha else 0f
         val normal = Direction.UP.unitVector
 
-        val x = 40.0f/16f
-        val y = 22.5f/16f
+        val x = 15.0f/16f
+        val y = 8.44f/16f
 
-        val wall = entity.cachedState[FlatScreenBlock.WALL]
         val facing = entity.cachedState[HorizontalFacingMediaPlayerBlock.FACING]
         val rotation = when(facing) {
             Direction.EAST -> 90f
@@ -50,20 +49,11 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
 
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation))
 
-        if(wall) {
-            when(facing) {
-                Direction.EAST -> matrices.translate(-28.0/16.0, 5.0/16.0, 2.55/16.0)
-                Direction.SOUTH -> matrices.translate(-28.0/16.0, 5.0/16.0, -2.55/16.0)
-                Direction.WEST -> matrices.translate(-12.0/16.0, 5.0/16.0, -13.45/16.0)
-                else -> matrices.translate(-12.0/16.0, 5.0/16.0, 13.45/16.0)
-            }
-        }else{
-            when(facing) {
-                Direction.EAST -> matrices.translate(-28.0/16.0, 5.0/16.0, 8.55/16.0)
-                Direction.SOUTH -> matrices.translate(-28.0/16.0, 5.0/16.0, -8.55/16.0)
-                Direction.WEST -> matrices.translate(-12.0/16.0, 5.0/16.0, -7.45/16.0)
-                else -> matrices.translate(-12.0/16.0, 5.0/16.0, 7.45/16.0)
-            }
+        when(facing) {
+            Direction.EAST -> matrices.translate(-15.5/16.0, 5.0/16.0, 8.05/16.0)
+            Direction.SOUTH -> matrices.translate(-15.5/16.0, 5.0/16.0, -8.05/16.0)
+            Direction.WEST -> matrices.translate(0.5/16.0, 5.0/16.0, -7.95/16.0)
+            else -> matrices.translate(0.5/16.0, 5.0/16.0, 7.95/16.0)
         }
 
         val entry = matrices.peek()

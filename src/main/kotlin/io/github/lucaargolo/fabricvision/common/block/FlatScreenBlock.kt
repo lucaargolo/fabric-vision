@@ -17,9 +17,7 @@ import net.minecraft.state.property.BooleanProperty
 import net.minecraft.state.property.DirectionProperty
 import net.minecraft.state.property.EnumProperty
 import net.minecraft.state.property.Properties
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
-import net.minecraft.util.StringIdentifiable
+import net.minecraft.util.*
 import net.minecraft.util.function.BooleanBiFunction
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
@@ -30,16 +28,18 @@ import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView
 import net.minecraft.world.World
 import java.util.stream.Stream
+import kotlin.Pair
 
 
-class FlatScreenBlock(settings: Settings) : MediaPlayerBlock({ BlockEntityCompendium.FLAT_SCREEN }, settings) {
+class FlatScreenBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock({ BlockEntityCompendium.FLAT_SCREEN }, settings) {
 
     init {
-        defaultState = defaultState.with(WALL, false).with(FACING, Direction.NORTH).with(PART, Part.CENTER).with(LAYER, Layer.DOWN)
+        defaultState = defaultState.with(WALL, false).with(PART, Part.CENTER).with(LAYER, Layer.DOWN)
     }
 
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
-        builder.add(WALL, FACING, PART, LAYER)
+        super.appendProperties(builder)
+        builder.add(WALL, PART, LAYER)
     }
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState? {
@@ -97,6 +97,7 @@ class FlatScreenBlock(settings: Settings) : MediaPlayerBlock({ BlockEntityCompen
     override fun getOutlineShape(state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext): VoxelShape {
         return getShape(state[WALL], state[FACING], state[LAYER], state[PART])
     }
+
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? {
         return if(state[PART] == Part.CENTER && state[LAYER] == Layer.DOWN) {
             FlatScreenBlockEntity(pos, state)
@@ -138,7 +139,6 @@ class FlatScreenBlock(settings: Settings) : MediaPlayerBlock({ BlockEntityCompen
     companion object {
 
         val WALL: BooleanProperty = BooleanProperty.of("wall")
-        val FACING: DirectionProperty = Properties.HORIZONTAL_FACING
         enum class Part: StringIdentifiable {
             CENTER, LEFT, RIGHT;
             override fun asString() = name.lowercase()

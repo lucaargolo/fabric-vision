@@ -1,6 +1,7 @@
 package io.github.lucaargolo.fabricvision.common.blockentity
 
 import io.github.lucaargolo.fabricvision.common.block.BlockCompendium
+import io.github.lucaargolo.fabricvision.common.block.HorizontalFacingMediaPlayerBlock
 import io.github.lucaargolo.fabricvision.common.block.PanelBlock
 import net.minecraft.block.BlockState
 import net.minecraft.nbt.NbtCompound
@@ -90,7 +91,7 @@ class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntit
         Direction.values().forEach { direction ->
             if(direction.axis != facing.axis) {
                 val state = world.getBlockState(pos.offset(direction))
-                if(state.isOf(BlockCompendium.PANEL) && state[PanelBlock.FACING] == facing) {
+                if(state.isOf(BlockCompendium.PANEL) && state[HorizontalFacingMediaPlayerBlock.FACING] == facing) {
                     world.getBlockEntity(pos.offset(direction), BlockEntityCompendium.PANEL).ifPresent { nearbyPanel ->
                         nearbyPanel.activePanel?.let(nearbyPanels::add)
                     }
@@ -147,11 +148,11 @@ class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntit
         super.markRemoved()
         (world as? ServerWorld)?.let { world ->
             activePanel?.disable(world)
-            val facing = cachedState[PanelBlock.FACING]
+            val facing = cachedState[HorizontalFacingMediaPlayerBlock.FACING]
             Direction.values().forEach { direction ->
                 if(direction.axis != facing.axis) {
                     val state = world.getBlockState(pos.offset(direction))
-                    if(state.isOf(BlockCompendium.PANEL) && state[PanelBlock.FACING] == facing) {
+                    if(state.isOf(BlockCompendium.PANEL) && state[HorizontalFacingMediaPlayerBlock.FACING] == facing) {
                         world.getBlockEntity(pos.offset(direction), BlockEntityCompendium.PANEL).ifPresent { nearbyPanel ->
                             if(nearbyPanel.activePanelPos == null) {
                                 nearbyPanel.setup(world, facing, pos.offset(direction))

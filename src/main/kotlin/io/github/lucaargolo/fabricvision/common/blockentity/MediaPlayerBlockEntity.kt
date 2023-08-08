@@ -28,7 +28,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             return field
         }
 
-    var enabled = true
+    var enabled = false
         set(value) {
             field = value
             markDirtyAndSync()

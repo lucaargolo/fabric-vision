@@ -9,7 +9,9 @@ import net.minecraft.registry.Registries
 object BlockEntityCompendium: RegistryCompendium<BlockEntityType<*>>(Registries.BLOCK_ENTITY_TYPE) {
 
     val FLAT_SCREEN = register("flat_screen", FabricBlockEntityTypeBuilder.create(::FlatScreenBlockEntity, BlockCompendium.FLAT_SCREEN).build())
-    val PROJECTOR = register("projector", FabricBlockEntityTypeBuilder.create(::ProjectorBlockEntity, BlockCompendium.PROJECTOR).build())
+    val MONITOR = register("monitor", FabricBlockEntityTypeBuilder.create(::MonitorBlockEntity, BlockCompendium.MONITOR).build())
     val PANEL = register("panel", FabricBlockEntityTypeBuilder.create(::PanelBlockEntity, BlockCompendium.PANEL).build())
+    val PROJECTOR = register("projector", FabricBlockEntityTypeBuilder.create(::ProjectorBlockEntity, BlockCompendium.PROJECTOR).build())
+    val HOLOGRAM = register("hologram", FabricBlockEntityTypeBuilder.create(::HologramBlockEntity, BlockCompendium.HOLOGRAM).build())
 
 }

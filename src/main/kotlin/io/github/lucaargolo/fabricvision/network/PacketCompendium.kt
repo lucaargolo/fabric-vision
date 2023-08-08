@@ -1,8 +1,10 @@
 package io.github.lucaargolo.fabricvision.network
 
+import io.github.lucaargolo.fabricvision.common.blockentity.HologramBlockEntity
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import kotlin.math.roundToInt
 
 object PacketCompendium {
 
@@ -27,6 +29,19 @@ object PacketCompendium {
                         3 -> blockEntity.green = value
                         4 -> blockEntity.blue = value
                         5 -> blockEntity.alpha = value
+                    }
+                }
+                (player.world.getBlockEntity(pos) as? HologramBlockEntity)?.let { blockEntity ->
+                    when(index) {
+                        6 -> blockEntity.width = value.toInt().toFloat()
+                        7 -> blockEntity.height = value.toInt().toFloat()
+                        8 -> blockEntity.offsetX = (value*2).toInt()/2f
+                        9 -> blockEntity.offsetY = (value*2).toInt()/2f
+                        10 -> blockEntity.offsetZ = (value*2).toInt()/2f
+                        11 -> blockEntity.yaw = value.roundToInt()*10f
+                        12 -> blockEntity.pitch = value.roundToInt()*10f
+                        13 -> blockEntity.yaw = value
+                        14 -> blockEntity.pitch = value
                     }
                 }
             }

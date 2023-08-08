@@ -11,33 +11,32 @@ import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-class EnableButtonWidget(private val parent: MediaPlayerScreen, x: Int, y: Int): ButtonWidget(x, y, 18, 18, Text.empty(), {  }, DEFAULT_NARRATION_SUPPLIER) {
+class EnableButtonWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: Int): ButtonWidget(x, y, 18, 18, Text.empty(), {  }, DEFAULT_NARRATION_SUPPLIER) {
 
-        private val textureU: Int
-            get() = if(parent.blockEntity.enabled) 150 else 132
+    private val textureU: Int
+        get() = if(parent.blockEntity.enabled) 150 else 132
 
+    private val textureV: Int
+        get() = if(active && (isHovered || isFocused)) 60 else 42
 
-        private val textureV: Int
-            get() = if(active && hovered) 60 else 42
-
-        override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-            context.drawTexture(MediaPlayerScreen.TEXTURE, x, y, textureU, textureV, 18, 18)
-            active = !parent.config
-            if(active && isHovered) {
-                //TODO: Also translate this
-                if(parent.blockEntity.enabled) {
-                    parent.playerTooltip.add(Text.literal("Player On").formatted(Formatting.GREEN).asOrderedText())
-                }else{
-                    parent.playerTooltip.add(Text.literal("Player Off").formatted(Formatting.RED).asOrderedText())
-                }
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        context.drawTexture(MediaPlayerScreen.TEXTURE, x, y, textureU, textureV, 18, 18)
+        active = !parent.config
+        if(active && isHovered) {
+            //TODO: Also translate this
+            if(parent.blockEntity.enabled) {
+                parent.playerTooltip.add(Text.literal("Player On").formatted(Formatting.GREEN).asOrderedText())
+            }else{
+                parent.playerTooltip.add(Text.literal("Player Off").formatted(Formatting.RED).asOrderedText())
             }
         }
-
-        override fun onPress() {
-            val buf = PacketByteBufs.create()
-            buf.writeBlockPos(parent.blockEntity.pos)
-            buf.writeBoolean(!parent.blockEntity.enabled)
-            ClientPlayNetworking.send(PacketCompendium.ENABLE_BUTTON_C2S, buf)
-        }
-
     }
+
+    override fun onPress() {
+        val buf = PacketByteBufs.create()
+        buf.writeBlockPos(parent.blockEntity.pos)
+        buf.writeBoolean(!parent.blockEntity.enabled)
+        ClientPlayNetworking.send(PacketCompendium.ENABLE_BUTTON_C2S, buf)
+    }
+
+}
