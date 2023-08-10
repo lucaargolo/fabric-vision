@@ -1,4 +1,55 @@
 {
+  "itemGroup.fabricvision": "Fabric Vision",
+
+  "block.fabricvision.flat_screen": "Flat Screen",
+  "block.fabricvision.monitor": "Monitor",
+  "block.fabricvision.panel": "Flat Screen",
+  "block.fabricvision.projector": "Projector",
+  "block.fabricvision.hologram": "Hologram",
+
+  "item.fabricvision.video_disk": "Video Disk",
+
+  "screen.fabricvision.media_player": "Media Player",
+
+  "screen.fabricvision.message.player_on": "Player On",
+  "screen.fabricvision.message.player_off": "Player Off",
+  "screen.fabricvision.message.open_config": "Open config screen",
+  "screen.fabricvision.message.repeating_enabled": "Repeating Enabled",
+  "screen.fabricvision.message.repeating_disabled": "Repeating Disabled",
+  "screen.fabricvision.message.backward_video": "Backward video in %s",
+  "screen.fabricvision.message.forward_video": "Forward video in %s",
+  "screen.fabricvision.message.play": "Play",
+  "screen.fabricvision.message.pause": "Pause",
+  "screen.fabricvision.message.stop": "Stop",
+
+  "screen.fabricvision.message.config_screen": "Config Screen",
+  "screen.fabricvision.message.volume": "Volume: %s",
+  "screen.fabricvision.message.light": "Light: %s",
+  "screen.fabricvision.message.red": "Red: %s",
+  "screen.fabricvision.message.green": "Green: %s",
+  "screen.fabricvision.message.blue": "Blue: %s",
+  "screen.fabricvision.message.alpha": "Alpha: %s",
+
+  "screen.fabricvision.message.rate": "Rate: %s",
+  "screen.fabricvision.message.set_rate": "Set rate to %s",
+
+  "screen.fabricvision.message.set_video_time": "Set video time to %s",
+
+  "screen.fabricvision.message.width": "Width: %s",
+  "screen.fabricvision.message.height": "Height: %s",
+  "screen.fabricvision.message.x_offset": "X Offset: %s",
+  "screen.fabricvision.message.y_offset": "Y Offset: %s",
+  "screen.fabricvision.message.z_offset": "Z Offset: %s",
+  "screen.fabricvision.message.yaw": "Yaw: %s",
+  "screen.fabricvision.message.pitch": "Pitch: %s",
+
+  "screen.fabricvision.message.set_mrl": "Set media location:",
+  "screen.fabricvision.message.stream": "Media is stream:",
+  "screen.fabricvision.message.live": "Live",
+
+  "tooltip.fabricvision.stream": "Stream",
+  "tooltip.fabricvision.mrl": "Media location: %s",
+
   "tooltip.fabricvision.status": "Status",
   "tooltip.fabricvision.status.no_player": "No Player",
   "tooltip.fabricvision.status.no_player.description": "Have you tried turning it off and on again?",

@@ -28,7 +28,7 @@ object ItemCompendium: RegistryCompendium<Item>(Registries.ITEM) {
     private fun registerCreativeTab() {
         Registry.register(Registries.ITEM_GROUP, ModIdentifier("creative_tab"), FabricItemGroup
             .builder()
-            .displayName(Text.literal("Fabric Vision"))
+            .displayName(Text.translatable("itemGroup.fabricvision"))
             .icon { defaultStack }
             .entries { _, entries ->
                 items.forEach(entries::add)

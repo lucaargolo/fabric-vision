@@ -24,7 +24,7 @@ class ProgressSliderWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: 
         if(active && (isHovered || isDragged)) {
             val valueFromMouse = (mouseX - (x + 4.0)) / (width - 8.0)
             val draggingMediaTime = (valueFromMouse * parent.mediaDuration).roundToLong()
-            parent.playerTooltip.add(Text.literal("Set video time to ").formatted(Formatting.GRAY).append(Text.literal(MediaPlayerScreen.formatTimestamp(draggingMediaTime)).styled { s -> s.withColor(0x00AFE4) }).asOrderedText())
+            parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.set_video_time", Text.literal(MediaPlayerScreen.formatTimestamp(draggingMediaTime)).styled { s -> s.withColor(0x00AFE4) }).formatted(Formatting.GRAY).asOrderedText())
         }
     }
 
@@ -50,7 +50,7 @@ class ProgressSliderWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: 
             val centerX = x + (166/2)
             context.matrices.push()
             context.matrices.scale(0.5f, 0.5f, 0.5f)
-            val configText = Text.literal("Live")
+            val configText = Text.translatable("screen.fabricvision.message.live")
             context.drawText(textRenderer, configText, (centerX * 2) - (textRenderer.getWidth(configText)/2), (y + 1)*2, 0xFFFFFF, false)
             context.matrices.pop()
         }

@@ -23,11 +23,10 @@ class NavigateButtonWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: 
         context.drawTexture(MediaPlayerScreen.TEXTURE, x, y, textureU + if(FabricVisionClient.isSneaking) 28 else 0, textureV, 14, 14)
         active = !parent.config
         if(active && isHovered) {
-            //TODO: Use translatable here
             if(realTime > 0) {
-                parent.playerTooltip.add(Text.literal("Forward video in ").formatted(Formatting.GRAY).append(Text.literal("${realTime/1000}s").styled { s -> s.withColor(0x00AFE4) }).asOrderedText())
+                parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.forward_video", Text.literal("${realTime/1000}s").styled { s -> s.withColor(0x00AFE4) }).formatted(Formatting.GRAY).asOrderedText())
             }else{
-                parent.playerTooltip.add(Text.literal("Backward video in ").formatted(Formatting.GRAY).append(Text.literal("${realTime/-1000}s").styled { s -> s.withColor(0x00AFE4) }).asOrderedText())
+                parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.backward_video", Text.literal("${realTime/-1000}s").styled { s -> s.withColor(0x00AFE4) }).formatted(Formatting.GRAY).asOrderedText())
             }
         }
     }

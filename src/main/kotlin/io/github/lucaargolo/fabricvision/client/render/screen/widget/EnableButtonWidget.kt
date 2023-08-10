@@ -21,11 +21,10 @@ class EnableButtonWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: In
         context.drawTexture(MediaPlayerScreen.TEXTURE, x, y, textureU, textureV, 18, 18)
         active = !parent.config
         if(active && isHovered) {
-            //TODO: Also translate this
             if(parent.blockEntity.enabled) {
-                parent.playerTooltip.add(Text.literal("Player On").formatted(Formatting.GREEN).asOrderedText())
+                parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.player_on").formatted(Formatting.GREEN).asOrderedText())
             }else{
-                parent.playerTooltip.add(Text.literal("Player Off").formatted(Formatting.RED).asOrderedText())
+                parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.player_off").formatted(Formatting.RED).asOrderedText())
             }
         }
     }

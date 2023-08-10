@@ -19,10 +19,9 @@ class RateButtonWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: Int,
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.drawTexture(MediaPlayerScreen.TEXTURE, x, y, textureU, textureV, 7, 7)
         if(isHovered) {
-            //TODO: Also translate this
             context.matrices.push()
             context.matrices.scale(0.5f, 0.5f, 0.5f)
-            val text = Text.literal("Set rate to ").formatted(Formatting.GRAY).append(Text.literal("${rate}x").styled { s -> s.withColor(0x00AFE4) })
+            val text = Text.translatable("screen.fabricvision.message.set_rate", Text.literal("${rate}x").styled { s -> s.withColor(0x00AFE4) }).formatted(Formatting.GRAY)
             context.drawTooltip(MinecraftClient.getInstance().textRenderer, listOf(text.asOrderedText()), { _, _, x, y, _, _ -> Vector2i(x, y) }, 6 + mouseX * 2, -10 + mouseY * 2)
             context.matrices.pop()
 

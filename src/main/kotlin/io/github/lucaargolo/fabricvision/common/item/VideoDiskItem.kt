@@ -9,6 +9,7 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
 import net.minecraft.world.World
@@ -32,8 +33,17 @@ class VideoDiskItem(settings: Settings) : Item(settings) {
     }
 
     override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
+        val stream = stack.nbt?.let { if(it.contains("stream")) it.getBoolean("stream") else false } ?: false
+        if(stream) {
+            tooltip.add(Text.translatable("tooltip.fabricvision.stream").formatted(Formatting.RED))
+        }
         val mrl = stack.nbt?.let { if(it.contains("mrl")) it.getString("mrl") else "" } ?: ""
-        val text = if(mrl.isNotEmpty()) Text.literal("Mrl: ").append(mrl) else Text.literal("No Media")
+        val showMrl = if (mrl.length > 32) "..." + mrl.substring(mrl.length - 29, mrl.length) else mrl
+
+        val text = if(mrl.isNotEmpty())
+            Text.translatable("tooltip.fabricvision.mrl", Text.literal(showMrl).formatted(Formatting.GRAY)).formatted(Formatting.BLUE)
+        else
+            Text.translatable("tooltip.fabricvision.status.no_media").formatted(Formatting.YELLOW)
         tooltip.add(text)
     }
 

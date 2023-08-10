@@ -15,8 +15,7 @@ class VolumeSliderWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: In
         super.renderButton(context, mouseX, mouseY, delta)
         active = !parent.config
         if(active && (isHovered || isDragged)) {
-            //TODO: Also translate this
-            parent.playerTooltip.add(Text.literal("Volume: ").formatted(getFormatting(value)).append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).asOrderedText())
+            parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.volume", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).formatted(getFormatting(value)).asOrderedText())
         }
     }
 

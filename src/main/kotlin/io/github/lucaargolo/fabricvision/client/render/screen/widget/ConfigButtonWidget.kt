@@ -18,8 +18,7 @@ class ConfigButtonWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: In
         context.drawTexture(MediaPlayerScreen.TEXTURE, x, y, textureU, textureV, 14, 14)
         active = !parent.config
         if(active && isHovered) {
-            //TODO: Also translate this
-            parent.playerTooltip.add(Text.literal("Open config screen").formatted(Formatting.GRAY).asOrderedText())
+            parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.open_config").formatted(Formatting.GRAY).asOrderedText())
         }
     }
 

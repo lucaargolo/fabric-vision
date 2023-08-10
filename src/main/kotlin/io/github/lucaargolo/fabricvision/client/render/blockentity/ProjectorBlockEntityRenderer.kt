@@ -35,7 +35,7 @@ class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.C
 
         matrices.pop()
 
-        if(MinecraftClient.isFabulousGraphicsOrBetter() || FabricVisionClient.isRenderingProjector || IrisCompat.INSTANCE.isRenderingShadowPass()) {
+        if(!entity.enabled || MinecraftClient.isFabulousGraphicsOrBetter() || FabricVisionClient.isRenderingProjector || IrisCompat.INSTANCE.isRenderingShadowPass()) {
             return
         }
 
