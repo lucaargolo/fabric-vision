@@ -2,7 +2,6 @@ package io.github.lucaargolo.fabricvision.common.block
 
 import io.github.lucaargolo.fabricvision.common.blockentity.BlockEntityCompendium
 import io.github.lucaargolo.fabricvision.common.blockentity.MonitorBlockEntity
-import io.github.lucaargolo.fabricvision.common.blockentity.PanelBlockEntity
 import io.github.lucaargolo.fabricvision.utils.VoxelShapeUtils.rotate
 import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState

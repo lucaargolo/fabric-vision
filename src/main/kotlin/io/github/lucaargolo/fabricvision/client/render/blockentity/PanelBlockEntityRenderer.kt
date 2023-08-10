@@ -1,7 +1,6 @@
 package io.github.lucaargolo.fabricvision.client.render.blockentity
 
 import io.github.lucaargolo.fabricvision.common.block.HorizontalFacingMediaPlayerBlock
-import io.github.lucaargolo.fabricvision.common.block.PanelBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.PanelBlockEntity
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import net.minecraft.client.render.LightmapTextureManager

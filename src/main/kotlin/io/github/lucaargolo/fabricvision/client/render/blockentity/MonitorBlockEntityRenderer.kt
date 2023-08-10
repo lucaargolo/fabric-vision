@@ -1,6 +1,5 @@
 package io.github.lucaargolo.fabricvision.client.render.blockentity
 
-import io.github.lucaargolo.fabricvision.common.block.MonitorBlock
 import io.github.lucaargolo.fabricvision.common.block.HorizontalFacingMediaPlayerBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.MonitorBlockEntity
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer

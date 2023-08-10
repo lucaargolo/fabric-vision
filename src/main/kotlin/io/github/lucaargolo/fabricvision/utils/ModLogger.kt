@@ -3,7 +3,6 @@ package io.github.lucaargolo.fabricvision.utils
 import io.github.lucaargolo.fabricvision.FabricVision
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.lang.Exception
 
 object ModLogger {
 

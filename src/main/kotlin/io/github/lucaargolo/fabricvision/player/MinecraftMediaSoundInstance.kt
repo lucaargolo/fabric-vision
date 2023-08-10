@@ -6,7 +6,6 @@ import net.minecraft.client.sound.SoundInstance
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundCategory
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.Vec3d
 
 class MinecraftMediaSoundInstance(private val volumeSupplier: () -> Float): SoundInstance {
 

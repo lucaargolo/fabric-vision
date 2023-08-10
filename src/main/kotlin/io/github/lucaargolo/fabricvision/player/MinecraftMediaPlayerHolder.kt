@@ -1,13 +1,9 @@
 package io.github.lucaargolo.fabricvision.player
 
-import com.sun.jna.NativeLibrary
-import net.fabricmc.loader.api.FabricLoader
+import io.github.lucaargolo.fabricvision.utils.ModLogger
 import net.minecraft.client.MinecraftClient
-import uk.co.caprica.vlcj.binding.support.runtime.RuntimeUtil
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
-import java.io.File
 import java.util.*
-import kotlin.io.path.pathString
 
 object MinecraftMediaPlayerHolder {
 
@@ -90,7 +86,7 @@ object MinecraftMediaPlayerHolder {
         if(CREATING == null && minDistancePlayer != null) {
             if(ACTIVE_PLAYERS.size >= MAX_SIMULTANEOUS_PLAYERS) {
                 if(maxDistance > minDistance && maxDistancePlayer != null && maxDistancePlayer.status != MinecraftMediaPlayer.Status.CLOSING && !ACTIVE_PLAYERS.contains(minDistancePlayer) && ACTIVE_PLAYERS.contains(maxDistancePlayer)) {
-                    println("Replacing player ${maxDistancePlayer.uuid} for ${minDistancePlayer.uuid}")
+                    ModLogger.warn("Replacing player ${maxDistancePlayer.uuid} for ${minDistancePlayer.uuid}")
                     maxDistancePlayer.shouldRenew = true
                     maxDistancePlayer.close(clearTexture = false)
                     CREATING = minDistancePlayer

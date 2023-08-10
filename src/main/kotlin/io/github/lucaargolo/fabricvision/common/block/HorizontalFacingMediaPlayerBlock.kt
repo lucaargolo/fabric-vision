@@ -1,25 +1,16 @@
 package io.github.lucaargolo.fabricvision.common.block
 
-import io.github.lucaargolo.fabricvision.common.blockentity.BlockEntityCompendium
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
-import io.github.lucaargolo.fabricvision.common.blockentity.PanelBlockEntity
-import io.github.lucaargolo.fabricvision.utils.VoxelShapeUtils.rotate
-import net.minecraft.block.*
+import net.minecraft.block.Block
+import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
-import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemPlacementContext
-import net.minecraft.item.ItemStack
-import net.minecraft.server.world.ServerWorld
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.DirectionProperty
 import net.minecraft.state.property.Properties
 import net.minecraft.util.BlockMirror
 import net.minecraft.util.BlockRotation
-import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
-import net.minecraft.util.shape.VoxelShape
-import net.minecraft.world.BlockView
-import net.minecraft.world.World
 
 abstract class HorizontalFacingMediaPlayerBlock<T: MediaPlayerBlockEntity>(typeProvider: () -> BlockEntityType<T>, settings: Settings) : MediaPlayerBlock<T>(typeProvider, settings) {
 

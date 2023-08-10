@@ -1,9 +1,6 @@
 package io.github.lucaargolo.fabricvision.client.render.blockentity
 
-import io.github.lucaargolo.fabricvision.common.block.MonitorBlock
-import io.github.lucaargolo.fabricvision.common.block.HorizontalFacingMediaPlayerBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.HologramBlockEntity
-import io.github.lucaargolo.fabricvision.common.blockentity.MonitorBlockEntity
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import net.minecraft.client.render.LightmapTextureManager
 import net.minecraft.client.render.OverlayTexture
@@ -14,7 +11,6 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.RotationAxis
-import kotlin.math.max
 import kotlin.math.roundToInt
 
 class HologramBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<HologramBlockEntity> {

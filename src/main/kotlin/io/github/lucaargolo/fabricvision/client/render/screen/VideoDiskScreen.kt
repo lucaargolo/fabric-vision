@@ -11,7 +11,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
 import net.minecraft.util.Hand
-import java.util.UUID
+import java.util.*
 
 class VideoDiskScreen(val stackUUID: UUID, val stack: ItemStack): Screen(Text.translatable("screen.fabricvision.title.video_disk")) {
 

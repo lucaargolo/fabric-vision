@@ -4,7 +4,9 @@ import com.sun.jna.Pointer
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaSoundInstance
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.sound.*
+import net.minecraft.client.sound.Channel
+import net.minecraft.client.sound.SoundEngine
+import net.minecraft.client.sound.StaticSound
 import org.lwjgl.openal.AL10
 import org.lwjgl.openal.AL11
 import uk.co.caprica.vlcj.player.base.MediaPlayer

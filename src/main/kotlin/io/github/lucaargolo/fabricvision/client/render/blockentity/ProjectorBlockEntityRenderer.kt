@@ -5,7 +5,6 @@ import io.github.lucaargolo.fabricvision.client.FabricVisionClient
 import io.github.lucaargolo.fabricvision.client.ProjectorProgram
 import io.github.lucaargolo.fabricvision.common.block.BlockCompendium
 import io.github.lucaargolo.fabricvision.common.block.ProjectorBlock
-import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
 import io.github.lucaargolo.fabricvision.common.blockentity.ProjectorBlockEntity
 import io.github.lucaargolo.fabricvision.compat.IrisCompat
 import io.github.lucaargolo.fabricvision.mixed.WorldRendererMixed

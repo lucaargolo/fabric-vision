@@ -14,12 +14,10 @@ class MinecraftBufferCallback(private val mmp: MinecraftMediaPlayer): BufferForm
 
     override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
         mmp.texture?.close()
-        println("Creating texture ${mmp.uuid}")
         RenderSystem.recordRenderCall {
             mmp.texture = NativeImageBackedTexture(1, 1, true)
             mmp.identifier = MinecraftClient.getInstance().textureManager.registerDynamicTexture("video", mmp.texture)
             if(sourceWidth != mmp.texture?.image?.width || sourceHeight != mmp.texture?.image?.height) mmp.texture?.let{ texture ->
-                println("Updating image ${mmp.uuid} (${sourceWidth}x${sourceHeight})")
                 texture.image = NativeImage(NativeImage.Format.RGBA, sourceWidth, sourceHeight, true)
                 TextureUtil.prepareImage(texture.glId, sourceWidth, sourceHeight)
             }
