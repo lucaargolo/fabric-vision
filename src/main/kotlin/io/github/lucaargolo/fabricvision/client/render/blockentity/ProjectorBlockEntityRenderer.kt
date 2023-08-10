@@ -40,6 +40,7 @@ class ProjectorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.C
         }
 
         entity.projectorProgram?.updateTexture(entity.player)
+        entity.projectorProgram?.updateConfiguration(entity)
         val cameraEntityBackup = client.cameraEntity
         client.cameraEntity = entity.cameraEntity
         val nauseaIntensityBackup = client.player?.nauseaIntensity ?: 0f

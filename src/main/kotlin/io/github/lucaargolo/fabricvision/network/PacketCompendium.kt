@@ -61,8 +61,13 @@ object PacketCompendium {
                         10 -> blockEntity.offsetZ = (value*2).toInt()/2f
                         11 -> blockEntity.yaw = value.roundToInt()*10f
                         12 -> blockEntity.pitch = value.roundToInt()*10f
-                        13 -> blockEntity.yaw = value
-                        14 -> blockEntity.pitch = value
+                        13 -> blockEntity.width = value
+                        14 -> blockEntity.height = value
+                        15 -> blockEntity.offsetX = value
+                        16 -> blockEntity.offsetY = value
+                        17 -> blockEntity.offsetZ = value
+                        18 -> blockEntity.yaw = value
+                        19 -> blockEntity.pitch = value
                     }
                 }
             }

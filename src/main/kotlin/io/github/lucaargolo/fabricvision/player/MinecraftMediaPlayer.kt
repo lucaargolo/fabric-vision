@@ -34,6 +34,10 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
         get() = internalMrl.get()
         private set(value) {
             ModLogger.info("Updating $uuid mrl ${internalMrl.get()} -> $value")
+            texture?.image?.let {
+                it.fillRect(0, 0, it.width, it.height, 0)
+            }
+            texture?.upload()
             internalMrl.set(value)
         }
 
@@ -210,7 +214,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                 val mediaPlayer = player ?: return
                 HOLDER.LOADING = this
                 mediaPlayer.submit {
-                    status = if (mediaPlayer.media().startPaused(currentMrl, *parsedOptions)) {
+                    status = if (mediaPlayer.media().start(currentMrl, *parsedOptions)) {
                         Status.LOADED
                     } else {
                         Status.NO_MEDIA
@@ -220,6 +224,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
         }else if (status == Status.LOADED) {
             val mediaPlayer = player ?: return
             val validMedia = mediaPlayer.media().isValid
+            mediaPlayer.controls().setPause(true)
             status = if (validMedia) {
                 Status.PAUSED
             } else {

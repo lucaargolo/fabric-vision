@@ -1,5 +1,6 @@
 package io.github.lucaargolo.fabricvision.client
 
+import io.github.lucaargolo.fabricvision.common.blockentity.ProjectorBlockEntity
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import ladysnake.satin.api.experimental.ReadableDepthFramebuffer
@@ -10,12 +11,13 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.render.BufferBuilderStorage
 import net.minecraft.client.render.Camera
+import net.minecraft.client.texture.AbstractTexture
 import net.minecraft.client.util.math.MatrixStack
 import org.joml.Matrix4f
 
 class ProjectorProgram {
 
-    private var texture = MinecraftClient.getInstance().textureManager.getTexture(MinecraftMediaPlayer.TRANSPARENT).glId
+    private var texture = TRANSPARENT.glId
 
     val framebuffer: SimpleFramebuffer by lazy {
         val client = MinecraftClient.getInstance()
@@ -42,18 +44,33 @@ class ProjectorProgram {
 
     private val viewPort = effect.findUniform4i("ViewPort")
 
-    //TODO: Brightness and color settings
+    private val colorConfiguration = effect.findUniform4f("ColorConfiguration")
+    private val projectionBrightness = effect.findUniform1f("ProjectionBrightness")
     private val projectionFallout = effect.findUniform1f("ProjectionFallout")
 
     fun updateTexture(player: MinecraftMediaPlayer?) {
         val playerTexture = player?.texture
-        if(playerTexture != null && playerTexture.glId != texture) {
-            texture = playerTexture.glId
+        if(playerTexture != null) {
+            if(playerTexture.glId != texture) {
+                texture = playerTexture.glId
+                effect.setSamplerUniform("ProjectorSampler", texture)
+            }
+        }else{
+            texture = TRANSPARENT.glId
             effect.setSamplerUniform("ProjectorSampler", texture)
         }
     }
 
+    fun updateConfiguration(blockEntity: ProjectorBlockEntity) {
+        colorConfiguration.set(blockEntity.red, blockEntity.green, blockEntity.blue, blockEntity.alpha)
+        projectionBrightness.set(blockEntity.light)
+        projectionFallout.set(blockEntity.fallout)
+    }
+
     companion object {
+        private val TRANSPARENT: AbstractTexture by lazy {
+            MinecraftClient.getInstance().textureManager.getTexture(MinecraftMediaPlayer.TRANSPARENT)
+        }
         private val SHADER = ModIdentifier("shaders/post/projector.json")
         private val RENDER = linkedSetOf<ProjectorProgram>()
 

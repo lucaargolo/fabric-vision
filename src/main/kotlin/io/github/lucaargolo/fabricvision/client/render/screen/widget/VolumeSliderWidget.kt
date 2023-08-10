@@ -30,8 +30,8 @@ class VolumeSliderWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: In
     companion object {
         fun getFormatting(value: Double): Formatting {
             return when {
-                value > 0.9 -> Formatting.RED
-                value > 0.7 -> Formatting.YELLOW
+                value > 0.85 -> Formatting.RED
+                value > 0.55 -> Formatting.YELLOW
                 else -> Formatting.GREEN
             }
         }
