@@ -125,7 +125,13 @@ abstract class MediaPlayerBlock<T: MediaPlayerBlockEntity>(private val typeProvi
         }
 
         override fun markDirty() {
-            blockEntity.markDirty()
+            if(blockEntity.diskStack?.isEmpty != false) {
+                blockEntity.world?.playSound(null, blockEntity.pos.x + 0.5, blockEntity.pos.y + 0.5, blockEntity.pos.z + 0.5, SoundCompendium.DISK_INSERT, SoundCategory.BLOCKS, 1f, 1f)
+            }else{
+                blockEntity.world?.playSound(null, blockEntity.pos.x + 0.5, blockEntity.pos.y + 0.5, blockEntity.pos.z + 0.5, SoundCompendium.DISK_EXTRACT, SoundCategory.BLOCKS, 1f, 1f)
+            }
+            blockEntity.markDirtyAndSync()
+            blockEntity.play()
         }
 
         override fun canPlayerUse(player: PlayerEntity) = true

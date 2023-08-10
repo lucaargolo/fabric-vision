@@ -44,11 +44,15 @@
   "screen.fabricvision.message.pitch": "Pitch: %s",
 
   "screen.fabricvision.message.set_mrl": "Set media location:",
+  "screen.fabricvision.message.set_options": "Set media options:",
   "screen.fabricvision.message.stream": "Media is stream:",
+  "screen.fabricvision.message.show_advanced": "Show advanced settings",
+  "screen.fabricvision.message.hide_advanced": "Hide advanced settings",
+
   "screen.fabricvision.message.live": "Live",
 
-  "tooltip.fabricvision.stream": "Stream",
   "tooltip.fabricvision.mrl": "Media location: %s",
+  "tooltip.fabricvision.stream": "Stream location: %s",
 
   "tooltip.fabricvision.status": "Status",
   "tooltip.fabricvision.status.no_player": "No Player",

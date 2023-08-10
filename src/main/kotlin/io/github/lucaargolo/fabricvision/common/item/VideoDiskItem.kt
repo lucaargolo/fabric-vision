@@ -1,5 +1,6 @@
 package io.github.lucaargolo.fabricvision.common.item
 
+import io.github.lucaargolo.fabricvision.FabricVision
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
@@ -22,6 +23,7 @@ class VideoDiskItem(settings: Settings) : Item(settings) {
         if(user is ServerPlayerEntity) {
             if(!stack.orCreateNbt.contains("uuid")) {
                 stack.orCreateNbt.putUuid("uuid", UUID.randomUUID())
+                stack.orCreateNbt.putString("options", FabricVision.DEFAULT_MEDIA_OPTIONS)
             }
             val uuid = stack.orCreateNbt.getUuid("uuid")
             val buf = PacketByteBufs.create()
@@ -34,14 +36,14 @@ class VideoDiskItem(settings: Settings) : Item(settings) {
 
     override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
         val stream = stack.nbt?.let { if(it.contains("stream")) it.getBoolean("stream") else false } ?: false
-        if(stream) {
-            tooltip.add(Text.translatable("tooltip.fabricvision.stream").formatted(Formatting.RED))
-        }
         val mrl = stack.nbt?.let { if(it.contains("mrl")) it.getString("mrl") else "" } ?: ""
         val showMrl = if (mrl.length > 32) "..." + mrl.substring(mrl.length - 29, mrl.length) else mrl
 
         val text = if(mrl.isNotEmpty())
-            Text.translatable("tooltip.fabricvision.mrl", Text.literal(showMrl).formatted(Formatting.GRAY)).formatted(Formatting.BLUE)
+            if(stream)
+                Text.translatable("tooltip.fabricvision.stream", Text.literal(showMrl).formatted(Formatting.GRAY)).formatted(Formatting.RED)
+            else
+                Text.translatable("tooltip.fabricvision.mrl", Text.literal(showMrl).formatted(Formatting.GRAY)).formatted(Formatting.BLUE)
         else
             Text.translatable("tooltip.fabricvision.status.no_media").formatted(Formatting.YELLOW)
         tooltip.add(text)

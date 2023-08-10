@@ -17,7 +17,7 @@ import javax.sound.sampled.AudioFormat
 class MinecraftAudioCallback(val player: MinecraftMediaPlayer): AudioCallback {
 
     //TODO: Add support to stereo audio when audioMaxDist == 0
-    private val format = AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 128000f, 16, 1, 4, 128000f, false)
+    private val format = AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 64000f, 16, 1, 4, 64000f, false)
 
     private val instance = MinecraftMediaSoundInstance(player::volume)
     private var sourceManager: Channel.SourceManager? = null

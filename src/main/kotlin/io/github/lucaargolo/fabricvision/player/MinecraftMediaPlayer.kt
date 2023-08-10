@@ -39,6 +39,11 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
 
     var shouldRenew = false
 
+    var options = FabricVision.DEFAULT_MEDIA_OPTIONS
+
+    val parsedOptions: Array<String>
+        get() = options.split(" ").toTypedArray()
+
     var pos = Vec3d.ZERO
     var playing = false
     var repeating = false
@@ -71,7 +76,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                 val currentTime = System.currentTimeMillis()
                 startTime += (currentTime - clientPausedTime)
                 player?.submit {
-                    player?.controls()?.play()
+                    if(stream) player?.media()?.start(currentMrl, *parsedOptions) else player?.controls()?.play()
                 }
             }
         }
@@ -142,7 +147,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                         if (difference < 100 || repeating) {
                             status = Status.PLAYING
                             if(!mediaPlayer.status().isPlaying) {
-                                if(stream) mediaPlayer.media().start(currentMrl, ":avcodec-hw=any") else mediaPlayer.controls().play()
+                                if(stream) mediaPlayer.media().start(currentMrl, *parsedOptions) else mediaPlayer.controls().play()
                             }
                         }else if(mediaPlayer.status().isPlaying) {
                             mediaPlayer.controls().setPause(true)
@@ -150,10 +155,10 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                     }else if(status == Status.PAUSED) {
                         status = Status.PLAYING
                         if(!mediaPlayer.status().isPlaying) {
-                            if(stream) mediaPlayer.media().start(currentMrl, ":avcodec-hw=any") else mediaPlayer.controls().play()
+                            if(stream) mediaPlayer.media().start(currentMrl, *parsedOptions) else mediaPlayer.controls().play()
                         }
                     }else if(!mediaPlayer.status().isPlaying) {
-                        if(stream) mediaPlayer.media().start(currentMrl, ":avcodec-hw=any") else mediaPlayer.controls().play()
+                        if(stream) mediaPlayer.media().start(currentMrl, *parsedOptions) else mediaPlayer.controls().play()
                     }
                 }else {
                     if(status == Status.PLAYING) {
@@ -182,7 +187,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                     ModLogger.info("Creating player $uuid")
                     val mediaPlayer = HOLDER.FACTORY!!.mediaPlayers().newEmbeddedMediaPlayer()
                     HOLDER.FACTORY!!.videoSurfaces().newVideoSurface(MinecraftBufferCallback(this), MinecraftRenderCallback(this), true).let(mediaPlayer.videoSurface()::set)
-                    mediaPlayer.audio().callback("S16N", 128000, 1, MinecraftAudioCallback(this), true)
+                    mediaPlayer.audio().callback("S16N", 64000, 1, MinecraftAudioCallback(this), true)
                     player = mediaPlayer
                 }
             }
@@ -205,7 +210,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                 val mediaPlayer = player ?: return
                 HOLDER.LOADING = this
                 mediaPlayer.submit {
-                    status = if (mediaPlayer.media().startPaused(currentMrl, ":avcodec-hw=any")) {
+                    status = if (mediaPlayer.media().startPaused(currentMrl, *parsedOptions)) {
                         Status.LOADED
                     } else {
                         Status.NO_MEDIA

@@ -1,5 +1,6 @@
 package io.github.lucaargolo.fabricvision.common.blockentity
 
+import io.github.lucaargolo.fabricvision.FabricVision
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayerHolder
 import net.minecraft.block.BlockState
@@ -45,6 +46,11 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             markDirtyAndSync()
         }
 
+    private var options = FabricVision.DEFAULT_MEDIA_OPTIONS
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
 
     private var lastTime = System.currentTimeMillis()
 
@@ -146,6 +152,10 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         return diskStack?.nbt?.let { if(it.contains("mrl")) it.getString("mrl") else null } ?: mrl
     }
 
+    fun getDiskOptions(): String {
+        return diskStack?.nbt?.let { if(it.contains("options")) it.getString("options") else null } ?: options
+    }
+
     fun isStreamDisk(): Boolean {
         return diskStack?.nbt?.let { if(it.contains("stream")) it.getBoolean("stream") else null } ?: stream
     }
@@ -159,12 +169,13 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             nbt.put("diskStack", diskStack?.writeNbt(NbtCompound()))
         }
         nbt.putString("mrl", mrl)
+        nbt.putString("options", options)
+        nbt.putBoolean("stream", stream)
         nbt.putLong("lastTime", lastTime)
         nbt.putLong("startTime", startTime)
         nbt.putBoolean("forceTime", forceTime)
         nbt.putBoolean("playing", playing)
         nbt.putBoolean("repeating", repeating)
-        nbt.putBoolean("stream", stream)
         nbt.putFloat("rate", rate)
         nbt.putFloat("audioMaxDist", audioMaxDist)
         nbt.putFloat("audioRefDist", audioRefDist)
@@ -189,12 +200,13 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             null
         }
         mrl = nbt.getString("mrl")
+        options = nbt.getString("options")
+        stream = nbt.getBoolean("stream")
         lastTime = nbt.getLong("lastTime")
         startTime = nbt.getLong("startTime")
         forceTime = nbt.getBoolean("forceTime")
         playing = nbt.getBoolean("playing")
         repeating = nbt.getBoolean("repeating")
-        stream = nbt.getBoolean("stream")
         rate = nbt.getFloat("rate")
         audioMaxDist = nbt.getFloat("audioMaxDist")
         audioRefDist = nbt.getFloat("audioRefDist")
@@ -242,11 +254,12 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
     fun updatePlayer() {
         player?.pos = getCenterPos()
         player?.mrl = getDiskMrl()
+        player?.options = getDiskOptions()
+        player?.stream = isStreamDisk()
         player?.startTime = startTime
         player?.forceTime = forceTime
         player?.playing = playing
         player?.repeating = repeating
-        player?.stream = isStreamDisk()
         player?.rate = rate
         player?.audioMaxDist = audioMaxDist
         player?.audioRefDist = audioRefDist

@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
 
 object PacketCompendium {
 
-    val SET_VIDEO_DISK_MRL_C2S = ModIdentifier("set_video_disk_mrl_c2s")
+    val UPDATE_VIDEO_DISK_C2S = ModIdentifier("update_video_disk_c2s")
 
     val SET_VALUE_BUTTON_C2S = ModIdentifier("set_value_button_c2s")
     val SET_TIME_BUTTON_C2S = ModIdentifier("set_time_button_c2s")
@@ -22,15 +22,17 @@ object PacketCompendium {
     val PLAY_BUTTON_C2S = ModIdentifier("play_button_c2s")
 
     fun initialize() {
-        ServerPlayNetworking.registerGlobalReceiver(SET_VIDEO_DISK_MRL_C2S) { server, player, handler, buf, sender ->
+        ServerPlayNetworking.registerGlobalReceiver(UPDATE_VIDEO_DISK_C2S) { server, player, handler, buf, sender ->
             val uuid = buf.readUuid()
             val hand = buf.readEnumConstant(Hand::class.java)
             val mrl = buf.readString()
+            val options = buf.readString()
             val stream = buf.readBoolean()
             server.execute {
                 val stack = player.getStackInHand(hand)
                 if(stack.isOf(ItemCompendium.VIDEO_DISK) && stack.nbt?.getUuid("uuid") == uuid) {
                     stack.orCreateNbt.putString("mrl", mrl)
+                    stack.orCreateNbt.putString("options", options)
                     stack.orCreateNbt.putBoolean("stream", stream)
                 }
             }
