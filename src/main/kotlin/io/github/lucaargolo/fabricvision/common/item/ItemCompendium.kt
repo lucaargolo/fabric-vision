@@ -4,6 +4,7 @@ import io.github.lucaargolo.fabricvision.common.block.BlockCompendium
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import io.github.lucaargolo.fabricvision.utils.RegistryCompendium
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
+import net.minecraft.client.item.ModelPredicateProviderRegistry
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
@@ -42,7 +43,9 @@ object ItemCompendium: RegistryCompendium<Item>(Registries.ITEM) {
     }
 
     override fun initializeClient() {
-
+        ModelPredicateProviderRegistry.register(VIDEO_DISK, ModIdentifier("stream")) { stack, _, _, _ ->
+            if (stack.nbt?.getBoolean("stream") == true) 1.0f else 0.0f
+        }
     }
 
 }

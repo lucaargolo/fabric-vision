@@ -9,7 +9,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import kotlin.math.roundToInt
 
-class VolumeSliderWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: Int) : PlayerSliderWidget(x, y, 33, 140, 6, 0, 82, { parent.blockEntity.volume }) {
+class VolumeSliderWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: Int) : PlayerSliderWidget(x, y, 33, 140, 6, 0, 86, { parent.blockEntity.volume }) {
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         super.renderButton(context, mouseX, mouseY, delta)

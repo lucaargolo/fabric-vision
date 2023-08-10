@@ -79,22 +79,22 @@ open class MediaPlayerScreen<M: MediaPlayerBlockEntity>(val blockEntity: M) : Sc
         addDrawableChild(NavigateButtonWidget(this, x+98, y+2, 5000L, 182))
         addDrawableChild(VolumeSliderWidget(this, x+140, y+6))
         addDrawableChild(ProgressSliderWidget(this, x+5, y+30))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+12, 13, 164, 50, 165, { blockEntity.volume }, 0, { value ->
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+12, 13, 168, 50, 169, { blockEntity.volume }, 0, { value ->
             Text.literal("Volume: ").formatted(VolumeSliderWidget.getFormatting(value)).append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
         })))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+22, 13, 174, 50, 175, { blockEntity.light }, 1, { value ->
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+22, 13, 178, 50, 179, { blockEntity.light }, 1, { value ->
             Text.literal("Light: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFFFF00)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
         })))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+32, 13, 184, 50, 185, { blockEntity.red }, 2, { value ->
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+32, 13, 188, 50, 189, { blockEntity.red }, 2, { value ->
             Text.literal("Red: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFF0000)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
         })))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+42, 13, 194, 50, 195, { blockEntity.green }, 3, { value ->
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+42, 13, 198, 50, 199, { blockEntity.green }, 3, { value ->
             Text.literal("Green: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0x00FF00)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
         })))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+52, 13, 204, 50, 205, { blockEntity.blue }, 4, { value ->
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+52, 13, 208, 50, 209, { blockEntity.blue }, 4, { value ->
             Text.literal("Blue: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0x0000FF)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
         })))
-        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+62, 13, 214, 50, 215, { blockEntity.alpha }, 5, { value ->
+        configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+62, 13, 218, 50, 219, { blockEntity.alpha }, 5, { value ->
             Text.literal("Alpha: ").styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFFFFFF)) }.append(Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY))
         })))
         configDrawables.add(addSelectableChild(RateButtonWidget(this, configX+8, configY+76, 0.25f, 8)))
@@ -122,7 +122,7 @@ open class MediaPlayerScreen<M: MediaPlayerBlockEntity>(val blockEntity: M) : Sc
             val configCenterX = configX + (configBackgroundWidth/2)
             val rateCenterX = configX + (50/2)
             renderBackground(context)
-            context.drawTexture(TEXTURE, configX, configY, 0, 152, configBackgroundWidth, configBackgroundHeight)
+            context.drawTexture(TEXTURE, configX, configY, 0, 156, configBackgroundWidth, configBackgroundHeight)
             context.matrices.push()
             context.matrices.scale(0.5f, 0.5f, 0.5f)
             val configText = Text.literal("Config Screen")

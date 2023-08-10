@@ -26,10 +26,12 @@ object PacketCompendium {
             val uuid = buf.readUuid()
             val hand = buf.readEnumConstant(Hand::class.java)
             val mrl = buf.readString()
+            val stream = buf.readBoolean()
             server.execute {
                 val stack = player.getStackInHand(hand)
                 if(stack.isOf(ItemCompendium.VIDEO_DISK) && stack.nbt?.getUuid("uuid") == uuid) {
                     stack.orCreateNbt.putString("mrl", mrl)
+                    stack.orCreateNbt.putBoolean("stream", stream)
                 }
             }
         }

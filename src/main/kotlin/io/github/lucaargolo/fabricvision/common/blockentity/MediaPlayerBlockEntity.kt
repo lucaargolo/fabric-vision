@@ -39,14 +39,14 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
 
     var diskStack: ItemStack? = null
 
-    var mrl = ""
+    private var mrl = ""
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
 
-    var lastTime = System.currentTimeMillis()
+    private var lastTime = System.currentTimeMillis()
 
     var startTime = System.currentTimeMillis()
         set(value) {
@@ -76,19 +76,25 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             markDirtyAndSync()
         }
 
+    private var stream = false
+        set(value) {
+            field = value
+            markDirtyAndSync()
+        }
+
     var rate = 1.0f
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
-    var audioMaxDist = 16.0f
+    private var audioMaxDist = 16.0f
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
-    var audioRefDist = 0.0f
+    private var audioRefDist = 0.0f
         set(value) {
             field = value
             markDirtyAndSync()
@@ -136,6 +142,14 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
 
     open fun getCenterPos(): Vec3d = Vec3d.ofCenter(pos)
 
+    fun getDiskMrl(): String {
+        return diskStack?.nbt?.let { if(it.contains("mrl")) it.getString("mrl") else null } ?: mrl
+    }
+
+    fun isStreamDisk(): Boolean {
+        return diskStack?.nbt?.let { if(it.contains("stream")) it.getBoolean("stream") else null } ?: stream
+    }
+
     override fun writeNbt(nbt: NbtCompound) {
         nbt.putBoolean("enabled", enabled)
         if(uuid != null) {
@@ -150,6 +164,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         nbt.putBoolean("forceTime", forceTime)
         nbt.putBoolean("playing", playing)
         nbt.putBoolean("repeating", repeating)
+        nbt.putBoolean("stream", stream)
         nbt.putFloat("rate", rate)
         nbt.putFloat("audioMaxDist", audioMaxDist)
         nbt.putFloat("audioRefDist", audioRefDist)
@@ -179,6 +194,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         forceTime = nbt.getBoolean("forceTime")
         playing = nbt.getBoolean("playing")
         repeating = nbt.getBoolean("repeating")
+        stream = nbt.getBoolean("stream")
         rate = nbt.getFloat("rate")
         audioMaxDist = nbt.getFloat("audioMaxDist")
         audioRefDist = nbt.getFloat("audioRefDist")
@@ -216,20 +232,21 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
 
     fun sync() {
         val world = world ?: return
-        if(world.isClient) {
+        if (world.isClient) {
             updatePlayer()
-        }else{
+        } else {
             (world as? ServerWorld)?.chunkManager?.markForUpdate(this.pos)
         }
     }
 
     fun updatePlayer() {
         player?.pos = getCenterPos()
-        player?.mrl = diskStack?.nbt?.let { if(it.contains("mrl")) it.getString("mrl") else null } ?: mrl
+        player?.mrl = getDiskMrl()
         player?.startTime = startTime
         player?.forceTime = forceTime
         player?.playing = playing
         player?.repeating = repeating
+        player?.stream = isStreamDisk()
         player?.rate = rate
         player?.audioMaxDist = audioMaxDist
         player?.audioRefDist = audioRefDist

@@ -10,7 +10,6 @@ import net.minecraft.client.texture.NativeImageBackedTexture
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
-import uk.co.caprica.vlcj.media.MediaType
 import uk.co.caprica.vlcj.media.Meta
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.State
@@ -46,6 +45,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
     var rate = 1f
     var startTime = 0L
     var forceTime = false
+    var stream = false
 
     var audioMaxDist = 0f
     var audioRefDist = 0f
@@ -105,8 +105,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
         }
         mediaPlayer.submit {
             if(status.interactable) {
-                val mediaType = mediaPlayer.media().info().type()
-                if(mediaType != MediaType.STREAM) {
+                if(!stream) {
                     val mediaRate = mediaPlayer.status().rate()
                     if(mediaRate != rate) {
                         mediaPlayer.controls().setRate(rate)
@@ -143,7 +142,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                         if (difference < 100 || repeating) {
                             status = Status.PLAYING
                             if(!mediaPlayer.status().isPlaying) {
-                                mediaPlayer.controls().play()
+                                if(stream) mediaPlayer.media().start(currentMrl, ":avcodec-hw=any") else mediaPlayer.controls().play()
                             }
                         }else if(mediaPlayer.status().isPlaying) {
                             mediaPlayer.controls().setPause(true)
@@ -151,10 +150,10 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
                     }else if(status == Status.PAUSED) {
                         status = Status.PLAYING
                         if(!mediaPlayer.status().isPlaying) {
-                            mediaPlayer.controls().play()
+                            if(stream) mediaPlayer.media().start(currentMrl, ":avcodec-hw=any") else mediaPlayer.controls().play()
                         }
                     }else if(!mediaPlayer.status().isPlaying) {
-                        mediaPlayer.controls().play()
+                        if(stream) mediaPlayer.media().start(currentMrl, ":avcodec-hw=any") else mediaPlayer.controls().play()
                     }
                 }else {
                     if(status == Status.PLAYING) {

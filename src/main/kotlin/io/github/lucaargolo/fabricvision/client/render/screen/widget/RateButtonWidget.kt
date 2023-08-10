@@ -14,7 +14,7 @@ import org.joml.Vector2i
 class RateButtonWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: Int, private val rate: Float, private val textureU: Int): ButtonWidget(x, y, 7, 7, Text.empty(), {  }, DEFAULT_NARRATION_SUPPLIER) {
 
     private val textureV: Int
-        get() = if(parent.blockEntity.rate == rate || isHovered || isFocused) 243 else 228
+        get() = if(parent.blockEntity.rate == rate || isHovered || isFocused) 247 else 232
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.drawTexture(MediaPlayerScreen.TEXTURE, x, y, textureU, textureV, 7, 7)
