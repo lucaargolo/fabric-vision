@@ -20,8 +20,6 @@ import net.fabricmc.api.ModInitializer
 
 object FabricVision: ModInitializer {
 
-    const val DEFAULT_MEDIA_OPTIONS = ":avcodec-hw=any"
-
     const val MOD_ID = "fabricvision"
     const val MOD_NAME = "Fabric Vision"
 
@@ -42,7 +40,7 @@ object FabricVision: ModInitializer {
 
     override fun onInitialize() {
         initializeRegistries()
-        ModConfig.getInstance()
+        ModConfig.initialize()
         LibVLCInitializer.initialize()
     }
 

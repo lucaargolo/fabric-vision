@@ -1,11 +1,13 @@
 package io.github.lucaargolo.fabricvision.mixin;
 
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient;
+import io.github.lucaargolo.fabricvision.utils.ModConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,6 +21,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public abstract class GameRendererMixin {
 
     @Shadow @Final MinecraftClient client;
+
+    @Shadow public abstract float method_32796();
 
     @Inject(at = @At("HEAD"), method = "updateTargetedEntity", cancellable = true)
     public void cancelProjectorEntityUpdate(float tickDelta, CallbackInfo ci) {
@@ -46,7 +50,16 @@ public abstract class GameRendererMixin {
         }
     }
 
-    //TODO: Cancel nausea
+    @Inject(at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;mul(Lorg/joml/Matrix4fc;)Lorg/joml/Matrix4f;"), method = "getBasicProjectionMatrix", locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
+    public void fixProjectorProjection(double fov, CallbackInfoReturnable<Matrix4f> cir, MatrixStack matrixStack) {
+        if(FabricVisionClient.INSTANCE.isRenderingProjector()) {
+            ModConfig modConfig = ModConfig.Companion.getInstance();
+            int width = modConfig.getProjectorFramebufferWidth();
+            int height = modConfig.getProjectorFramebufferHeight();
+            matrixStack.peek().getPositionMatrix().mul(new Matrix4f().setPerspective((float)(fov * 0.01745329238474369), (float)width / (float)height, 0.05F, this.method_32796()));
+            cir.setReturnValue(matrixStack.peek().getPositionMatrix());
+        }
+    }
 
 
 

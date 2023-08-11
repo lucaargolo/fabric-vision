@@ -2,6 +2,7 @@ package io.github.lucaargolo.fabricvision.client
 
 import io.github.lucaargolo.fabricvision.common.blockentity.ProjectorBlockEntity
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
+import io.github.lucaargolo.fabricvision.utils.ModConfig
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import ladysnake.satin.api.experimental.ReadableDepthFramebuffer
 import ladysnake.satin.api.managed.ManagedShaderEffect
@@ -20,8 +21,7 @@ class ProjectorProgram {
     private var texture = TRANSPARENT.glId
 
     val framebuffer: SimpleFramebuffer by lazy {
-        val client = MinecraftClient.getInstance()
-        SimpleFramebuffer(client.window.framebufferWidth, client.window.framebufferHeight, true, MinecraftClient.IS_SYSTEM_MAC)
+        SimpleFramebuffer(ModConfig.instance.projectorFramebufferWidth, ModConfig.instance.projectorFramebufferHeight, true, MinecraftClient.IS_SYSTEM_MAC)
     }
 
     var bufferBuilders = BufferBuilderStorage()
@@ -42,7 +42,7 @@ class ProjectorProgram {
     private val cameraPosition = effect.findUniform3f("CameraPosition")
     private val projectorPosition = effect.findUniform3f("ProjectorPosition")
 
-    private val viewPort = effect.findUniform4i("ViewPort")
+    private val viewPort = effect.findUniform2i("ViewPort")
 
     private val colorConfiguration = effect.findUniform4f("ColorConfiguration")
     private val projectionBrightness = effect.findUniform1f("ProjectionBrightness")
@@ -80,10 +80,6 @@ class ProjectorProgram {
             FabricVisionClient.renderingProjector = projector
             projector?.let {
                 RENDER.add(it)
-                val client = MinecraftClient.getInstance()
-                if(it.framebuffer.viewportWidth != client.window.framebufferWidth || it.framebuffer.viewportHeight != client.window.framebufferHeight) {
-                    it.framebuffer.resize(client.window.framebufferWidth, client.window.framebufferHeight, MinecraftClient.IS_SYSTEM_MAC)
-                }
             }
         }
 
@@ -98,7 +94,7 @@ class ProjectorProgram {
             val client = MinecraftClient.getInstance()
             RENDER.forEach {
                 if (!FabricVisionClient.isRenderingProjector) {
-                    it.viewPort.set(0, 0, client.window.framebufferWidth + 0, client.window.framebufferHeight + 0)
+                    it.viewPort.set(client.window.framebufferWidth, client.window.framebufferHeight)
                     it.cameraPosition.set(camera.pos.x.toFloat(), camera.pos.y.toFloat(), camera.pos.z.toFloat())
                     it.mainInverseTransformMatrix.set(GlMatrices.getInverseTransformMatrix(outMat))
                 }else if(FabricVisionClient.renderingProjector == it) {

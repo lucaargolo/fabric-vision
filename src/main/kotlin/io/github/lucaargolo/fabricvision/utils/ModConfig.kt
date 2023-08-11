@@ -10,16 +10,16 @@ import java.nio.file.Files
 
 class ModConfig {
 
-    val projectorFalloutDistance = 32f
+    val defaultMediaOptions = ":avcodec-hw=any"
+
+    val maxPanelDepth = 200
 
     val projectorFramebufferWidth = 1280
     val projectorFramebufferHeight = 720
 
-    val maxPanelDepth = 200
-
     companion object {
 
-        private val config: ModConfig by lazy {
+       val instance: ModConfig by lazy {
             val gson = GsonBuilder().setPrettyPrinting().create()
             val configFile = File("${FabricLoader.getInstance().configDir}${File.separator}${FabricVision.MOD_ID}.json")
             var finalConfig: ModConfig
@@ -44,7 +44,9 @@ class ModConfig {
             finalConfig
         }
 
-        fun getInstance() = config
+        fun initialize() {
+            instance
+        }
 
     }
 

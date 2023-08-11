@@ -2,6 +2,7 @@ package io.github.lucaargolo.fabricvision.common.blockentity
 
 import io.github.lucaargolo.fabricvision.common.block.BlockCompendium
 import io.github.lucaargolo.fabricvision.common.block.HorizontalFacingMediaPlayerBlock
+import io.github.lucaargolo.fabricvision.utils.ModConfig
 import net.minecraft.block.BlockState
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.world.ServerWorld
@@ -180,7 +181,7 @@ class PanelBlockEntity(pos: BlockPos, state: BlockState) : MediaPlayerBlockEntit
     private fun searchPanels(world: ServerWorld, facing: Direction, pos: BlockPos, search: MutableSet<BlockPos> = linkedSetOf(), found: MutableSet<BlockPos> = linkedSetOf(), minPos: BlockPos = pos, maxPos: BlockPos = pos, depth: Int = 0): Triple<BlockPos, BlockPos, MutableSet<BlockPos>> {
         var newMinPos = minPos
         var newMaxPos = maxPos
-        if(depth < 200 && search.add(pos)) {
+        if(depth < ModConfig.instance.maxPanelDepth && search.add(pos)) {
             val state = world.getBlockState(pos)
             if(state.isOf(BlockCompendium.PANEL) && found.add(pos)) {
                 checkMinMaxPos(facing, newMinPos, newMaxPos, pos, pos).let {

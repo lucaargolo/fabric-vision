@@ -1,7 +1,7 @@
 package io.github.lucaargolo.fabricvision.common.item
 
-import io.github.lucaargolo.fabricvision.FabricVision
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
+import io.github.lucaargolo.fabricvision.utils.ModConfig
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.client.item.TooltipContext
@@ -23,7 +23,7 @@ class VideoDiskItem(settings: Settings) : Item(settings) {
         if(user is ServerPlayerEntity) {
             if(!stack.orCreateNbt.contains("uuid")) {
                 stack.orCreateNbt.putUuid("uuid", UUID.randomUUID())
-                stack.orCreateNbt.putString("options", FabricVision.DEFAULT_MEDIA_OPTIONS)
+                stack.orCreateNbt.putString("options", ModConfig.instance.defaultMediaOptions)
             }
             val uuid = stack.orCreateNbt.getUuid("uuid")
             val buf = PacketByteBufs.create()
