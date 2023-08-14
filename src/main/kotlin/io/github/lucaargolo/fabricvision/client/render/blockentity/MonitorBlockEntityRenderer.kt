@@ -19,7 +19,7 @@ class MonitorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Con
 
     override fun render(entity: MonitorBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
 
-        val identifier = entity.player?.identifier ?: MinecraftMediaPlayer.TRANSPARENT
+        val identifier = entity.player?.texture ?: MinecraftMediaPlayer.TRANSPARENT
         val renderLayer = RenderLayer.getEntityTranslucent(identifier)
         val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
 

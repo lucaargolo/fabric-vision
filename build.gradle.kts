@@ -75,6 +75,10 @@ repositories {
         name = "ladysnake"
         url = uri("https://maven.ladysnake.org/releases")
     }
+    maven {
+        name = "dv8tion"
+        url = uri("https://m2.dv8tion.net/releases")
+    }
     mavenCentral()
     mavenLocal()
 }
@@ -97,6 +101,8 @@ dependencies {
     implementation("uk.co.caprica:vlcj:4.8.2")
     include("uk.co.caprica:vlcj:4.8.2")
     include("uk.co.caprica:vlcj-natives:4.8.1")
+
+    implementation("com.sedmelluq:lavaplayer:1.3.77")
 
     modCompileOnly(files("libs/iris-mc1.20.1-1.6.5.jar"))
 

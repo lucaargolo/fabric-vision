@@ -1,5 +1,6 @@
 package io.github.lucaargolo.fabricvision.player
 
+import io.github.lucaargolo.fabricvision.player.MinecraftPlayer.Status
 import io.github.lucaargolo.fabricvision.utils.ModLogger
 import net.minecraft.client.MinecraftClient
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
@@ -17,15 +18,7 @@ object MinecraftMediaPlayerHolder {
 
     var FACTORY: MediaPlayerFactory? = null
 
-    private var tickedWorld = false
     private var age = 0
-
-    fun worldTick() {
-        if(!tickedWorld) {
-            tickedWorld = true
-            PLAYERS.forEach(MinecraftMediaPlayer::worldTick)
-        }
-    }
 
     fun clientTick(client: MinecraftClient) {
 
@@ -36,10 +29,10 @@ object MinecraftMediaPlayerHolder {
 
         val player = client.player
 
-        if(CREATING?.status != MinecraftMediaPlayer.Status.WAITING && CREATING?.status != MinecraftMediaPlayer.Status.CREATING) {
+        if(CREATING?.status != Status.WAITING && CREATING?.status != Status.CREATING) {
             CREATING = null
         }
-        if(LOADING?.status != MinecraftMediaPlayer.Status.LOADING) {
+        if(LOADING?.status != Status.LOADING) {
             LOADING = null
         }
 
@@ -63,7 +56,7 @@ object MinecraftMediaPlayerHolder {
                         maxDistance = distance
                     }
                 }
-                if(entry.status == MinecraftMediaPlayer.Status.WAITING) {
+                if(entry.status == Status.WAITING) {
                     val distance = entry.pos.distanceTo(player.pos)
                     if (distance < minDistance) {
                         minDistancePlayer = entry
@@ -72,7 +65,7 @@ object MinecraftMediaPlayerHolder {
                 }
             }
 
-            if(entry.status == MinecraftMediaPlayer.Status.CLOSED) {
+            if(entry.status == Status.CLOSED) {
                 if(entry.closed()) {
                     iterator.remove()
                 }
@@ -85,10 +78,10 @@ object MinecraftMediaPlayerHolder {
 
         if(CREATING == null && minDistancePlayer != null) {
             if(ACTIVE_PLAYERS.size >= MAX_SIMULTANEOUS_PLAYERS) {
-                if(maxDistance > minDistance && maxDistancePlayer != null && maxDistancePlayer.status != MinecraftMediaPlayer.Status.CLOSING && !ACTIVE_PLAYERS.contains(minDistancePlayer) && ACTIVE_PLAYERS.contains(maxDistancePlayer)) {
+                if(maxDistance > minDistance && maxDistancePlayer != null && maxDistancePlayer.status != Status.CLOSING && !ACTIVE_PLAYERS.contains(minDistancePlayer) && ACTIVE_PLAYERS.contains(maxDistancePlayer)) {
                     ModLogger.warn("Replacing player ${maxDistancePlayer.uuid} for ${minDistancePlayer.uuid}")
                     maxDistancePlayer.shouldRenew = true
-                    maxDistancePlayer.close(clearTexture = false)
+                    maxDistancePlayer.close(clearAssets = false)
                     CREATING = minDistancePlayer
                 }
             }else{
@@ -96,14 +89,11 @@ object MinecraftMediaPlayerHolder {
             }
         }
 
-
-
-        tickedWorld = false
         age++
     }
 
     fun create(uuid: UUID): MinecraftMediaPlayer {
-        val player = MinecraftMediaPlayer(uuid, "")
+        val player = MinecraftMediaPlayer(uuid)
         PLAYERS.add(player)
         return player
     }

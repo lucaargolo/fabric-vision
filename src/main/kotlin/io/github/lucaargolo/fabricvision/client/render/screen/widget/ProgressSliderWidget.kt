@@ -15,14 +15,14 @@ class ProgressSliderWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: 
     private val stream = Stream()
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        if(!parent.blockEntity.isStreamDisk()) {
+        if(!parent.blockEntity.isStreamInternal()) {
             super.renderButton(context, mouseX, mouseY, delta)
         }else{
             stream.renderButton(context, mouseX, mouseY, delta)
         }
-        active = !parent.config && !parent.blockEntity.isStreamDisk()
+        active = !parent.config && !parent.blockEntity.isStreamInternal()
         if(active && (isHovered || isDragged)) {
-            val valueFromMouse = (mouseX - (x + 4.0)) / (width - 8.0)
+            val valueFromMouse = (mouseX - x) / (width - 2.0)
             val draggingMediaTime = (valueFromMouse * parent.mediaDuration).roundToLong()
             parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.set_video_time", Text.literal(MediaPlayerScreen.formatTimestamp(draggingMediaTime)).styled { s -> s.withColor(0x00AFE4) }).formatted(Formatting.GRAY).asOrderedText())
         }

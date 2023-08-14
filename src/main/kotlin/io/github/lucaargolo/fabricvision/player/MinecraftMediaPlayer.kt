@@ -1,13 +1,14 @@
 package io.github.lucaargolo.fabricvision.player
 
-import io.github.lucaargolo.fabricvision.FabricVision
+import io.github.lucaargolo.fabricvision.common.item.DiskItem.Type
+import io.github.lucaargolo.fabricvision.player.MinecraftPlayer.Status
 import io.github.lucaargolo.fabricvision.player.callback.MinecraftAudioCallback
 import io.github.lucaargolo.fabricvision.player.callback.MinecraftBufferCallback
 import io.github.lucaargolo.fabricvision.player.callback.MinecraftRenderCallback
+import io.github.lucaargolo.fabricvision.utils.ModConfig
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import io.github.lucaargolo.fabricvision.utils.ModLogger
 import net.minecraft.client.texture.NativeImageBackedTexture
-import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
 import uk.co.caprica.vlcj.media.Meta
@@ -18,10 +19,12 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
 import kotlin.math.roundToLong
 
-class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
+class MinecraftMediaPlayer(override val uuid: UUID): MinecraftPlayer {
+
+    override val type = Type.VIDEO
 
     private val internalStatus = AtomicReference(Status.WAITING)
-    var status
+    override var status
         get() = internalStatus.get()
         private set(value) {
             ModLogger.info("Updating $uuid state ${internalStatus.get()} -> $value")
@@ -30,39 +33,38 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
 
     private val internalMrl = AtomicReference("")
 
-    var currentMrl
+    private var currentMrl
         get() = internalMrl.get()
         private set(value) {
             ModLogger.info("Updating $uuid mrl ${internalMrl.get()} -> $value")
-            texture?.image?.let {
+            nativeTexture?.image?.let {
                 it.fillRect(0, 0, it.width, it.height, 0)
             }
-            texture?.upload()
+            nativeTexture?.upload()
             internalMrl.set(value)
         }
 
     var shouldRenew = false
 
-    var options = FabricVision.DEFAULT_MEDIA_OPTIONS
+    var options = ModConfig.instance.defaultMediaOptions
 
-    val parsedOptions: Array<String>
+    private val parsedOptions: Array<String>
         get() = options.split(" ").toTypedArray()
 
-    var pos = Vec3d.ZERO
-    var playing = false
-    var repeating = false
-    var rate = 1f
-    var startTime = 0L
-    var forceTime = false
-    var stream = false
+    override var mrl = ""
+    override var pos = Vec3d.ZERO
+    override var stream = false
+    override var playing = false
+    override var repeating = false
+    override var rate = 1f
+    override var startTime = 0L
+    override var forceTime = false
+    override var volume = 1f
+    override var audioMaxDist = 0f
+    override var audioRefDist = 0f
 
-    var audioMaxDist = 0f
-    var audioRefDist = 0f
-
-    var volume = 1f
-
-    var identifier: Identifier = TRANSPARENT
-    var texture: NativeImageBackedTexture? = null
+    override var texture: Identifier = TRANSPARENT
+    var nativeTexture: NativeImageBackedTexture? = null
 
     private var player: MediaPlayer? = null
 
@@ -85,7 +87,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
             }
         }
 
-    fun updateDuration(durationConsumer: (Long) -> Unit) {
+    override fun updateDuration(durationConsumer: (Long) -> Unit) {
         val mediaPlayer = player ?: return
         mediaPlayer.submit {
             if(status.interactable) {
@@ -96,7 +98,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
         }
     }
 
-    fun updateTitle(titleConsumer: (String) -> Unit) {
+    override fun updateTitle(titleConsumer: (String) -> Unit) {
         val mediaPlayer = player ?: return
         mediaPlayer.submit {
             if(status.interactable) {
@@ -107,7 +109,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
         }
     }
 
-    fun worldTick() {
+    override fun tick() {
         val mediaPlayer = player ?: return
         if(clientPaused) {
             return
@@ -238,7 +240,7 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
         }
     }
 
-    fun load(justCreated: Boolean = false): Boolean {
+    private fun load(justCreated: Boolean = false): Boolean {
         player?.controls()?.stop()
         return if(justCreated || status.acceptMedia) {
             currentMrl = mrl
@@ -254,10 +256,14 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
         }
     }
 
-    fun close(clearTexture: Boolean = true) {
-        if(clearTexture) {
-            texture?.image = null
-            texture?.clearGlId()
+    override fun close() {
+        close(true)
+    }
+
+    fun close(clearAssets: Boolean) {
+        if(clearAssets) {
+            nativeTexture?.image = null
+            nativeTexture?.clearGlId()
         }
         status = if(player == null) {
             Status.CLOSED
@@ -286,27 +292,6 @@ class MinecraftMediaPlayer(val uuid: UUID, var mrl: String) {
         }else{
             true
         }
-    }
-
-    enum class Status(val interactable: Boolean, val acceptMedia: Boolean, val formatting: Formatting) {
-        NO_PLAYER(false, false, Formatting.RED),    // mmp not created, used for screen
-        WAITING(false, false, Formatting.RED),      // mmp just created, waiting for liberation
-        CREATING(false, false, Formatting.RED),     // mp requested
-        NO_MEDIA(false, true, Formatting.YELLOW),   // mp ready, no media
-        LOADING(false, false, Formatting.YELLOW),   // mp ready, media requested
-        LOADED(false, true, Formatting.YELLOW),     // mp ready, media loaded
-        PLAYING(true, true, Formatting.GREEN),      // mp ready, media playing
-        PAUSED(true, true, Formatting.GREEN),       // mp ready, media paused
-        STOPPED(true, true, Formatting.GREEN),      // mp ready, media stopped
-        CLOSING(false, false, Formatting.RED),      // mp closing
-        CLOSED(false, false, Formatting.RED);       // mp closed
-
-        val translationKey: String
-            get() = "tooltip.${FabricVision.MOD_ID}.status.${name.lowercase()}"
-
-        val descriptionKey: String
-            get() = "$translationKey.description"
-
     }
 
     companion object {

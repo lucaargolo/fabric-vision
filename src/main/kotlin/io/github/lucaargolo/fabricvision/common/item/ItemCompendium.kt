@@ -24,6 +24,7 @@ object ItemCompendium: RegistryCompendium<Item>(Registries.ITEM) {
     }
 
     val VIDEO_DISK = register("video_disk", VideoDiskItem(Item.Settings().maxCount(1)))
+    val AUDIO_DISK = register("audio_disk", AudioDiskItem(Item.Settings().maxCount(1)))
 
     private fun registerCreativeTab() {
         Registry.register(Registries.ITEM_GROUP, ModIdentifier("creative_tab"), FabricItemGroup

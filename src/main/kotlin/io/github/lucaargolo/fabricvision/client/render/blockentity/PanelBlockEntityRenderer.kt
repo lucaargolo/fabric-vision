@@ -21,7 +21,7 @@ class PanelBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Conte
     override fun render(entity: PanelBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
 
         if(entity.activePanel == entity) {
-            val identifier = entity.player?.identifier ?: MinecraftMediaPlayer.TRANSPARENT
+            val identifier = entity.player?.texture ?: MinecraftMediaPlayer.TRANSPARENT
             val renderLayer = RenderLayer.getEntityTranslucent(identifier)
             val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
 

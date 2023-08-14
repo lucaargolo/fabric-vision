@@ -2,7 +2,6 @@ package io.github.lucaargolo.fabricvision.common.item
 
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
 import io.github.lucaargolo.fabricvision.common.item.DiskItem.Type
-import io.github.lucaargolo.fabricvision.utils.ModConfig
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.client.item.TooltipContext
@@ -16,34 +15,28 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.world.World
 import java.util.*
 
-class VideoDiskItem(settings: Settings) : DiskItem(Type.VIDEO, settings) {
+class AudioDiskItem(settings: Settings) : DiskItem(Type.AUDIO, settings) {
 
     override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
         val stack = user.getStackInHand(hand)
         if(user is ServerPlayerEntity) {
             if(!stack.orCreateNbt.contains("uuid")) {
                 stack.orCreateNbt.putUuid("uuid", UUID.randomUUID())
-                stack.orCreateNbt.putString("options", ModConfig.instance.defaultMediaOptions)
             }
             val uuid = stack.orCreateNbt.getUuid("uuid")
             val buf = PacketByteBufs.create()
             buf.writeUuid(uuid)
             buf.writeEnumConstant(hand)
-            ServerPlayNetworking.send(user, PacketCompendium.OPEN_VIDEO_DISK_SCREEN_S2C, buf)
+            ServerPlayNetworking.send(user, PacketCompendium.OPEN_AUDIO_DISK_SCREEN_S2C, buf)
         }
         return TypedActionResult.success(stack)
     }
 
     override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
-        val stream = stack.nbt?.let { if(it.contains("stream")) it.getBoolean("stream") else false } ?: false
         val mrl = stack.nbt?.let { if(it.contains("mrl")) it.getString("mrl") else "" } ?: ""
         val showMrl = if (mrl.length > 32) "..." + mrl.substring(mrl.length - 29, mrl.length) else mrl
-
         val text = if(mrl.isNotEmpty())
-            if(stream)
-                Text.translatable("tooltip.fabricvision.stream", Text.literal(showMrl).formatted(Formatting.GRAY)).formatted(Formatting.RED)
-            else
-                Text.translatable("tooltip.fabricvision.mrl", Text.literal(showMrl).formatted(Formatting.GRAY)).formatted(Formatting.BLUE)
+            Text.translatable("tooltip.fabricvision.mrl", Text.literal(showMrl).formatted(Formatting.GRAY)).formatted(Formatting.GREEN)
         else
             Text.translatable("tooltip.fabricvision.status.no_media").formatted(Formatting.YELLOW)
         tooltip.add(text)

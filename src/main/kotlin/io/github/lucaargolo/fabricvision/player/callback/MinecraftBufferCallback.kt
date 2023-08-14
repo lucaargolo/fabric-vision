@@ -13,11 +13,11 @@ import java.nio.ByteBuffer
 class MinecraftBufferCallback(private val mmp: MinecraftMediaPlayer): BufferFormatCallback {
 
     override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
-        mmp.texture?.close()
+        mmp.nativeTexture?.close()
         RenderSystem.recordRenderCall {
-            mmp.texture = NativeImageBackedTexture(1, 1, true)
-            mmp.identifier = MinecraftClient.getInstance().textureManager.registerDynamicTexture("video", mmp.texture)
-            if(sourceWidth != mmp.texture?.image?.width || sourceHeight != mmp.texture?.image?.height) mmp.texture?.let{ texture ->
+            mmp.nativeTexture = NativeImageBackedTexture(1, 1, true)
+            mmp.texture = MinecraftClient.getInstance().textureManager.registerDynamicTexture("video", mmp.nativeTexture)
+            if(sourceWidth != mmp.nativeTexture?.image?.width || sourceHeight != mmp.nativeTexture?.image?.height) mmp.nativeTexture?.let{ texture ->
                 texture.image = NativeImage(NativeImage.Format.RGBA, sourceWidth, sourceHeight, true)
                 TextureUtil.prepareImage(texture.glId, sourceWidth, sourceHeight)
             }

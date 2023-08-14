@@ -8,6 +8,10 @@
   "block.fabricvision.hologram": "Hologram",
 
   "item.fabricvision.video_disk": "Video Disk",
+  "item.fabricvision.audio_disk": "Audio Disk",
+
+  "screen.fabricvision.title.video_disk": "Video Disk",
+  "screen.fabricvision.title.audio_disk": "Audio Disk",
 
   "screen.fabricvision.media_player": "Media Player",
 

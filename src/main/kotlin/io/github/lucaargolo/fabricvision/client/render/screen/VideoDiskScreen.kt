@@ -3,6 +3,7 @@ package io.github.lucaargolo.fabricvision.client.render.screen
 import io.github.lucaargolo.fabricvision.FabricVision
 import io.github.lucaargolo.fabricvision.common.item.ItemCompendium
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
+import io.github.lucaargolo.fabricvision.utils.ModConfig
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.client.gui.DrawContext
@@ -51,7 +52,7 @@ class VideoDiskScreen(val stackUUID: UUID, val stack: ItemStack): Screen(Text.tr
         advancedButton = advancedButtonBuilder.build()
         optionsField = TextFieldWidget(textRenderer, (width/2)-150, (height/2)+60, 300, 16, Text.empty())
         optionsField?.setMaxLength(99999)
-        optionsField?.text = stack.nbt?.getString("options") ?: FabricVision.DEFAULT_MEDIA_OPTIONS
+        optionsField?.text = stack.nbt?.getString("options") ?: ModConfig.instance.defaultMediaOptions
         optionsField?.setEditableColor(16777215)
         optionsField?.setChangedListener {
             update()
@@ -112,7 +113,7 @@ class VideoDiskScreen(val stackUUID: UUID, val stack: ItemStack): Screen(Text.tr
         val validStack = getValidStack(client?.player) ?: return
         val hand = if(validStack == client?.player?.mainHandStack) Hand.MAIN_HAND else Hand.OFF_HAND
         val mrl = mrlField?.text ?: ""
-        val options = optionsField?.text ?: FabricVision.DEFAULT_MEDIA_OPTIONS
+        val options = optionsField?.text ?: ModConfig.instance.defaultMediaOptions
         val stream = mrl.endsWith(".m3u8") || mrl.startsWith("rt") || mrl.startsWith("mms")
         if(stream != streamCheckbox?.isChecked && !forceCheck) {
             streamCheckbox?.onPress()

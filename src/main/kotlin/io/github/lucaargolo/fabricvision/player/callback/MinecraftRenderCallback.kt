@@ -11,10 +11,10 @@ import java.nio.ByteBuffer
 
 class MinecraftRenderCallback(private val mmp: MinecraftMediaPlayer): RenderCallback {
     override fun display(player: MediaPlayer, buffers: Array<ByteBuffer>, bufferFormat: BufferFormat) {
-        if (mmp.status.interactable && buffers.size == 1) RenderSystem.recordRenderCall { mmp.texture?.image?.let { image ->
+        if (mmp.status.interactable && buffers.size == 1) RenderSystem.recordRenderCall { mmp.nativeTexture?.image?.let { image ->
             val address = JNINativeInterface.GetDirectBufferAddress(buffers[0])
             MemoryUtil.memCopy(address, image.pointer, image.width * image.height * 4L)
-            mmp.texture?.upload()
+            mmp.nativeTexture?.upload()
         } }
     }
 

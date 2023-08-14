@@ -1,8 +1,10 @@
 package io.github.lucaargolo.fabricvision.common.blockentity
 
-import io.github.lucaargolo.fabricvision.FabricVision
-import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
-import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayerHolder
+import io.github.lucaargolo.fabricvision.common.item.DiskItem
+import io.github.lucaargolo.fabricvision.common.item.DiskItem.Type
+import io.github.lucaargolo.fabricvision.player.*
+
+import io.github.lucaargolo.fabricvision.utils.ModConfig
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
@@ -19,11 +21,21 @@ import java.util.*
 
 abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlockEntity>, pos: BlockPos, state: BlockState) : BlockEntity(type, pos, state) {
 
-    var player: MinecraftMediaPlayer? = null
+    private var uuid: UUID? = null
+
+    var diskStack: ItemStack? = null
+    val type: Type
+        get() = (diskStack?.item as? DiskItem)?.type ?: Type.NONE
+
+    var player: MinecraftPlayer? = null
         get() {
             val uuid = uuid
             if(field == null && uuid != null && enabled) {
-                field = MinecraftMediaPlayerHolder.create(uuid)
+                field = when(type) {
+                    Type.VIDEO -> MinecraftMediaPlayerHolder.create(uuid)
+                    Type.AUDIO -> MinecraftAudioPlayerHolder.create(uuid)
+                    else -> null
+                }
             }
             return field
         }
@@ -36,17 +48,13 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
             markDirtyAndSync()
         }
 
-    private var uuid: UUID? = null
-
-    var diskStack: ItemStack? = null
-
     private var mrl = ""
         set(value) {
             field = value
             markDirtyAndSync()
         }
 
-    private var options = FabricVision.DEFAULT_MEDIA_OPTIONS
+    private var options = ModConfig.instance.defaultMediaOptions
         set(value) {
             field = value
             markDirtyAndSync()
@@ -160,6 +168,10 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         return diskStack?.nbt?.let { if(it.contains("stream")) it.getBoolean("stream") else null } ?: stream
     }
 
+    fun isStreamInternal(): Boolean {
+        return player?.stream ?: false
+    }
+
     override fun writeNbt(nbt: NbtCompound) {
         nbt.putBoolean("enabled", enabled)
         if(uuid != null) {
@@ -252,13 +264,17 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
     }
 
     fun updatePlayer() {
-        player?.pos = getCenterPos()
+        if(type != Type.NONE && type != player?.type) {
+            player?.close()
+            player = null
+        }
+        (player as? MinecraftMediaPlayer)?.options = getDiskOptions()
         player?.mrl = getDiskMrl()
-        player?.options = getDiskOptions()
+        player?.pos = getCenterPos()
+        player?.playing = playing
         player?.stream = isStreamDisk()
         player?.startTime = startTime
         player?.forceTime = forceTime
-        player?.playing = playing
         player?.repeating = repeating
         player?.rate = rate
         player?.audioMaxDist = audioMaxDist
@@ -312,6 +328,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
                     blockEntity.player = null
                 }
             }
+            blockEntity.player?.tick()
         }
 
     }

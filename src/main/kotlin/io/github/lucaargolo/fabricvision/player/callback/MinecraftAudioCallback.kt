@@ -22,53 +22,49 @@ class MinecraftAudioCallback(val player: MinecraftMediaPlayer): AudioCallback {
     private val instance = MinecraftMediaSoundInstance(player::volume)
     private var sourceManager: Channel.SourceManager? = null
 
-    private var scheduleThread = Thread()
-
     override fun play(mediaPlayer: MediaPlayer, samples: Pointer, sampleCount: Int, pts: Long) {
         val factory = MinecraftMediaPlayerHolder.FACTORY ?: return
         val clock = factory.application().clock()
         val delay = pts - clock
-        scheduleThread.run {
-            if(delay > 0) {
-                Thread.sleep(delay / 1000)
+        if(delay > 0) {
+            Thread.sleep(delay / 1000)
 
-                val buffer = samples.getByteBuffer(0L, sampleCount * 2L)
-                soundExecutor.execute {
-                    val volume = soundSystem.getAdjustedVolume(instance)
-                    if(volume > 0f && soundSystem.started && (sourceManager == null || sourceManager?.isStopped == true)) {
-                        val source = soundEngine.createSource(SoundEngine.RunMode.STREAMING)
-                        if (source != null) {
-                            val channelSource = soundChannel.SourceManager(source)
-                            soundChannel.sources.add(channelSource)
-                            sourceManager = channelSource
-                        }
+            val buffer = samples.getByteBuffer(0L, sampleCount * 2L)
+            soundExecutor.execute {
+                val volume = soundSystem.getAdjustedVolume(instance)
+                if(volume > 0f && soundSystem.started && (sourceManager == null || sourceManager?.isStopped == true)) {
+                    val source = soundEngine.createSource(SoundEngine.RunMode.STREAMING)
+                    if (source != null) {
+                        val channelSource = soundChannel.SourceManager(source)
+                        soundChannel.sources.add(channelSource)
+                        sourceManager = channelSource
                     }
                 }
-                sourceManager?.run { source ->
-                    source.setPosition(player.pos)
-                    if(player.audioMaxDist > 0f) {
-                        AL10.alSourcei(source.pointer, AL10.AL_DISTANCE_MODEL, AL11.AL_LINEAR_DISTANCE)
-                        AL10.alSourcef(source.pointer, AL10.AL_MAX_DISTANCE, player.audioMaxDist)
-                        AL10.alSourcef(source.pointer, AL10.AL_ROLLOFF_FACTOR, 1.0f)
-                        AL10.alSourcef(source.pointer, AL10.AL_REFERENCE_DISTANCE, player.audioRefDist)
-                    }
-                    val adjustedVolume = soundSystem.getAdjustedVolume(instance)
-                    if (adjustedVolume > 0.0f) {
-                        source.setVolume(adjustedVolume)
-                        source.removeProcessedBuffers()
-                        StaticSound(buffer, format).takeStreamBufferPointer().ifPresent { buffer ->
-                            AL10.alSourceQueueBuffers(source.pointer, intArrayOf(buffer))
-                        }
-                        if(!source.isPlaying) {
-                            source.play()
-                        }
-                    } else {
-                        clearSource()
-                    }
-                }
-            }else{
-                clearSource()
             }
+            sourceManager?.run { source ->
+                source.setPosition(player.pos)
+                if(player.audioMaxDist > 0f) {
+                    AL10.alSourcei(source.pointer, AL10.AL_DISTANCE_MODEL, AL11.AL_LINEAR_DISTANCE)
+                    AL10.alSourcef(source.pointer, AL10.AL_MAX_DISTANCE, player.audioMaxDist)
+                    AL10.alSourcef(source.pointer, AL10.AL_ROLLOFF_FACTOR, 1.0f)
+                    AL10.alSourcef(source.pointer, AL10.AL_REFERENCE_DISTANCE, player.audioRefDist)
+                }
+                val adjustedVolume = soundSystem.getAdjustedVolume(instance)
+                if (adjustedVolume > 0.0f) {
+                    source.setVolume(adjustedVolume)
+                    source.removeProcessedBuffers()
+                    StaticSound(buffer, format).takeStreamBufferPointer().ifPresent { buffer ->
+                        AL10.alSourceQueueBuffers(source.pointer, intArrayOf(buffer))
+                    }
+                    if(!source.isPlaying) {
+                        source.play()
+                    }
+                } else {
+                    clearSource()
+                }
+            }
+        }else{
+            clearSource()
         }
     }
 

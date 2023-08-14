@@ -3,7 +3,7 @@ package io.github.lucaargolo.fabricvision.client.render.screen.widget
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient
 import io.github.lucaargolo.fabricvision.client.render.screen.MediaPlayerScreen
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
-import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer.Status
+import io.github.lucaargolo.fabricvision.player.MinecraftPlayer.Status
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.client.gui.DrawContext

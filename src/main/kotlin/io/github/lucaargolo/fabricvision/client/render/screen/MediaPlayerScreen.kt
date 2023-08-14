@@ -2,7 +2,7 @@ package io.github.lucaargolo.fabricvision.client.render.screen
 
 import io.github.lucaargolo.fabricvision.client.render.screen.widget.*
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
-import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer.Status
+import io.github.lucaargolo.fabricvision.player.MinecraftPlayer.Status
 import io.github.lucaargolo.fabricvision.utils.MathUtils
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import net.minecraft.client.gui.DrawContext

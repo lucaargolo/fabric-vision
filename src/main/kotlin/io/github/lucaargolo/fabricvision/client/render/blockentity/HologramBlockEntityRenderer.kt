@@ -17,7 +17,7 @@ class HologramBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Co
 
     override fun render(entity: HologramBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
 
-        val identifier = entity.player?.identifier ?: MinecraftMediaPlayer.TRANSPARENT
+        val identifier = entity.player?.texture ?: MinecraftMediaPlayer.TRANSPARENT
         val renderLayer = RenderLayer.getEntityTranslucent(identifier)
         val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
 

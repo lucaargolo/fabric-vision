@@ -2,6 +2,7 @@ package io.github.lucaargolo.fabricvision.client
 
 import io.github.lucaargolo.fabricvision.common.blockentity.ProjectorBlockEntity
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
+import io.github.lucaargolo.fabricvision.player.MinecraftPlayer
 import io.github.lucaargolo.fabricvision.utils.ModConfig
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import ladysnake.satin.api.experimental.ReadableDepthFramebuffer
@@ -48,16 +49,14 @@ class ProjectorProgram {
     private val projectionBrightness = effect.findUniform1f("ProjectionBrightness")
     private val projectionFallout = effect.findUniform1f("ProjectionFallout")
 
-    fun updateTexture(player: MinecraftMediaPlayer?) {
-        val playerTexture = player?.texture
-        if(playerTexture != null) {
-            if(playerTexture.glId != texture) {
+    fun updateTexture(player: MinecraftPlayer?) {
+        if(player != null) {
+            val client = MinecraftClient.getInstance()
+            val playerTexture = client.textureManager.getTexture(player.texture)
+            if (playerTexture.glId != texture) {
                 texture = playerTexture.glId
                 effect.setSamplerUniform("ProjectorSampler", texture)
             }
-        }else{
-            texture = TRANSPARENT.glId
-            effect.setSamplerUniform("ProjectorSampler", texture)
         }
     }
 

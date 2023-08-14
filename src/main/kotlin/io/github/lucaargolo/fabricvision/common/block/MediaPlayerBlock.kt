@@ -2,6 +2,7 @@ package io.github.lucaargolo.fabricvision.common.block
 
 import io.github.lucaargolo.fabricvision.client.render.screen.MediaPlayerScreen
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
+import io.github.lucaargolo.fabricvision.common.item.DiskItem
 import io.github.lucaargolo.fabricvision.common.item.ItemCompendium
 import io.github.lucaargolo.fabricvision.common.sound.SoundCompendium
 import net.minecraft.block.BlockState
@@ -60,7 +61,7 @@ abstract class MediaPlayerBlock<T: MediaPlayerBlockEntity>(private val typeProvi
     override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult {
         getBlockEntity(world, state, pos)?.let {
             val stack = player.getStackInHand(hand)
-            if(stack.isOf(ItemCompendium.VIDEO_DISK)) {
+            if(stack.item is DiskItem) {
                 if(!world.isClient) {
                     it.diskStack?.let { diskStack ->
                         val vec = player.horizontalFacing.opposite.unitVector
