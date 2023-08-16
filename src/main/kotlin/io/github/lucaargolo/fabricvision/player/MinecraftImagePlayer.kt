@@ -56,7 +56,7 @@ class MinecraftImagePlayer(override val uuid: UUID): MinecraftPlayer {
         if(!loading) {
             if (!started || mrl != lastMrl) {
                 started = true
-                currentFrame = -1
+                currentFrame = 0
                 lastMrl = mrl
                 internalImage?.let {
                     client.textureManager.destroyTexture(internalTexture)
@@ -147,22 +147,16 @@ class MinecraftImagePlayer(override val uuid: UUID): MinecraftPlayer {
         val buffer = internalBuffer ?: return MinecraftPlayer.TRANSPARENT
 
         val time = delay + (tickDelta * 5f)
-        val totalTime = frameDelays.sum()
-
         val width = image.width
         val height = image.height
 
         val isValid = buffer.capacity() % (width * height * 4) == 0
         if (isValid) {
             val frames = buffer.capacity() / (width * height * 4)
-            var frame = 0
-            if(totalTime > 0) {
-                var gifTime = time % totalTime
-
-                while(gifTime > 0 && frame < frames-1) {
-                    gifTime -= frameDelays.getOrNull(frame) ?: 0f
-                    frame++
-                }
+            var frame = currentFrame
+            if(time >= frameDelays[frame]) {
+                frame = (currentFrame + 1) % frames
+                delay = 0
             }
             if (frame != currentFrame) {
                 currentFrame = frame
@@ -187,9 +181,11 @@ class MinecraftImagePlayer(override val uuid: UUID): MinecraftPlayer {
         internalImage?.let {
             client.textureManager.destroyTexture(internalTexture)
         }
+        internalImage = null
         internalBuffer?.let {
             MemoryUtil.memFree(it)
         }
+        internalBuffer = null
     }
 
     private fun BufferedImage.putABGRBuffer(byteBuffer: ByteBuffer?, offset: Int) {
