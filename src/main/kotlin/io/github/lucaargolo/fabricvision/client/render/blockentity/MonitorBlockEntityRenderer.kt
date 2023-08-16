@@ -3,6 +3,7 @@ package io.github.lucaargolo.fabricvision.client.render.blockentity
 import io.github.lucaargolo.fabricvision.common.block.HorizontalFacingMediaPlayerBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.MonitorBlockEntity
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
+import io.github.lucaargolo.fabricvision.player.MinecraftPlayer
 import net.minecraft.client.render.LightmapTextureManager
 import net.minecraft.client.render.OverlayTexture
 import net.minecraft.client.render.RenderLayer
@@ -19,7 +20,7 @@ class MonitorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Con
 
     override fun render(entity: MonitorBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
 
-        val identifier = entity.player?.texture ?: MinecraftMediaPlayer.TRANSPARENT
+        val identifier = entity.player?.getTexture(tickDelta) ?: MinecraftPlayer.TRANSPARENT
         val renderLayer = RenderLayer.getEntityTranslucent(identifier)
         val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
 

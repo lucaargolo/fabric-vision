@@ -34,9 +34,9 @@ class PlayButtonWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: Int)
                 parent.playerTooltip.add(Text.translatable(parent.mediaStatus.descriptionKey).formatted(Formatting.GRAY).asOrderedText())
             }else{
                 when(textureU) {
-                    6 -> parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.play").styled { s -> s.withColor(0x00AFE4) }.asOrderedText())
-                    24 -> parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.pause").styled { s -> s.withColor(0x00AFE4) }.asOrderedText())
-                    42 -> parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.stop").styled { s -> s.withColor(0x00AFE4) }.asOrderedText())
+                    6 -> parent.playerTooltip.add(Text.translatable("tooltip.fabricvision.play").styled { s -> s.withColor(0x00AFE4) }.asOrderedText())
+                    24 -> parent.playerTooltip.add(Text.translatable("tooltip.fabricvision.pause").styled { s -> s.withColor(0x00AFE4) }.asOrderedText())
+                    42 -> parent.playerTooltip.add(Text.translatable("tooltip.fabricvision.stop").styled { s -> s.withColor(0x00AFE4) }.asOrderedText())
                 }
             }
         }

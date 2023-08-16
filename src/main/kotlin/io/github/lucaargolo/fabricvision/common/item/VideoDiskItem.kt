@@ -29,7 +29,8 @@ class VideoDiskItem(settings: Settings) : DiskItem(Type.VIDEO, settings) {
             val buf = PacketByteBufs.create()
             buf.writeUuid(uuid)
             buf.writeEnumConstant(hand)
-            ServerPlayNetworking.send(user, PacketCompendium.OPEN_VIDEO_DISK_SCREEN_S2C, buf)
+            buf.writeEnumConstant(type)
+            ServerPlayNetworking.send(user, PacketCompendium.OPEN_DISK_SCREEN_S2C, buf)
         }
         return TypedActionResult.success(stack)
     }

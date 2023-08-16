@@ -1,21 +1,22 @@
 package io.github.lucaargolo.fabricvision.network
 
-import io.github.lucaargolo.fabricvision.client.render.screen.AudioDiskScreen
+import io.github.lucaargolo.fabricvision.client.render.screen.DiskScreen
 import io.github.lucaargolo.fabricvision.client.render.screen.VideoDiskScreen
 import io.github.lucaargolo.fabricvision.common.blockentity.HologramBlockEntity
 import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEntity
+import io.github.lucaargolo.fabricvision.common.item.DiskItem.Type
 import io.github.lucaargolo.fabricvision.common.item.ItemCompendium
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import kotlin.math.roundToInt
 
 object PacketCompendium {
 
     val UPDATE_VIDEO_DISK_C2S = ModIdentifier("update_video_disk_c2s")
-    val UPDATE_AUDIO_DISK_C2S = ModIdentifier("update_audio_disk_c2s")
-    val UPDATE_IMAGE_DISK_C2S = ModIdentifier("update_image_disk_c2s")
+    val UPDATE_DISK_C2S = ModIdentifier("update_disk_c2s")
 
     val SET_VALUE_BUTTON_C2S = ModIdentifier("set_value_button_c2s")
     val SET_TIME_BUTTON_C2S = ModIdentifier("set_time_button_c2s")
@@ -40,13 +41,19 @@ object PacketCompendium {
                 }
             }
         }
-        ServerPlayNetworking.registerGlobalReceiver(UPDATE_AUDIO_DISK_C2S) { server, player, handler, buf, sender ->
+        ServerPlayNetworking.registerGlobalReceiver(UPDATE_DISK_C2S) { server, player, handler, buf, sender ->
             val uuid = buf.readUuid()
             val hand = buf.readEnumConstant(Hand::class.java)
+            val type = buf.readEnumConstant(Type::class.java)
             val mrl = buf.readString()
             server.execute {
                 val stack = player.getStackInHand(hand)
-                if(stack.isOf(ItemCompendium.AUDIO_DISK) && stack.nbt?.getUuid("uuid") == uuid) {
+                val valid = when(type) {
+                    Type.AUDIO -> stack.isOf(ItemCompendium.AUDIO_DISK)
+                    Type.IMAGE -> stack.isOf(ItemCompendium.IMAGE_DISK)
+                    else -> false
+                }
+                if(valid && stack.nbt?.getUuid("uuid") == uuid) {
                     stack.orCreateNbt.putString("mrl", mrl)
                 }
             }
@@ -150,27 +157,22 @@ object PacketCompendium {
         }
     }
 
-    val OPEN_VIDEO_DISK_SCREEN_S2C = ModIdentifier("open_video_disk_screen_s2c")
-    val OPEN_AUDIO_DISK_SCREEN_S2C = ModIdentifier("open_audio_disk_screen_s2c")
-    val OPEN_IMAGE_DISK_SCREEN_S2C = ModIdentifier("open_image_disk_screen_s2c")
+    val OPEN_DISK_SCREEN_S2C = ModIdentifier("open_disk_screen_s2c")
 
     fun initializeClient() {
-        ClientPlayNetworking.registerGlobalReceiver(OPEN_VIDEO_DISK_SCREEN_S2C) { client, handler, buf, sender ->
+        ClientPlayNetworking.registerGlobalReceiver(OPEN_DISK_SCREEN_S2C) { client, handler, buf, sender ->
             val uuid = buf.readUuid()
             val hand = buf.readEnumConstant(Hand::class.java)
+            val type = buf.readEnumConstant(Type::class.java)
             client.execute {
                 val player = client?.player ?: return@execute
                 val stack = player.getStackInHand(hand)
-                client.setScreen(VideoDiskScreen(uuid, stack))
-            }
-        }
-        ClientPlayNetworking.registerGlobalReceiver(OPEN_AUDIO_DISK_SCREEN_S2C) { client, handler, buf, sender ->
-            val uuid = buf.readUuid()
-            val hand = buf.readEnumConstant(Hand::class.java)
-            client.execute {
-                val player = client?.player ?: return@execute
-                val stack = player.getStackInHand(hand)
-                client.setScreen(AudioDiskScreen(uuid, stack))
+                when(type) {
+                    Type.VIDEO -> client.setScreen(VideoDiskScreen(uuid, stack))
+                    Type.AUDIO -> client.setScreen(DiskScreen(uuid, stack, type, Text.translatable("screen.fabricvision.title.audio_disk")))
+                    Type.IMAGE -> client.setScreen(DiskScreen(uuid, stack, type, Text.translatable("screen.fabricvision.title.image_disk")))
+                    else -> Unit
+                }
             }
         }
     }

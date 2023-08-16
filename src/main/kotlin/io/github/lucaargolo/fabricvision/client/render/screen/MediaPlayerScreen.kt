@@ -79,22 +79,22 @@ open class MediaPlayerScreen<M: MediaPlayerBlockEntity>(val blockEntity: M) : Sc
         addDrawableChild(VolumeSliderWidget(this, x+140, y+6))
         addDrawableChild(ProgressSliderWidget(this, x+5, y+30))
         configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+12, 13, 168, 50, 169, { blockEntity.volume }, 0, { value ->
-            Text.translatable("screen.fabricvision.message.volume", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).formatted(VolumeSliderWidget.getFormatting(value))
+            Text.translatable("tooltip.fabricvision.volume", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).formatted(VolumeSliderWidget.getFormatting(value))
         })))
         configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+22, 13, 178, 50, 179, { blockEntity.light }, 1, { value ->
-            Text.translatable("screen.fabricvision.message.light", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFFFF00)) }
+            Text.translatable("tooltip.fabricvision.light", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFFFF00)) }
         })))
         configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+32, 13, 188, 50, 189, { blockEntity.red }, 2, { value ->
-            Text.translatable("screen.fabricvision.message.red", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFF0000)) }
+            Text.translatable("tooltip.fabricvision.red", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFF0000)) }
         })))
         configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+42, 13, 198, 50, 199, { blockEntity.green }, 3, { value ->
-            Text.translatable("screen.fabricvision.message.green", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0x00FF00)) }
+            Text.translatable("tooltip.fabricvision.green", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0x00FF00)) }
         })))
         configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+52, 13, 208, 50, 209, { blockEntity.blue }, 4, { value ->
-            Text.translatable("screen.fabricvision.message.blue", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0x0000FF)) }
+            Text.translatable("tooltip.fabricvision.blue", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0x0000FF)) }
         })))
         configDrawables.add(addSelectableChild(ConfigSliderWidget(this, configX+13, configY+62, 13, 218, 50, 219, { blockEntity.alpha }, 5, { value ->
-            Text.translatable("screen.fabricvision.message.alpha", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFFFFFF)) }
+            Text.translatable("tooltip.fabricvision.alpha", Text.literal("${(value*100.0).roundToInt()}%").formatted(Formatting.GRAY)).styled { s -> s.withColor(MathUtils.lerpColor(value, 0x555555, 0xFFFFFF)) }
         })))
         configDrawables.add(addSelectableChild(RateButtonWidget(this, configX+8, configY+76, 0.25f, 8)))
         configDrawables.add(addSelectableChild(RateButtonWidget(this, configX+15, configY+76, 0.50f, 15)))
@@ -124,9 +124,9 @@ open class MediaPlayerScreen<M: MediaPlayerBlockEntity>(val blockEntity: M) : Sc
             context.drawTexture(TEXTURE, configX, configY, 0, 156, configBackgroundWidth, configBackgroundHeight)
             context.matrices.push()
             context.matrices.scale(0.5f, 0.5f, 0.5f)
-            val configText = Text.translatable("screen.fabricvision.message.config_screen")
+            val configText = Text.translatable("screen.fabricvision.title.config_screen")
             context.drawText(textRenderer, configText, (configCenterX * 2) - (textRenderer.getWidth(configText)/2), (configY + 5)*2, 0xFFFFFF, false)
-            val rateText = Text.translatable("screen.fabricvision.message.rate", Text.literal("${blockEntity.rate}x").styled { s -> s.withColor(0x00AFE4) }).formatted(Formatting.GRAY)
+            val rateText = Text.translatable("tooltip.fabricvision.rate", Text.literal("${blockEntity.rate}x").styled { s -> s.withColor(0x00AFE4) }).formatted(Formatting.GRAY)
             context.drawText(textRenderer, rateText, (rateCenterX * 2) - (textRenderer.getWidth(rateText)/2), (configY + 70)*2, 0xFFFFFF, false)
             context.matrices.pop()
             configDrawables.forEach {

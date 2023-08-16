@@ -22,9 +22,9 @@ class EnableButtonWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: In
         active = !parent.config
         if(active && isHovered) {
             if(parent.blockEntity.enabled) {
-                parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.player_on").formatted(Formatting.GREEN).asOrderedText())
+                parent.playerTooltip.add(Text.translatable("tooltip.fabricvision.player_on").formatted(Formatting.GREEN).asOrderedText())
             }else{
-                parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.player_off").formatted(Formatting.RED).asOrderedText())
+                parent.playerTooltip.add(Text.translatable("tooltip.fabricvision.player_off").formatted(Formatting.RED).asOrderedText())
             }
         }
     }

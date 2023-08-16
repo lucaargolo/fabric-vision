@@ -1,6 +1,7 @@
 package io.github.lucaargolo.fabricvision.client.render.screen
 
-import io.github.lucaargolo.fabricvision.common.item.ItemCompendium
+import io.github.lucaargolo.fabricvision.common.item.DiskItem
+import io.github.lucaargolo.fabricvision.common.item.DiskItem.Type
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
@@ -13,9 +14,9 @@ import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import java.util.*
 
-class AudioDiskScreen(val stackUUID: UUID, val stack: ItemStack): Screen(Text.translatable("screen.fabricvision.title.audio_disk")) {
+open class DiskScreen(val stackUUID: UUID, val stack: ItemStack, val type: Type, title: Text): Screen(title) {
 
-    private var mrlField: TextFieldWidget? = null
+    protected var mrlField: TextFieldWidget? = null
 
     override fun init() {
         super.init()
@@ -30,16 +31,16 @@ class AudioDiskScreen(val stackUUID: UUID, val stack: ItemStack): Screen(Text.tr
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val nameField = mrlField ?: return super.keyPressed(keyCode, scanCode, modifiers)
-        return if (nameField.keyPressed(keyCode, scanCode, modifiers)) true
-        else if (nameField.isFocused && nameField.isVisible && keyCode != 256) true
+        val mrlField = mrlField ?: return super.keyPressed(keyCode, scanCode, modifiers)
+        return if (mrlField.keyPressed(keyCode, scanCode, modifiers)) true
+        else if (mrlField.isFocused && mrlField.isVisible && keyCode != 256) true
         else super.keyPressed(keyCode, scanCode, modifiers)
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.renderBackground(context)
         super.render(context, mouseX, mouseY, delta)
-        val setMrlText = Text.translatable("screen.fabricvision.message.set_mrl")
+        val setMrlText = Text.translatable("tooltip.fabricvision.set_mrl")
         context.drawText(textRenderer, setMrlText, (width/2)-(textRenderer.getWidth(setMrlText)/2), (height/2)-20, 0xFFFFFF, false)
     }
 
@@ -50,26 +51,27 @@ class AudioDiskScreen(val stackUUID: UUID, val stack: ItemStack): Screen(Text.tr
         }
     }
 
-    private fun getValidStack(player: PlayerEntity?): ItemStack? {
+    protected fun getValidStack(player: PlayerEntity?): ItemStack? {
         player ?: return null
-        return if(player.mainHandStack.isOf(ItemCompendium.AUDIO_DISK) && player.mainHandStack.nbt?.getUuid("uuid") == stackUUID) {
+        return if(player.mainHandStack.item is DiskItem && player.mainHandStack.nbt?.getUuid("uuid") == stackUUID) {
             player.mainHandStack
-        }else if(player.offHandStack.isOf(ItemCompendium.AUDIO_DISK) && player.offHandStack.nbt?.getUuid("uuid") == stackUUID){
+        }else if(player.offHandStack.item is DiskItem && player.offHandStack.nbt?.getUuid("uuid") == stackUUID){
             player.offHandStack
         }else{
             null
         }
     }
 
-    private fun update() {
+    protected open fun update() {
         val validStack = getValidStack(client?.player) ?: return
         val hand = if(validStack == client?.player?.mainHandStack) Hand.MAIN_HAND else Hand.OFF_HAND
         val mrl = mrlField?.text ?: ""
         val buf = PacketByteBufs.create()
         buf.writeUuid(stackUUID)
         buf.writeEnumConstant(hand)
+        buf.writeEnumConstant(type)
         buf.writeString(mrl)
-        ClientPlayNetworking.send(PacketCompendium.UPDATE_AUDIO_DISK_C2S, buf)
+        ClientPlayNetworking.send(PacketCompendium.UPDATE_DISK_C2S, buf)
     }
 
     override fun shouldPause() = false

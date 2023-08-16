@@ -24,9 +24,9 @@ class NavigateButtonWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: 
         active = !parent.config
         if(active && isHovered) {
             if(realTime > 0) {
-                parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.forward_video", Text.literal("${realTime/1000}s").styled { s -> s.withColor(0x00AFE4) }).formatted(Formatting.GRAY).asOrderedText())
+                parent.playerTooltip.add(Text.translatable("tooltip.fabricvision.forward_video", Text.literal("${realTime/1000}s").styled { s -> s.withColor(0x00AFE4) }).formatted(Formatting.GRAY).asOrderedText())
             }else{
-                parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.backward_video", Text.literal("${realTime/-1000}s").styled { s -> s.withColor(0x00AFE4) }).formatted(Formatting.GRAY).asOrderedText())
+                parent.playerTooltip.add(Text.translatable("tooltip.fabricvision.backward_video", Text.literal("${realTime/-1000}s").styled { s -> s.withColor(0x00AFE4) }).formatted(Formatting.GRAY).asOrderedText())
             }
         }
     }

@@ -16,6 +16,7 @@ import io.github.lucaargolo.fabricvision.common.screenhandler.ScreenHandlerCompe
 import io.github.lucaargolo.fabricvision.common.sound.SoundCompendium
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
 import io.github.lucaargolo.fabricvision.player.MinecraftAudioPlayerHolder
+import io.github.lucaargolo.fabricvision.player.MinecraftImagePlayerHolder
 import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayerHolder
 import ladysnake.satin.api.event.PostWorldRenderCallbackV2
 import ladysnake.satin.api.event.ShaderEffectRenderCallback
@@ -76,10 +77,12 @@ object FabricVisionClient: ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
             MinecraftMediaPlayerHolder.close(false)
             MinecraftAudioPlayerHolder.close()
+            MinecraftImagePlayerHolder.close()
         }
         ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
             MinecraftMediaPlayerHolder.close(true)
             MinecraftAudioPlayerHolder.close()
+            MinecraftImagePlayerHolder.close()
         }
         ShaderEffectRenderCallback.EVENT.register(ProjectorProgram::renderProjectors)
         PostWorldRenderCallbackV2.EVENT.register(ProjectorProgram::captureCameras)

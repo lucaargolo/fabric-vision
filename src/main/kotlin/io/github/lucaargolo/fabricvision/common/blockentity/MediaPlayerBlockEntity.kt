@@ -34,6 +34,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
                 field = when(type) {
                     Type.VIDEO -> MinecraftMediaPlayerHolder.create(uuid)
                     Type.AUDIO -> MinecraftAudioPlayerHolder.create(uuid)
+                    Type.IMAGE -> MinecraftImagePlayerHolder.create(uuid)
                     else -> null
                 }
             }

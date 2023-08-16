@@ -2,6 +2,7 @@ package io.github.lucaargolo.fabricvision.player
 
 import io.github.lucaargolo.fabricvision.common.item.DiskItem.Type
 import io.github.lucaargolo.fabricvision.FabricVision
+import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
@@ -25,7 +26,9 @@ interface MinecraftPlayer {
     var audioMaxDist: Float
     var audioRefDist: Float
 
-    val texture: Identifier
+    fun getTexture(tickDelta: Float): Identifier {
+        return TRANSPARENT
+    }
 
     fun tick()
 
@@ -54,6 +57,10 @@ interface MinecraftPlayer {
         val descriptionKey: String
             get() = "$translationKey.description"
 
+    }
+
+    companion object {
+        val TRANSPARENT = ModIdentifier("textures/gui/transparent.png")
     }
 
 }

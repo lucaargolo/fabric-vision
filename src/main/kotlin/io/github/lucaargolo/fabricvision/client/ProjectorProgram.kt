@@ -49,10 +49,10 @@ class ProjectorProgram {
     private val projectionBrightness = effect.findUniform1f("ProjectionBrightness")
     private val projectionFallout = effect.findUniform1f("ProjectionFallout")
 
-    fun updateTexture(player: MinecraftPlayer?) {
+    fun updateTexture(player: MinecraftPlayer?, tickDelta: Float) {
         if(player != null) {
             val client = MinecraftClient.getInstance()
-            val playerTexture = client.textureManager.getTexture(player.texture)
+            val playerTexture = client.textureManager.getTexture(player.getTexture(tickDelta))
             if (playerTexture.glId != texture) {
                 texture = playerTexture.glId
                 effect.setSamplerUniform("ProjectorSampler", texture)
@@ -68,7 +68,7 @@ class ProjectorProgram {
 
     companion object {
         private val TRANSPARENT: AbstractTexture by lazy {
-            MinecraftClient.getInstance().textureManager.getTexture(MinecraftMediaPlayer.TRANSPARENT)
+            MinecraftClient.getInstance().textureManager.getTexture(MinecraftPlayer.TRANSPARENT)
         }
         private val SHADER = ModIdentifier("shaders/post/projector.json")
         private val RENDER = linkedSetOf<ProjectorProgram>()

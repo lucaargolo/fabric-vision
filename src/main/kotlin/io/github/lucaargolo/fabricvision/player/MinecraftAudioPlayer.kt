@@ -69,8 +69,6 @@ class MinecraftAudioPlayer(override val uuid: UUID): MinecraftPlayer {
     override var audioMaxDist = 0f
     override var audioRefDist = 0f
 
-    override var texture: Identifier = MinecraftMediaPlayer.TRANSPARENT
-
     private var clientPausedBackup = false
     var clientPaused = false
         set(value) {

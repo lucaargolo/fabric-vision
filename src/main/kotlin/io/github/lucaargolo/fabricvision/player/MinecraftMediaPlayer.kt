@@ -63,7 +63,7 @@ class MinecraftMediaPlayer(override val uuid: UUID): MinecraftPlayer {
     override var audioMaxDist = 0f
     override var audioRefDist = 0f
 
-    override var texture: Identifier = TRANSPARENT
+    var texture: Identifier = MinecraftPlayer.TRANSPARENT
     var nativeTexture: NativeImageBackedTexture? = null
 
     private var player: MediaPlayer? = null
@@ -86,6 +86,10 @@ class MinecraftMediaPlayer(override val uuid: UUID): MinecraftPlayer {
                 }
             }
         }
+
+    override fun getTexture(tickDelta: Float): Identifier {
+        return texture
+    }
 
     override fun updateDuration(durationConsumer: (Long) -> Unit) {
         val mediaPlayer = player ?: return
@@ -295,7 +299,6 @@ class MinecraftMediaPlayer(override val uuid: UUID): MinecraftPlayer {
     }
 
     companion object {
-        val TRANSPARENT = ModIdentifier("textures/gui/transparent.png")
         val HOLDER = MinecraftMediaPlayerHolder
     }
 

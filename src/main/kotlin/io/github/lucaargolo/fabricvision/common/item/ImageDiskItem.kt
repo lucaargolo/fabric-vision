@@ -1,7 +1,6 @@
 package io.github.lucaargolo.fabricvision.common.item
 
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
-import io.github.lucaargolo.fabricvision.common.item.DiskItem.Type
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.client.item.TooltipContext
@@ -15,7 +14,7 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.world.World
 import java.util.*
 
-class AudioDiskItem(settings: Settings) : DiskItem(Type.AUDIO, settings) {
+class ImageDiskItem(settings: Settings) : DiskItem(Type.IMAGE, settings) {
 
     override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
         val stack = user.getStackInHand(hand)

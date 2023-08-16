@@ -23,9 +23,9 @@ class RepeatButtonWidget(private val parent: MediaPlayerScreen<*>, x: Int, y: In
         active = !parent.config
         if(active && isHovered) {
             if(parent.blockEntity.repeating) {
-                parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.repeating_enabled").formatted(Formatting.GREEN).asOrderedText())
+                parent.playerTooltip.add(Text.translatable("tooltip.fabricvision.repeating_enabled").formatted(Formatting.GREEN).asOrderedText())
             }else{
-                parent.playerTooltip.add(Text.translatable("screen.fabricvision.message.repeating_disabled").formatted(Formatting.RED).asOrderedText())
+                parent.playerTooltip.add(Text.translatable("tooltip.fabricvision.repeating_disabled").formatted(Formatting.RED).asOrderedText())
             }
         }
     }
