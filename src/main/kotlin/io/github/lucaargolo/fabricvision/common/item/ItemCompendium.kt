@@ -23,6 +23,9 @@ object ItemCompendium: RegistryCompendium<Item>(Registries.ITEM) {
         BlockCompendium.registerBlockItems(map)
     }
 
+    val DIGITAL_CAMERA = register("digital_camera", DigitalCameraItem(Item.Settings().maxCount(1)))
+
+    val BLANK_DISK = register("blank_disk", Item(Item.Settings()))
     val VIDEO_DISK = register("video_disk", VideoDiskItem(Item.Settings().maxCount(1)))
     val AUDIO_DISK = register("audio_disk", AudioDiskItem(Item.Settings().maxCount(1)))
     val IMAGE_DISK = register("image_disk", ImageDiskItem(Item.Settings().maxCount(1)))

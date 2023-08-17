@@ -53,9 +53,9 @@ open class DiskScreen(val stackUUID: UUID, val stack: ItemStack, val type: Type,
 
     protected fun getValidStack(player: PlayerEntity?): ItemStack? {
         player ?: return null
-        return if(player.mainHandStack.item is DiskItem && player.mainHandStack.nbt?.getUuid("uuid") == stackUUID) {
+        return if(player.mainHandStack.item is DiskItem && player.mainHandStack.nbt?.contains("uuid") == true && player.mainHandStack.nbt?.getUuid("uuid") == stackUUID) {
             player.mainHandStack
-        }else if(player.offHandStack.item is DiskItem && player.offHandStack.nbt?.getUuid("uuid") == stackUUID){
+        }else if(player.offHandStack.item is DiskItem && player.offHandStack.nbt?.contains("uuid") == true && player.offHandStack.nbt?.getUuid("uuid") == stackUUID){
             player.offHandStack
         }else{
             null

@@ -16,6 +16,10 @@ object ModLogger {
         logger.warn("[${FabricVision.MOD_NAME}] $message")
     }
 
+    fun warn(message: String, exception: Exception) {
+        logger.warn("[${FabricVision.MOD_NAME}] $message", exception)
+    }
+
     fun error(message: String) {
         logger.error("[${FabricVision.MOD_NAME}] $message")
     }

@@ -43,7 +43,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
 
     var forceTimeCooldown = 0
 
-    var enabled = false
+    var enabled = true
         private set(value) {
             field = value
             markDirtyAndSync()

@@ -8,5 +8,10 @@
     "sounds": [
       "fabricvision:disk_extract"
     ]
+  },
+  "camera": {
+    "sounds": [
+      "fabricvision:camera"
+    ]
   }
 }

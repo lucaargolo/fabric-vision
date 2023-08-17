@@ -51,12 +51,15 @@ class MinecraftImagePlayer(override val uuid: UUID): MinecraftPlayer {
     private var currentFrame = 0
     private var delay = 0
 
+    private var lastUploaded = -1
+
     override fun tick() {
         val client = MinecraftClient.getInstance()
         if(!loading) {
             if (!started || mrl != lastMrl) {
                 started = true
                 currentFrame = 0
+                lastUploaded = -1
                 lastMrl = mrl
                 internalImage?.let {
                     client.textureManager.destroyTexture(internalTexture)
@@ -84,18 +87,19 @@ class MinecraftImagePlayer(override val uuid: UUID): MinecraftPlayer {
                                 RenderSystem.recordRenderCall {
                                     internalImage = NativeImageBackedTexture(width, height, MinecraftClient.IS_SYSTEM_MAC)
                                 }
-                                internalBuffer = MemoryUtil.memAlloc(width * height * 4 * frames)
+                                val buffer = MemoryUtil.memAlloc(width * height * 4 * frames)
                                 var lastBuffered = reader.read(0, param)
                                 repeat(frames) { frame ->
                                     frameDelays[frame] = reader.getDelayTime(frame).toFloat()
                                     if (frame > 0 && reader.getWidth(frame) == width && reader.getHeight(frame) == height) {
                                         val buffered: BufferedImage = reader.read(frame, param)
-                                        buffered.putABGRBuffer(internalBuffer, width * height * 4 * frame)
+                                        buffered.putABGRBuffer(buffer, width * height * 4 * frame)
                                         lastBuffered = buffered
                                     } else {
-                                        lastBuffered.putABGRBuffer(internalBuffer, width * height * 4 * frame)
+                                        lastBuffered.putABGRBuffer(buffer, width * height * 4 * frame)
                                     }
                                 }
+                                internalBuffer = buffer
                             }
                             reader.dispose()
                             input.close()
@@ -125,7 +129,6 @@ class MinecraftImagePlayer(override val uuid: UUID): MinecraftPlayer {
             val delayTime = extension.getAttribute("delayTime")
             delayTime.toInt()
         }catch (e: Exception) {
-            e.printStackTrace()
             0
         }
     }
@@ -158,8 +161,9 @@ class MinecraftImagePlayer(override val uuid: UUID): MinecraftPlayer {
                 frame = (currentFrame + 1) % frames
                 delay = 0
             }
-            if (frame != currentFrame) {
+            if (frame != currentFrame || frame != lastUploaded) {
                 currentFrame = frame
+                lastUploaded = frame
                 val address = JNINativeInterface.GetDirectBufferAddress(buffer)
                 MemoryUtil.memCopy(address + (width * height * 4L * frame), image.pointer, width * height * 4L)
                 texture.upload()
