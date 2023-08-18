@@ -1,7 +1,6 @@
 package io.github.lucaargolo.fabricvision.mixin;
 
-import io.github.lucaargolo.fabricvision.client.FabricVisionClient;
-import io.github.lucaargolo.fabricvision.common.item.DigitalCameraItem;
+import io.github.lucaargolo.fabricvision.client.CameraHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 import net.minecraft.entity.player.PlayerEntity;
@@ -21,8 +20,8 @@ public class MouseMixin {
     @ModifyArgs(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;changeLookDirection(DD)V"), method = "updateMouse")
     public void fabricVision_fixDigitalCameraMouseSmoothness(Args args) {
         PlayerEntity player = client.player;
-        if(player != null && client.options.getPerspective().isFirstPerson() && DigitalCameraItem.Companion.isUsingCamera(player)) {
-            float fov = FabricVisionClient.INSTANCE.getDigitalCameraFovMultiplier();
+        if(player != null && client.options.getPerspective().isFirstPerson() && CameraHelper.isUsingCamera(player)) {
+            float fov = CameraHelper.INSTANCE.getDigitalCameraFovMultiplier();
 
             double m = (70.0*MathHelper.clamp(fov, 0.1, 1.0) + 2.0)/9.0;
 

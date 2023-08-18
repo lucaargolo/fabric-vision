@@ -1,6 +1,6 @@
 package io.github.lucaargolo.fabricvision.client.render.item
 
-import io.github.lucaargolo.fabricvision.utils.FramebufferTexture
+import io.github.lucaargolo.fabricvision.client.FramebufferTexture
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry.DynamicItemRenderer
 import net.minecraft.client.MinecraftClient

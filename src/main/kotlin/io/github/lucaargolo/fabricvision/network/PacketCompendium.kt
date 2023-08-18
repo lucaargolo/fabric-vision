@@ -1,6 +1,5 @@
 package io.github.lucaargolo.fabricvision.network
 
-import io.github.lucaargolo.fabricvision.client.FabricVisionClient
 import io.github.lucaargolo.fabricvision.client.render.screen.DiskScreen
 import io.github.lucaargolo.fabricvision.client.render.screen.ImageDiskScreen
 import io.github.lucaargolo.fabricvision.client.render.screen.VideoDiskScreen
@@ -9,6 +8,7 @@ import io.github.lucaargolo.fabricvision.common.blockentity.MediaPlayerBlockEnti
 import io.github.lucaargolo.fabricvision.common.item.DiskItem.Type
 import io.github.lucaargolo.fabricvision.common.item.ItemCompendium
 import io.github.lucaargolo.fabricvision.common.sound.SoundCompendium
+import io.github.lucaargolo.fabricvision.client.CameraHelper
 import io.github.lucaargolo.fabricvision.utils.ImgurHelper
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import io.github.lucaargolo.fabricvision.utils.ModLogger
@@ -242,9 +242,9 @@ object PacketCompendium {
             client.execute {
                 if(success) {
                     client.soundManager.play(PositionedSoundInstance.master(SoundCompendium.DISK_EXTRACT, 1.0f))
-                    FabricVisionClient.savedPicture = 100
+                    CameraHelper.savedPicture = 100
                 }else{
-                    FabricVisionClient.errorSavingPicture = 100
+                    CameraHelper.errorSavingPicture = 100
                 }
             }
         }

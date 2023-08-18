@@ -1,4 +1,4 @@
-package io.github.lucaargolo.fabricvision.utils
+package io.github.lucaargolo.fabricvision.client
 
 import net.minecraft.client.gl.Framebuffer
 import net.minecraft.client.texture.AbstractTexture

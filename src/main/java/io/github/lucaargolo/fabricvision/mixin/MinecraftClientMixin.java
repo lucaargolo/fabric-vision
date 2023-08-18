@@ -3,7 +3,7 @@ package io.github.lucaargolo.fabricvision.mixin;
 
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient;
 import io.github.lucaargolo.fabricvision.client.ProjectorProgram;
-import io.github.lucaargolo.fabricvision.common.item.DigitalCameraItem;
+import io.github.lucaargolo.fabricvision.client.CameraHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -37,11 +37,11 @@ public class MinecraftClientMixin {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z", ordinal = 0, shift = At.Shift.BEFORE), method = "handleInputEvents", locals = LocalCapture.CAPTURE_FAILSOFT)
     public void fabricVision_takeDigitalCameraPicture(CallbackInfo ci, boolean bl3) {
-        if(player != null && DigitalCameraItem.Companion.isUsingCamera(player)) {
+        if(player != null && CameraHelper.isUsingCamera(player)) {
             while(this.options.attackKey.wasPressed()) {
-                FabricVisionClient.INSTANCE.setHudHiddenBackup(this.options.hudHidden);
+                CameraHelper.INSTANCE.setHudHiddenBackup(this.options.hudHidden);
                 this.options.hudHidden = true;
-                FabricVisionClient.INSTANCE.setTakePicture(5);
+                CameraHelper.INSTANCE.setTakePicture(5);
             }
         }
     }
