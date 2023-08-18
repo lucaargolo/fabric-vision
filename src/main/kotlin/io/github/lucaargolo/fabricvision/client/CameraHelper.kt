@@ -1,6 +1,9 @@
 package io.github.lucaargolo.fabricvision.client
 
 import com.google.gson.JsonParser
+import com.mojang.blaze3d.platform.GlConst
+import com.mojang.blaze3d.platform.GlStateManager
+import com.mojang.blaze3d.systems.RenderSystem
 import io.github.lucaargolo.fabricvision.common.item.ItemCompendium
 import io.github.lucaargolo.fabricvision.common.sound.SoundCompendium
 import io.github.lucaargolo.fabricvision.network.PacketCompendium
@@ -11,12 +14,15 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gl.Framebuffer
+import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.util.ScreenshotRecorder
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Util
+import org.lwjgl.opengl.GL11
 import java.io.File
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
@@ -24,6 +30,9 @@ import kotlin.math.roundToInt
 object CameraHelper {
 
     private val CAMERA_HUD = ModIdentifier("textures/gui/camera.png")
+
+    val cameraFramebuffer = SimpleFramebuffer(854, 480, false, MinecraftClient.IS_SYSTEM_MAC)
+    var renderedCamera = false
 
     var hudHiddenBackup = false
     var takePicture = 0
@@ -58,7 +67,28 @@ object CameraHelper {
         if(errorSavingPicture > 0) errorSavingPicture--
         if(savedPicture > 0) savedPicture--
     }
-    
+
+    fun updateCameraFramebuffer() {
+        if(renderedCamera) {
+            val client = MinecraftClient.getInstance()
+            val framebuffer = client.framebuffer
+            if (framebuffer.textureWidth != cameraFramebuffer.textureWidth || framebuffer.textureHeight != cameraFramebuffer.textureHeight) {
+                cameraFramebuffer.resize(framebuffer.textureWidth, framebuffer.textureHeight, MinecraftClient.IS_SYSTEM_MAC)
+            }
+            cameraFramebuffer.copyColorFrom(framebuffer)
+            framebuffer.beginWrite(true)
+            renderedCamera = false
+        }
+    }
+
+    private fun Framebuffer.copyColorFrom(framebuffer: Framebuffer) {
+        RenderSystem.assertOnRenderThreadOrInit()
+        GlStateManager._glBindFramebuffer(GlConst.GL_READ_FRAMEBUFFER, framebuffer.fbo)
+        GlStateManager._glBindFramebuffer(GlConst.GL_DRAW_FRAMEBUFFER, fbo)
+        GlStateManager._glBlitFrameBuffer(0, 0, framebuffer.textureWidth, framebuffer.textureHeight, 0, 0, textureWidth, textureHeight, GL11.GL_COLOR_BUFFER_BIT, GlConst.GL_NEAREST)
+        GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER, 0)
+    }
+
     fun renderDigitalCameraHud(context: DrawContext, textRenderer: TextRenderer, scaledWidth: Int, scaledHeight: Int, scale: Float) {
         if(takingPicture) {
             val string = Text.translatable("screen.fabricvision.taking_picture")

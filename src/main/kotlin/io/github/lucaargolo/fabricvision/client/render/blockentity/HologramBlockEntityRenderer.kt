@@ -1,7 +1,6 @@
 package io.github.lucaargolo.fabricvision.client.render.blockentity
 
 import io.github.lucaargolo.fabricvision.common.blockentity.HologramBlockEntity
-import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import io.github.lucaargolo.fabricvision.player.MinecraftPlayer
 import net.minecraft.client.render.LightmapTextureManager
 import net.minecraft.client.render.OverlayTexture
@@ -12,6 +11,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.RotationAxis
+import net.minecraft.util.math.Vec3d
 import kotlin.math.roundToInt
 
 class HologramBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Context): BlockEntityRenderer<HologramBlockEntity> {
@@ -51,6 +51,18 @@ class HologramBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Co
 
         matrices.pop()
 
+    }
+
+    override fun rendersOutsideBoundingBox(blockEntity: HologramBlockEntity): Boolean {
+        return true
+    }
+
+    override fun getRenderDistance(): Int {
+        return 256
+    }
+
+    override fun isInRenderDistance(blockEntity: HologramBlockEntity, pos: Vec3d): Boolean {
+        return Vec3d.ofCenter(blockEntity.pos).multiply(1.0, 0.0, 1.0).isInRange(pos.multiply(1.0, 0.0, 1.0), this.renderDistance.toDouble())
     }
 
 }

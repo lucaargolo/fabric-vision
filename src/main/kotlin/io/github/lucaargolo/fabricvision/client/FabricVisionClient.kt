@@ -26,6 +26,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
@@ -83,8 +84,13 @@ object FabricVisionClient: ClientModInitializer {
         }
         ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
             MinecraftMediaPlayerHolder.close(true)
-            MinecraftAudioPlayerHolder.close()
+            MinecraftAudioPlayerHolder.close() //TODO: Shutdown manager
             MinecraftImagePlayerHolder.close()
+        }
+        WorldRenderEvents.END.register {
+            if(!isRenderingProjector) {
+                CameraHelper.updateCameraFramebuffer()
+            }
         }
         ShaderEffectRenderCallback.EVENT.register(ProjectorProgram::renderProjectors)
         PostWorldRenderCallbackV2.EVENT.register(ProjectorProgram::captureCameras)

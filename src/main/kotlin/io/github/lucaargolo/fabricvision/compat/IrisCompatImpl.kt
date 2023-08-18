@@ -50,7 +50,6 @@ class IrisCompatImpl: IrisCompat {
         val pipelineManager = Iris.getPipelineManager()
         irisPipelineBackup = irisPipelineField.get(pipelineManager) as WorldRenderingPipeline?
         irisPipelineField.set(pipelineManager, null)
-        Iris.getIrisConfig().setShadersEnabled(false)
         extendedVertexFormatBackup = BlockRenderingSettings.INSTANCE.shouldUseExtendedVertexFormat()
 
         BlockRenderingSettings.INSTANCE.setUseExtendedVertexFormat(false)
