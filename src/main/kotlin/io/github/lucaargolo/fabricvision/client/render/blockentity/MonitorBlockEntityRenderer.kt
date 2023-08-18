@@ -2,8 +2,8 @@ package io.github.lucaargolo.fabricvision.client.render.blockentity
 
 import io.github.lucaargolo.fabricvision.common.block.HorizontalFacingMediaPlayerBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.MonitorBlockEntity
-import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import io.github.lucaargolo.fabricvision.player.MinecraftPlayer
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.LightmapTextureManager
 import net.minecraft.client.render.OverlayTexture
 import net.minecraft.client.render.RenderLayer
@@ -13,6 +13,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.RotationAxis
+import org.lwjgl.opengl.GL11
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -20,7 +21,10 @@ class MonitorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Con
 
     override fun render(entity: MonitorBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
 
+        val client = MinecraftClient.getInstance()
         val identifier = entity.player?.getTexture(tickDelta) ?: MinecraftPlayer.TRANSPARENT
+        val texture = client.textureManager.getTexture(identifier)
+
         val renderLayer = RenderLayer.getEntityTranslucent(identifier)
         val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
 
@@ -34,8 +38,8 @@ class MonitorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Con
         val alpha = if(entity.enabled) entity.alpha else 0f
         val normal = Direction.UP.unitVector
 
-        val x = 15.0f/16f
-        val y = 8.44f/16f
+        var x = 15.0f/16f
+        var y = 8.44f/16f
 
         val facing = entity.cachedState[HorizontalFacingMediaPlayerBlock.FACING]
         val rotation = when(facing) {
@@ -48,6 +52,31 @@ class MonitorBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Con
         matrices.push()
 
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation))
+
+        if(identifier != MinecraftPlayer.TRANSPARENT) {
+            texture.bindTexture()
+            val i = IntArray(1)
+            GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH, i)
+            val width = i[0] + 0f
+            GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT, i)
+            val height = i[0] + 0f
+
+            val screenAspectRatio = x / y
+            val textureAspectRatio = width / height
+
+            var xOffset = 0f
+            var yOffset = 0f
+
+            if (screenAspectRatio > textureAspectRatio) {
+                xOffset = (x - (width * (y / height))) / 2
+            } else {
+                yOffset = (y - (height * (x / width))) / 2
+            }
+
+            x -= xOffset + xOffset
+            y -= yOffset + yOffset
+            matrices.translate(xOffset, yOffset, 0f)
+        }
 
         when(facing) {
             Direction.EAST -> matrices.translate(-15.5/16.0, 5.0/16.0, 8.05/16.0)

@@ -6,7 +6,6 @@ import io.github.lucaargolo.fabricvision.player.callback.MinecraftAudioCallback
 import io.github.lucaargolo.fabricvision.player.callback.MinecraftBufferCallback
 import io.github.lucaargolo.fabricvision.player.callback.MinecraftRenderCallback
 import io.github.lucaargolo.fabricvision.utils.ModConfig
-import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import io.github.lucaargolo.fabricvision.utils.ModLogger
 import net.minecraft.client.texture.NativeImageBackedTexture
 import net.minecraft.util.Identifier
@@ -27,7 +26,7 @@ class MinecraftMediaPlayer(override val uuid: UUID): MinecraftPlayer {
     override var status
         get() = internalStatus.get()
         private set(value) {
-            ModLogger.info("Updating $uuid state ${internalStatus.get()} -> $value")
+            ModLogger.debug("Updating $uuid state ${internalStatus.get()} -> $value")
             internalStatus.set(value)
         }
 
@@ -36,7 +35,7 @@ class MinecraftMediaPlayer(override val uuid: UUID): MinecraftPlayer {
     private var currentMrl
         get() = internalMrl.get()
         private set(value) {
-            ModLogger.info("Updating $uuid mrl ${internalMrl.get()} -> $value")
+            ModLogger.debug("Updating $uuid mrl ${internalMrl.get()} -> $value")
             nativeTexture?.image?.let {
                 it.fillRect(0, 0, it.width, it.height, 0)
             }
@@ -194,7 +193,7 @@ class MinecraftMediaPlayer(override val uuid: UUID): MinecraftPlayer {
                 HOLDER.ACTIVE_PLAYERS.add(this)
                 status = Status.CREATING
                 HOLDER.FACTORY?.submit {
-                    ModLogger.info("Creating player $uuid")
+                    ModLogger.debug("Creating player $uuid")
                     val mediaPlayer = HOLDER.FACTORY!!.mediaPlayers().newEmbeddedMediaPlayer()
                     HOLDER.FACTORY!!.videoSurfaces().newVideoSurface(MinecraftBufferCallback(this), MinecraftRenderCallback(this), true).let(mediaPlayer.videoSurface()::set)
                     mediaPlayer.audio().callback("S16N", 64000, 1, MinecraftAudioCallback(this), true)
@@ -277,7 +276,7 @@ class MinecraftMediaPlayer(override val uuid: UUID): MinecraftPlayer {
         val mediaPlayer = player ?: return
         player = null
         mediaPlayer.submit {
-            ModLogger.info("Cleaning player $uuid")
+            ModLogger.debug("Cleaning player $uuid")
             if(mediaPlayer.status().isPlaying) {
                 mediaPlayer.controls().pause()
             }

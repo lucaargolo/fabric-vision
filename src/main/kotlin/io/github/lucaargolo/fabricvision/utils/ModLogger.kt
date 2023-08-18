@@ -8,6 +8,10 @@ object ModLogger {
 
     private val logger: Logger = LogManager.getLogger(FabricVision.MOD_NAME)
 
+    fun debug(message: String) {
+        logger.debug("[${FabricVision.MOD_NAME}] $message")
+    }
+
     fun info(message: String) {
         logger.info("[${FabricVision.MOD_NAME}] $message")
     }

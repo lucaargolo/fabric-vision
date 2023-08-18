@@ -1,7 +1,7 @@
 package io.github.lucaargolo.fabricvision.mixin;
 
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient;
-import io.github.lucaargolo.fabricvision.utils.ModConfig;
+import io.github.lucaargolo.fabricvision.client.ProjectorProgram;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
@@ -52,10 +52,10 @@ public abstract class GameRendererMixin {
 
     @Inject(at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;mul(Lorg/joml/Matrix4fc;)Lorg/joml/Matrix4f;"), method = "getBasicProjectionMatrix", locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
     public void fixProjectorProjection(double fov, CallbackInfoReturnable<Matrix4f> cir, MatrixStack matrixStack) {
-        if(FabricVisionClient.INSTANCE.isRenderingProjector()) {
-            ModConfig modConfig = ModConfig.Companion.getInstance();
-            int width = modConfig.getProjectorFramebufferWidth();
-            int height = modConfig.getProjectorFramebufferHeight();
+        ProjectorProgram renderingProjector = FabricVisionClient.INSTANCE.getRenderingProjector();
+        if(renderingProjector != null) {
+            int width = renderingProjector.getFramebuffer().textureWidth;
+            int height = renderingProjector.getFramebuffer().textureHeight;
             matrixStack.peek().getPositionMatrix().mul(new Matrix4f().setPerspective((float)(fov * 0.01745329238474369), (float)width / (float)height, 0.05F, this.method_32796()));
             cir.setReturnValue(matrixStack.peek().getPositionMatrix());
         }

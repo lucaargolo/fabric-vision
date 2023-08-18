@@ -14,9 +14,6 @@ class ModConfig {
 
     val maxPanelDepth = 200
 
-    val projectorFramebufferWidth = 1280
-    val projectorFramebufferHeight = 720
-
     companion object {
 
        val instance: ModConfig by lazy {

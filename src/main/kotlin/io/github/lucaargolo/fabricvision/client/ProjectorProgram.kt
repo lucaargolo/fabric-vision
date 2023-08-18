@@ -16,13 +16,14 @@ import net.minecraft.client.render.Camera
 import net.minecraft.client.texture.AbstractTexture
 import net.minecraft.client.util.math.MatrixStack
 import org.joml.Matrix4f
+import org.lwjgl.opengl.GL11
 
 class ProjectorProgram {
 
     private var texture = TRANSPARENT.glId
 
     val framebuffer: SimpleFramebuffer by lazy {
-        SimpleFramebuffer(ModConfig.instance.projectorFramebufferWidth, ModConfig.instance.projectorFramebufferHeight, true, MinecraftClient.IS_SYSTEM_MAC)
+        SimpleFramebuffer(1280, 720, true, MinecraftClient.IS_SYSTEM_MAC)
     }
 
     var bufferBuilders = BufferBuilderStorage()
@@ -56,6 +57,16 @@ class ProjectorProgram {
             if (playerTexture.glId != texture) {
                 texture = playerTexture.glId
                 effect.setSamplerUniform("ProjectorSampler", texture)
+            }else{
+                playerTexture.bindTexture()
+                val i = IntArray(1)
+                GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH, i)
+                val width = i[0]
+                GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT, i)
+                val height = i[0]
+                if(framebuffer.textureWidth != width || framebuffer.textureHeight != height) {
+                    framebuffer.resize(width, height, MinecraftClient.IS_SYSTEM_MAC)
+                }
             }
         }
     }

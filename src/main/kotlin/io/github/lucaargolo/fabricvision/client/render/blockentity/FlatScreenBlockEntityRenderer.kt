@@ -3,8 +3,8 @@ package io.github.lucaargolo.fabricvision.client.render.blockentity
 import io.github.lucaargolo.fabricvision.common.block.FlatScreenBlock
 import io.github.lucaargolo.fabricvision.common.block.HorizontalFacingMediaPlayerBlock
 import io.github.lucaargolo.fabricvision.common.blockentity.FlatScreenBlockEntity
-import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
 import io.github.lucaargolo.fabricvision.player.MinecraftPlayer
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.LightmapTextureManager
 import net.minecraft.client.render.OverlayTexture
 import net.minecraft.client.render.RenderLayer
@@ -14,6 +14,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.RotationAxis
+import org.lwjgl.opengl.GL11
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -21,7 +22,10 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
 
     override fun render(entity: FlatScreenBlockEntity, tickDelta: Float, matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, overlay: Int) {
 
+        val client = MinecraftClient.getInstance()
         val identifier = entity.player?.getTexture(tickDelta) ?: MinecraftPlayer.TRANSPARENT
+        val texture = client.textureManager.getTexture(identifier)
+
         val renderLayer = RenderLayer.getEntityTranslucent(identifier)
         val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
 
@@ -35,8 +39,8 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
         val alpha = if(entity.enabled) entity.alpha else 0f
         val normal = Direction.UP.unitVector
 
-        val x = 40.0f/16f
-        val y = 22.5f/16f
+        var x = 40.0f/16f
+        var y = 22.5f/16f
 
         val wall = entity.cachedState[FlatScreenBlock.WALL]
         val facing = entity.cachedState[HorizontalFacingMediaPlayerBlock.FACING]
@@ -50,6 +54,31 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
         matrices.push()
 
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation))
+
+        if(identifier != MinecraftPlayer.TRANSPARENT) {
+            texture.bindTexture()
+            val i = IntArray(1)
+            GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH, i)
+            val width = i[0] + 0f
+            GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT, i)
+            val height = i[0] + 0f
+
+            val screenAspectRatio = x / y
+            val textureAspectRatio = width / height
+
+            var xOffset = 0f
+            var yOffset = 0f
+
+            if (screenAspectRatio > textureAspectRatio) {
+                xOffset = (x - (width * (y / height))) / 2
+            } else {
+                yOffset = (y - (height * (x / width))) / 2
+            }
+
+            x -= xOffset + xOffset
+            y -= yOffset + yOffset
+            matrices.translate(xOffset, yOffset, 0f)
+        }
 
         if(wall) {
             when(facing) {
