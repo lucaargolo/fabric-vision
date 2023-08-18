@@ -2,7 +2,6 @@ package io.github.lucaargolo.fabricvision.mixin;
 
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient;
 import io.github.lucaargolo.fabricvision.compat.IrisCompat;
-import io.github.lucaargolo.fabricvision.mixed.WorldRendererMixed;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -21,53 +20,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(WorldRenderer.class)
-public abstract class WorldRendererMixin implements WorldRendererMixed {
+public abstract class WorldRendererMixin {
 
 
     @Shadow @Final private MinecraftClient client;
-
-    @Shadow private Frustum frustum;
-    @Shadow private boolean shouldCaptureFrustum;
-    @Shadow private @Nullable Frustum capturedFrustum;
-    @Shadow @Final private Vector4f[] capturedFrustumOrientation;
-    @Shadow @Final private Vector3d capturedFrustumPosition;
-
     @Shadow
     public BufferBuilderStorage bufferBuilders;
-    private Frustum fabricVision_frustum;
-    private boolean fabricVision_shouldCaptureFrustum;
-    @Nullable
-    private Frustum fabricVision_capturedFrustum;
-    private final Vector4f[] fabricVision_capturedFrustumOrientation = new Vector4f[8];
-    private final Vector3d fabricVision_capturedFrustumPosition = new Vector3d();
-
-    private BufferBuilderStorage fabricVision_bufferBuilders;
 
     @Shadow protected abstract void renderEntity(Entity entity, double cameraX, double cameraY, double cameraZ, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers);
 
-    @Override
-    public void backup() {
-        fabricVision_frustum = this.frustum;
-        fabricVision_shouldCaptureFrustum = this.shouldCaptureFrustum;
-        fabricVision_capturedFrustum = this.capturedFrustum;
-        System.arraycopy(capturedFrustumOrientation, 0, fabricVision_capturedFrustumOrientation, 0, capturedFrustumOrientation.length);
-        fabricVision_capturedFrustumPosition.x = capturedFrustumPosition.x;
-        fabricVision_capturedFrustumPosition.y = capturedFrustumPosition.y;
-        fabricVision_capturedFrustumPosition.z = capturedFrustumPosition.z;
-        fabricVision_bufferBuilders = bufferBuilders;
-    }
-
-    @Override
-    public void restore() {
-        this.frustum = fabricVision_frustum;
-        this.shouldCaptureFrustum = fabricVision_shouldCaptureFrustum;
-        this.capturedFrustum = fabricVision_capturedFrustum;
-        System.arraycopy(fabricVision_capturedFrustumOrientation, 0, capturedFrustumOrientation, 0, capturedFrustumOrientation.length);
-        capturedFrustumPosition.x = fabricVision_capturedFrustumPosition.x;
-        capturedFrustumPosition.y = fabricVision_capturedFrustumPosition.y;
-        capturedFrustumPosition.z = fabricVision_capturedFrustumPosition.z;
-        bufferBuilders = fabricVision_bufferBuilders;
-    }
 
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderGameTime(JF)V", shift = At.Shift.AFTER), method = "render")
     public void irisCompat(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {

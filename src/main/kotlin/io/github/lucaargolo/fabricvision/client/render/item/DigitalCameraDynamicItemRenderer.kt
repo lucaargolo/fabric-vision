@@ -67,10 +67,10 @@ class DigitalCameraDynamicItemRenderer: DynamicItemRenderer {
 
             val entry = matrices.peek()
 
-            vertexConsumer.vertex(entry.positionMatrix, x, 0f, 0f).color(1f, 1f, 1f, 1f).texture(1f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(LightmapTextureManager.MAX_LIGHT_COORDINATE).normal(entry.normalMatrix, 0f, 0f, 1f).next()
-            vertexConsumer.vertex(entry.positionMatrix, x, y, 0f).color(1f, 1f, 1f, 1f).texture(1f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(LightmapTextureManager.MAX_LIGHT_COORDINATE).normal(entry.normalMatrix, 0f, 0f, 1f).next()
-            vertexConsumer.vertex(entry.positionMatrix, 0f, y, 0f).color(1f, 1f, 1f, 1f).texture(0f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(LightmapTextureManager.MAX_LIGHT_COORDINATE).normal(entry.normalMatrix, 0f, 0f, 1f).next()
-            vertexConsumer.vertex(entry.positionMatrix, 0f, 0f, 0f).color(1f, 1f, 1f, 1f).texture(0f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(LightmapTextureManager.MAX_LIGHT_COORDINATE).normal(entry.normalMatrix, 0f, 0f, 1f).next()
+            vertexConsumer.vertex(entry.positionMatrix, x, 0f, 0f).color(1f, 1f, 1f, 1f).texture(1f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(LightmapTextureManager.MAX_LIGHT_COORDINATE).normal(entry.normalMatrix, 0f, 1f, 0f).next()
+            vertexConsumer.vertex(entry.positionMatrix, x, y, 0f).color(1f, 1f, 1f, 1f).texture(1f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(LightmapTextureManager.MAX_LIGHT_COORDINATE).normal(entry.normalMatrix, 0f, 1f, 0f).next()
+            vertexConsumer.vertex(entry.positionMatrix, 0f, y, 0f).color(1f, 1f, 1f, 1f).texture(0f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(LightmapTextureManager.MAX_LIGHT_COORDINATE).normal(entry.normalMatrix, 0f, 1f, 0f).next()
+            vertexConsumer.vertex(entry.positionMatrix, 0f, 0f, 0f).color(1f, 1f, 1f, 1f).texture(0f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(LightmapTextureManager.MAX_LIGHT_COORDINATE).normal(entry.normalMatrix, 0f, 1f, 0f).next()
 
             matrices.pop()
         }

@@ -87,13 +87,13 @@ object FabricVisionClient: ClientModInitializer {
             MinecraftAudioPlayerHolder.close() //TODO: Shutdown manager
             MinecraftImagePlayerHolder.close()
         }
-        WorldRenderEvents.END.register {
-            if(!isRenderingProjector) {
-                CameraHelper.updateCameraFramebuffer()
-            }
+        PostWorldRenderCallbackV2.EVENT.register { _, camera, tickDelta, _ ->
+            ProjectorProgram.renderProjectors(camera, tickDelta)
         }
-        ShaderEffectRenderCallback.EVENT.register(ProjectorProgram::renderProjectors)
-        PostWorldRenderCallbackV2.EVENT.register(ProjectorProgram::captureCameras)
+        ShaderEffectRenderCallback.EVENT.register { tickDelta ->
+            ProjectorProgram.renderShaders(tickDelta)
+            CameraHelper.updateCameraFramebuffer()
+        }
         ModelLoadingRegistry.INSTANCE.registerModelProvider { _, out ->
             out.accept(DigitalCameraDynamicItemRenderer.MODEL)
         }

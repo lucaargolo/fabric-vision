@@ -37,8 +37,12 @@ class HologramBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.Co
 
         matrices.translate(0.5, 1.0, 0.5)
 
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(entity.yaw))
-        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(entity.pitch))
+        val yawRot = RotationAxis.POSITIVE_Y.rotationDegrees(entity.yaw)
+        matrices.multiply(yawRot)
+        val pitchRot = RotationAxis.POSITIVE_X.rotationDegrees(entity.pitch)
+        matrices.multiply(pitchRot)
+        normal.rotate(yawRot.invert())
+        normal.rotate(pitchRot.invert())
 
         matrices.translate(entity.offsetX, entity.offsetY, entity.offsetZ)
 

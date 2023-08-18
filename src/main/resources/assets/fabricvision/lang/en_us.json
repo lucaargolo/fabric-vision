@@ -34,7 +34,7 @@
   "screen.fabricvision.saved_picture": "Successfully saved picture!",
 
   "screen.fabricvision.key_to_take_picture": "%s to take picture",
-  "screen.fabricvision.zoom": "Zoom: %s (Scroll to change)",
+  "screen.fabricvision.zoom": "Zoom: %sx (Scroll to change)",
 
   "tooltip.fabricvision.player_on": "Player On",
   "tooltip.fabricvision.player_off": "Player Off",

@@ -1,9 +1,9 @@
 package io.github.lucaargolo.fabricvision.client
 
+import com.mojang.blaze3d.systems.RenderSystem
 import io.github.lucaargolo.fabricvision.common.blockentity.ProjectorBlockEntity
-import io.github.lucaargolo.fabricvision.player.MinecraftMediaPlayer
+import io.github.lucaargolo.fabricvision.compat.IrisCompat
 import io.github.lucaargolo.fabricvision.player.MinecraftPlayer
-import io.github.lucaargolo.fabricvision.utils.ModConfig
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import ladysnake.satin.api.experimental.ReadableDepthFramebuffer
 import ladysnake.satin.api.managed.ManagedShaderEffect
@@ -71,10 +71,13 @@ class ProjectorProgram {
         }
     }
 
-    fun updateConfiguration(blockEntity: ProjectorBlockEntity) {
+    fun updateConfiguration(client: MinecraftClient, camera: Camera, blockEntity: ProjectorBlockEntity) {
         colorConfiguration.set(blockEntity.red, blockEntity.green, blockEntity.blue, blockEntity.alpha)
         projectionBrightness.set(blockEntity.light)
         projectionFallout.set(blockEntity.fallout)
+        viewPort.set(client.window.framebufferWidth, client.window.framebufferHeight)
+        cameraPosition.set(camera.pos.x.toFloat(), camera.pos.y.toFloat(), camera.pos.z.toFloat())
+        mainInverseTransformMatrix.set(GlMatrices.getInverseTransformMatrix(outMat))
     }
 
     companion object {
@@ -83,36 +86,81 @@ class ProjectorProgram {
         }
         private val SHADER = ModIdentifier("shaders/post/projector.json")
         private val RENDER = linkedSetOf<ProjectorProgram>()
+        private val QUEUE = linkedSetOf<ProjectorBlockEntity>()
 
         private val outMat = Matrix4f()
 
-        fun setRendering(projector: ProjectorProgram?) {
-            FabricVisionClient.renderingProjector = projector
-            projector?.let {
-                RENDER.add(it)
+        fun queue(blockEntity: ProjectorBlockEntity) {
+            QUEUE.add(blockEntity)
+        }
+
+        fun renderProjectors(camera: Camera, tickDelta: Float) {
+            val client = MinecraftClient.getInstance()
+            if(FabricVisionClient.isRenderingProjector) {
+                val renderingProjector = FabricVisionClient.renderingProjector ?: return
+                renderingProjector.projectorPosition.set(camera.pos.x.toFloat(), camera.pos.y.toFloat(), camera.pos.z.toFloat())
+                renderingProjector.projectorTransformMatrix.set(GlMatrices.getInverseTransformMatrix(outMat).invert())
+            }else {
+                val iterator = QUEUE.iterator()
+                while (iterator.hasNext()) {
+                    val entity = iterator.next()
+                    entity.projectorProgram?.updateTexture(entity.player, tickDelta)
+                    entity.projectorProgram?.updateConfiguration(client, camera, entity)
+                    val cameraEntityBackup = client.cameraEntity
+                    client.cameraEntity = entity.cameraEntity
+                    val nauseaIntensityBackup = client.player?.nauseaIntensity ?: 0f
+                    val prevNauseaIntensityBackup = client.player?.nauseaIntensity ?: 0f
+                    client.player?.nauseaIntensity = 0f
+                    client.player?.prevNauseaIntensity = 0f
+                    renderProjectorWorld(entity, tickDelta, 0L, MatrixStack())
+                    client.player?.nauseaIntensity = nauseaIntensityBackup
+                    client.player?.prevNauseaIntensity = prevNauseaIntensityBackup
+                    client.cameraEntity = cameraEntityBackup
+                    client.gameRenderer.camera.update(client.world, if (client.getCameraEntity() == null) client.player else client.getCameraEntity(), !client.options.perspective.isFirstPerson, client.options.perspective.isFrontView, tickDelta)
+                    iterator.remove()
+                }
             }
         }
 
-        fun renderProjectors(tickDelta: Float) {
+        private fun renderProjectorWorld(entity: ProjectorBlockEntity, tickDelta: Float, limitTime: Long, matrices: MatrixStack) {
+            val projectorProgram = entity.projectorProgram ?: return
+            val client = MinecraftClient.getInstance()
+            val gameRenderer = client.gameRenderer
+            projectorProgram.framebuffer.beginWrite(true)
+            FabricVisionClient.renderingProjector = projectorProgram
+            if(FabricVisionClient.isRenderingProjector) {
+                val backupRenderHand: Boolean = gameRenderer.renderHand
+                gameRenderer.renderHand = false
+                val backupViewDistance: Float = gameRenderer.viewDistance
+                gameRenderer.viewDistance = 16f
+                RenderSystem.backupProjectionMatrix()
+                val backup = RenderSystem.getInverseViewRotationMatrix()
+                IrisCompat.INSTANCE.setupProjectorWorldRender()
+                val mat = RenderSystem.getModelViewStack()
+                mat.push()
+                mat.loadIdentity()
+                RenderSystem.applyModelViewMatrix()
+                gameRenderer.renderWorld(tickDelta, limitTime, matrices)
+                mat.pop()
+                RenderSystem.applyModelViewMatrix()
+                IrisCompat.INSTANCE.endProjectorWorldRender(client.worldRenderer)
+                RenderSystem.setInverseViewRotationMatrix(backup)
+                RenderSystem.restoreProjectionMatrix()
+                gameRenderer.viewDistance = backupViewDistance
+                gameRenderer.renderHand = backupRenderHand
+            }
+            RENDER.add(projectorProgram)
+            FabricVisionClient.renderingProjector = null
+            client.framebuffer.beginWrite(true)
+        }
+
+        fun renderShaders(tickDelta: Float) {
             RENDER.forEach {
                 it.effect.render(tickDelta)
             }
             RENDER.clear()
         }
 
-        fun captureCameras(matrices: MatrixStack, camera: Camera, tickDelta: Float, nanoTime: Long) {
-            val client = MinecraftClient.getInstance()
-            RENDER.forEach {
-                if (!FabricVisionClient.isRenderingProjector) {
-                    it.viewPort.set(client.window.framebufferWidth, client.window.framebufferHeight)
-                    it.cameraPosition.set(camera.pos.x.toFloat(), camera.pos.y.toFloat(), camera.pos.z.toFloat())
-                    it.mainInverseTransformMatrix.set(GlMatrices.getInverseTransformMatrix(outMat))
-                }else if(FabricVisionClient.renderingProjector == it) {
-                    it.projectorPosition.set(camera.pos.x.toFloat(), camera.pos.y.toFloat(), camera.pos.z.toFloat())
-                    it.projectorTransformMatrix.set(GlMatrices.getInverseTransformMatrix(outMat).invert())
-                }
-            }
-        }
 
     }
 
