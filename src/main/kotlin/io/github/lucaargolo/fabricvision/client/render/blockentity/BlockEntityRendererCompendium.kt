@@ -11,6 +11,7 @@ object BlockEntityRendererCompendium {
         BlockEntityRendererFactories.register(BlockEntityCompendium.PANEL, ::PanelBlockEntityRenderer)
         BlockEntityRendererFactories.register(BlockEntityCompendium.PROJECTOR, ::ProjectorBlockEntityRenderer)
         BlockEntityRendererFactories.register(BlockEntityCompendium.HOLOGRAM, ::HologramBlockEntityRenderer)
+        BlockEntityRendererFactories.register(BlockEntityCompendium.BOOKSHELF_SPEAKER, ::BookshelfSpeakerBlockEntityRenderer)
     }
 
 }

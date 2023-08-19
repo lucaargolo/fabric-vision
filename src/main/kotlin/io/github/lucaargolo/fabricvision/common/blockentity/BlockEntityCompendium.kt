@@ -13,5 +13,6 @@ object BlockEntityCompendium: RegistryCompendium<BlockEntityType<*>>(Registries.
     val PANEL = register("panel", FabricBlockEntityTypeBuilder.create(::PanelBlockEntity, BlockCompendium.PANEL).build())
     val PROJECTOR = register("projector", FabricBlockEntityTypeBuilder.create(::ProjectorBlockEntity, BlockCompendium.PROJECTOR).build())
     val HOLOGRAM = register("hologram", FabricBlockEntityTypeBuilder.create(::HologramBlockEntity, BlockCompendium.HOLOGRAM).build())
+    val BOOKSHELF_SPEAKER = register("bookshelf_speaker", FabricBlockEntityTypeBuilder.create(::BookshelfSpeakerBlockEntity, BlockCompendium.BOOKSHELF_SPEAKER).build())
 
 }

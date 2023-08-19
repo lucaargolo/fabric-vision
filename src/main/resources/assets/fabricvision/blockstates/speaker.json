@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "fabricvision:block/speaker",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "fabricvision:block/speaker"
+    },
+    "facing=south": {
+      "model": "fabricvision:block/speaker",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "fabricvision:block/speaker",
+      "y": 270
+    }
+  }
+}

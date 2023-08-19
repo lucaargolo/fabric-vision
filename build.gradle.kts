@@ -104,7 +104,7 @@ dependencies {
 
     implementation("com.sedmelluq:lavaplayer:1.3.77")
 
-    modCompileOnly(files("libs/iris-mc1.20.1-1.6.5.jar"))
+    modCompileOnly(files("libs/iris-mc1.20.1-1.6.8.jar"))
 
     modRuntimeOnly("com.terraformersmc:modmenu:${project["modmenu_version"]}")
     modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:${project["rei_version"]}")
