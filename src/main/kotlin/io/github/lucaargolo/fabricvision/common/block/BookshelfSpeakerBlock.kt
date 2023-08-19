@@ -1,10 +1,8 @@
 package io.github.lucaargolo.fabricvision.common.block
 
 import io.github.lucaargolo.fabricvision.common.blockentity.BookshelfSpeakerBlockEntity
-import io.github.lucaargolo.fabricvision.common.blockentity.ProjectorBlockEntity
 import io.github.lucaargolo.fabricvision.utils.VoxelShapeUtils.rotate
 import net.minecraft.block.*
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.IntProperty
@@ -21,7 +19,7 @@ import net.minecraft.world.BlockView
 import java.util.stream.Stream
 
 
-class BookshelfSpeakerBlock(settings: Settings) : SpeakerBlock(4.0, settings), BlockEntityProvider {
+class BookshelfSpeakerBlock(settings: Settings) : AbstractSpeakerBlock(4.0, settings), BlockEntityProvider {
 
     init {
         defaultState = defaultState.with(ROTATION, 0)
@@ -32,7 +30,7 @@ class BookshelfSpeakerBlock(settings: Settings) : SpeakerBlock(4.0, settings), B
     }
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState {
-        return defaultState.with(SkullBlock.ROTATION, RotationPropertyHelper.fromYaw(ctx.playerYaw))
+        return defaultState.with(SkullBlock.ROTATION, RotationPropertyHelper.fromYaw(ctx.playerYaw-180f))
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("state.with(SkullBlock.ROTATION, rotation.rotate((state.get(ROTATION)), MAX_ROTATIONS))", "net.minecraft.block.SkullBlock", "io.github.lucaargolo.fabricvision.common.block.ProjectorBlock.Companion.ROTATION", "io.github.lucaargolo.fabricvision.common.block.ProjectorBlock.Companion.MAX_ROTATIONS"))
@@ -59,17 +57,10 @@ class BookshelfSpeakerBlock(settings: Settings) : SpeakerBlock(4.0, settings), B
         private val MAX_ROTATIONS = MAX_ROTATION_INDEX + 1
         val ROTATION: IntProperty = Properties.ROTATION
 
-        private val MAIN_SHAPE = Stream.of(
-            createCuboidShape(2.0, 0.0, 3.0, 3.0, 5.0, 13.0),
-            createCuboidShape(5.0, 1.0, 1.0, 11.0, 4.0, 2.0),
-            createCuboidShape(3.0, 0.0, 3.0, 13.0, 5.0, 13.0),
-            createCuboidShape(6.0, 4.0, 1.0, 10.0, 5.0, 2.0),
-            createCuboidShape(6.0, 0.0, 1.0, 10.0, 1.0, 2.0),
-            createCuboidShape(6.0, 0.0, 1.0, 10.0, 1.0, 2.0),
-            createCuboidShape(3.0, 0.0, 2.0, 13.0, 5.0, 3.0),
-            createCuboidShape(3.0, 0.0, 13.0, 13.0, 5.0, 14.0),
-            createCuboidShape(13.0, 0.0, 3.0, 14.0, 5.0, 13.0)
-        ).reduce{ a, b -> VoxelShapes.combineAndSimplify(a, b, BooleanBiFunction.OR) }.get()
+        private val MAIN_SHAPE = VoxelShapes.combineAndSimplify(
+            createCuboidShape(5.0, 0.0, 4.5, 11.0, 8.0, 5.5),
+            createCuboidShape(5.0, 0.0, 5.5, 11.0, 8.0, 11.5),
+        BooleanBiFunction.OR)
 
         private val SHAPES = mutableMapOf<Int, VoxelShape>()
 
