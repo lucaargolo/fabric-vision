@@ -14,11 +14,11 @@ import net.minecraft.util.Identifier
 
 object BlockCompendium: RegistryCompendium<Block>(Registries.BLOCK) {
 
+    val HOLOGRAM = register("hologram", HologramBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
     val FLAT_SCREEN = register("flat_screen", FlatScreenBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
     val MONITOR = register("monitor", MonitorBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
     val PANEL = register("panel", PanelBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
     val PROJECTOR = register("projector", ProjectorBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
-    val HOLOGRAM = register("hologram", HologramBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
     val BOOKSHELF_SPEAKER = register("bookshelf_speaker", BookshelfSpeakerBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
     val SPEAKER = register("speaker", SpeakerBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
     val LARGE_SPEAKER = register("large_speaker", LargeSpeakerBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))

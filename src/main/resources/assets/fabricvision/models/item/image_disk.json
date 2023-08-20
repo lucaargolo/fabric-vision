@@ -1,6 +1,7 @@
 {
-  "parent": "item/generated",
+  "parent": "fabricvision:item/blank_disk",
   "textures": {
-    "layer0": "fabricvision:item/image_disk"
+    "texture": "fabricvision:item/image_disk",
+    "particle": "fabricvision:item/image_disk"
   }
 }

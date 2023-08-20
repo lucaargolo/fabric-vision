@@ -36,7 +36,7 @@ class ImageDiskItem(settings: Settings) : DiskItem(Type.IMAGE, settings) {
         val mrl = stack.nbt?.let { if(it.contains("mrl")) it.getString("mrl") else "" } ?: ""
         val showMrl = if (mrl.length > 32) "..." + mrl.substring(mrl.length - 29, mrl.length) else mrl
         val text = if(mrl.isNotEmpty())
-            Text.translatable("tooltip.fabricvision.mrl", Text.literal(showMrl).formatted(Formatting.GRAY)).formatted(Formatting.GREEN)
+            Text.translatable("tooltip.fabricvision.mrl", Text.literal(showMrl).formatted(Formatting.GRAY)).formatted(Formatting.YELLOW)
         else
             Text.translatable("tooltip.fabricvision.status.no_media").formatted(Formatting.YELLOW)
         tooltip.add(text)
