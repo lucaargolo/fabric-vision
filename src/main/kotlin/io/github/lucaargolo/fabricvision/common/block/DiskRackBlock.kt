@@ -22,6 +22,7 @@ import net.minecraft.util.function.BooleanBiFunction
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
+import net.minecraft.util.math.RotationAxis
 import net.minecraft.util.shape.VoxelShape
 
 import net.minecraft.util.shape.VoxelShapes
@@ -55,23 +56,64 @@ class DiskRackBlock(settings: Settings?) : BlockWithEntity(settings) {
         return state.rotate(mirror.getRotation(state.get(FACING) as Direction))
     }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Deprecated in Java")
+    override fun onStateReplaced(state: BlockState, world: World, pos: BlockPos, newState: BlockState, moved: Boolean) {
+        if (!state.isOf(newState.block)) {
+            world.getBlockEntity(pos, BlockEntityCompendium.DISK_RACK).ifPresent { blockEntity ->
+                blockEntity.stacks.forEach { diskStack ->
+                    ItemScatterer.spawn(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, diskStack)
+                }
+                blockEntity.stacks.clear()
+            }
+            super.onStateReplaced(state, world, pos, newState, moved)
+        }
+    }
+
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity {
         return DiskRackBlockEntity(pos, state)
     }
 
     override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult {
         if(!world.isClient) {
-            val rayPos = player.raycast(4.5, 1.0F, false).pos.subtract(pos.x + 0.0, pos.y + 0.0, pos.z + 0.0)
+            val facing = state[FACING]
+            val rayPos = player.raycast(4.5, 1.0F, false).pos.subtract(pos.x + 0.0, pos.y + 0.0, pos.z + 0.0).multiply(16.0).toVector3f()
+            rayPos.rotate(RotationAxis.POSITIVE_Y.rotationDegrees(facing.asRotation()))
+            rayPos.absolute()
+            if(facing.direction == Direction.AxisDirection.NEGATIVE) {
+                if(facing.axis == Direction.Axis.X) {
+                    rayPos.x = 16f - rayPos.x
+                    rayPos.z = 16f - rayPos.z
+                }
+                if(facing.axis == Direction.Axis.Z) {
+                    rayPos.z = 16f - rayPos.z
+                }
+            }
+            val disk = if(rayPos.x in 4f..12f && rayPos.y in 1f..9f) {
+                when(rayPos.z) {
+                    in 1.5f..2.5f -> 0
+                    in 3.5f..4.5f -> 1
+                    in 5.5f..6.5f -> 2
+                    in 7.5f..8.5f -> 3
+                    in 9.5f..10.5f -> 4
+                    in 11.5f..12.5f -> 5
+                    in 13.5f..14.5f -> 6
+                    else -> -1
+                }
+            }else -1
             val stack = player.getStackInHand(hand)
-            world.getBlockEntity(pos, BlockEntityCompendium.DISK_RACK).ifPresent { blockEntity ->
-                if(stack.item is DiskItem) {
-                    val slot = (0..6).random()
-                    ItemScatterer.spawn(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, blockEntity.stacks[slot])
-                    blockEntity.stacks[slot] = stack.copy()
-                    player.setStackInHand(hand, ItemStack.EMPTY)
+            if(disk >= 0) {
+                world.getBlockEntity(pos, BlockEntityCompendium.DISK_RACK).ifPresent { blockEntity ->
+                    ItemScatterer.spawn(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, blockEntity.stacks[disk])
+                    blockEntity.stacks[disk] = ItemStack.EMPTY
+                    if(stack.item is DiskItem) {
+                        blockEntity.stacks[disk] = stack.copy()
+                        player.setStackInHand(hand, ItemStack.EMPTY)
+                    }
                     blockEntity.markDirtyAndSync()
                 }
             }
+
         }
         return ActionResult.SUCCESS
     }

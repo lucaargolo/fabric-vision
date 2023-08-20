@@ -1,14 +1,18 @@
 {
   "itemGroup.fabricvision": "Fabric Vision",
 
+  "block.fabricvision.hologram": "Hologram",
   "block.fabricvision.flat_screen": "Flat Screen",
   "block.fabricvision.monitor": "Monitor",
   "block.fabricvision.panel": "Flat Screen",
   "block.fabricvision.projector": "Projector",
-  "block.fabricvision.hologram": "Hologram",
+  "block.fabricvision.bookshelf_speaker": "Bookshelf Speaker",
+  "block.fabricvision.speaker": "Speaker",
+  "block.fabricvision.large_speaker": "Large Speaker",
+  "block.fabricvision.disk_rack": "Disk Rack",
 
   "item.fabricvision.digital_camera": "Digital Camera",
-
+  "item.fabricvision.sound_configurator": "Sound Configurator",
   "item.fabricvision.blank_disk": "Blank Disk",
   "item.fabricvision.video_disk": "Video Disk",
   "item.fabricvision.audio_disk": "Audio Disk",
