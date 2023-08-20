@@ -9,6 +9,7 @@ import io.github.lucaargolo.fabricvision.common.blockentity.BlockEntityCompendiu
 import io.github.lucaargolo.fabricvision.common.command.CommandCompendium
 import io.github.lucaargolo.fabricvision.common.entity.EntityCompendium
 import io.github.lucaargolo.fabricvision.common.fluid.FluidCompendium
+import io.github.lucaargolo.fabricvision.common.item.DiskItem
 import io.github.lucaargolo.fabricvision.common.item.ItemCompendium
 import io.github.lucaargolo.fabricvision.common.recipe.RecipeSerializerCompendium
 import io.github.lucaargolo.fabricvision.common.recipe.RecipeTypeCompendium
@@ -96,6 +97,10 @@ object FabricVisionClient: ClientModInitializer {
         }
         ModelLoadingRegistry.INSTANCE.registerModelProvider { _, out ->
             out.accept(DigitalCameraDynamicItemRenderer.MODEL)
+            out.accept(DiskItem.Type.VIDEO.model)
+            out.accept(DiskItem.Type.AUDIO.model)
+            out.accept(DiskItem.Type.IMAGE.model)
+            out.accept(DiskItem.Type.STREAM.model)
         }
     }
 

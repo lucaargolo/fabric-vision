@@ -1,5 +1,6 @@
 package io.github.lucaargolo.fabricvision.common.item
 
+import io.github.lucaargolo.fabricvision.common.item.DiskItem.Type
 import io.github.lucaargolo.fabricvision.common.block.BlockCompendium
 import io.github.lucaargolo.fabricvision.utils.ModIdentifier
 import io.github.lucaargolo.fabricvision.utils.RegistryCompendium
@@ -10,6 +11,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 
 object ItemCompendium: RegistryCompendium<Item>(Registries.ITEM) {
 
@@ -29,8 +31,8 @@ object ItemCompendium: RegistryCompendium<Item>(Registries.ITEM) {
 
     val BLANK_DISK = register("blank_disk", Item(Item.Settings()))
     val VIDEO_DISK = register("video_disk", VideoDiskItem(Item.Settings().maxCount(1)))
-    val AUDIO_DISK = register("audio_disk", AudioDiskItem(Item.Settings().maxCount(1)))
-    val IMAGE_DISK = register("image_disk", ImageDiskItem(Item.Settings().maxCount(1)))
+    val AUDIO_DISK = register("audio_disk", DiskItem(Type.AUDIO, Item.Settings().maxCount(1)))
+    val IMAGE_DISK = register("image_disk", DiskItem(Type.IMAGE, Item.Settings().maxCount(1)))
 
     private fun registerCreativeTab() {
         Registry.register(Registries.ITEM_GROUP, ModIdentifier("creative_tab"), FabricItemGroup

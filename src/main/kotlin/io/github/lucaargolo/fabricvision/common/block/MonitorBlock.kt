@@ -21,7 +21,7 @@ class MonitorBlock(settings: Settings) : HorizontalFacingMediaPlayerBlock<Monito
     @Deprecated("Deprecated in Java", ReplaceWith("BlockRenderType.MODEL", "net.minecraft.block.BlockRenderType"))
     override fun getRenderType(state: BlockState) = BlockRenderType.MODEL
 
-    @Deprecated("Deprecated in Java", ReplaceWith("ProjectorBlock.getShape(state[FACING])", "io.github.lucaargolo.fabricvision.common.block.PanelBlock.Companion.FACING"))
+    @Deprecated("Deprecated in Java", ReplaceWith("MonitorBlock.getShape(state[FACING])", "io.github.lucaargolo.fabricvision.common.block.MonitorBlock.Companion.FACING"))
     override fun getOutlineShape(state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext): VoxelShape {
         return getShape(state[FACING])
     }

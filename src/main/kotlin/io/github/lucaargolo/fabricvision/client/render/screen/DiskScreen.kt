@@ -16,10 +16,18 @@ import java.util.*
 
 open class DiskScreen(val stackUUID: UUID, val stack: ItemStack, val type: Type, title: Text): Screen(title) {
 
+    protected var nameField: TextFieldWidget? = null
     protected var mrlField: TextFieldWidget? = null
 
     override fun init() {
         super.init()
+        nameField = TextFieldWidget(textRenderer, (width/2)-150, (height/2)-45, 300, 16, Text.empty())
+        nameField?.setMaxLength(55)
+        nameField?.text = stack.nbt?.getString("name") ?: ""
+        nameField?.setEditableColor(16777215)
+        nameField?.setChangedListener {
+            update()
+        }
         mrlField = TextFieldWidget(textRenderer, (width/2)-150, (height/2)-5, 300, 16, Text.empty())
         mrlField?.setMaxLength(99999)
         mrlField?.text = stack.nbt?.getString("mrl") ?: ""
@@ -27,6 +35,7 @@ open class DiskScreen(val stackUUID: UUID, val stack: ItemStack, val type: Type,
         mrlField?.setChangedListener {
             update()
         }
+        this.addDrawableChild(nameField)
         this.addDrawableChild(mrlField)
     }
 
@@ -40,6 +49,8 @@ open class DiskScreen(val stackUUID: UUID, val stack: ItemStack, val type: Type,
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.renderBackground(context)
         super.render(context, mouseX, mouseY, delta)
+        val setNameText = Text.translatable("tooltip.fabricvision.set_name")
+        context.drawText(textRenderer, setNameText, (width/2)-(textRenderer.getWidth(setNameText)/2), (height/2)-60, 0xFFFFFF, false)
         val setMrlText = Text.translatable("tooltip.fabricvision.set_mrl")
         context.drawText(textRenderer, setMrlText, (width/2)-(textRenderer.getWidth(setMrlText)/2), (height/2)-20, 0xFFFFFF, false)
     }
@@ -65,11 +76,13 @@ open class DiskScreen(val stackUUID: UUID, val stack: ItemStack, val type: Type,
     protected open fun update() {
         val validStack = getValidStack(client?.player) ?: return
         val hand = if(validStack == client?.player?.mainHandStack) Hand.MAIN_HAND else Hand.OFF_HAND
+        val name = nameField?.text ?: ""
         val mrl = mrlField?.text ?: ""
         val buf = PacketByteBufs.create()
         buf.writeUuid(stackUUID)
         buf.writeEnumConstant(hand)
         buf.writeEnumConstant(type)
+        buf.writeString(name)
         buf.writeString(mrl)
         ClientPlayNetworking.send(PacketCompendium.UPDATE_DISK_C2S, buf)
     }

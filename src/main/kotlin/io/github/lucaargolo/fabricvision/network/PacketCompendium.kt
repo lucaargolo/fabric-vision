@@ -40,12 +40,14 @@ object PacketCompendium {
         ServerPlayNetworking.registerGlobalReceiver(UPDATE_VIDEO_DISK_C2S) { server, player, handler, buf, sender ->
             val uuid = buf.readUuid()
             val hand = buf.readEnumConstant(Hand::class.java)
+            val name = buf.readString()
             val mrl = buf.readString()
             val options = buf.readString()
             val stream = buf.readBoolean()
             server.execute {
                 val stack = player.getStackInHand(hand)
                 if(stack.isOf(ItemCompendium.VIDEO_DISK) && stack.nbt?.getUuid("uuid") == uuid) {
+                    stack.orCreateNbt.putString("name", name)
                     stack.orCreateNbt.putString("mrl", mrl)
                     stack.orCreateNbt.putString("options", options)
                     stack.orCreateNbt.putBoolean("stream", stream)
@@ -56,6 +58,7 @@ object PacketCompendium {
             val uuid = buf.readUuid()
             val hand = buf.readEnumConstant(Hand::class.java)
             val type = buf.readEnumConstant(Type::class.java)
+            val name = buf.readString()
             val mrl = buf.readString()
             server.execute {
                 val stack = player.getStackInHand(hand)
@@ -65,6 +68,7 @@ object PacketCompendium {
                     else -> false
                 }
                 if(valid && stack.nbt?.getUuid("uuid") == uuid) {
+                    stack.orCreateNbt.putString("name", name)
                     stack.orCreateNbt.putString("mrl", mrl)
                 }
             }

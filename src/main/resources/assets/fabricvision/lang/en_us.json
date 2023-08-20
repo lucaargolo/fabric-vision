@@ -67,6 +67,7 @@
   "tooltip.fabricvision.yaw": "Yaw: %s",
   "tooltip.fabricvision.pitch": "Pitch: %s",
 
+  "tooltip.fabricvision.set_name": "Set name:",
   "tooltip.fabricvision.set_mrl": "Set media location:",
   "tooltip.fabricvision.set_options": "Set media options:",
   "tooltip.fabricvision.is_stream": "Media is stream:",
@@ -85,6 +86,8 @@
 
   "tooltip.fabricvision.live": "Live",
 
+  "tooltip.fabricvision.name": "Name: %s",
+  "tooltip.fabricvision.no_name": "No name",
   "tooltip.fabricvision.mrl": "Media: %s",
   "tooltip.fabricvision.stream": "Stream: %s",
 

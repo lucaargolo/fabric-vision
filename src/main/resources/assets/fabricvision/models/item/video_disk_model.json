@@ -1,0 +1,7 @@
+{
+  "parent": "fabricvision:item/blank_disk",
+  "textures": {
+    "texture": "fabricvision:item/video_disk",
+    "particle": "fabricvision:item/video_disk"
+  }
+}

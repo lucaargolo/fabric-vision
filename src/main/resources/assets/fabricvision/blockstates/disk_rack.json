@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "fabricvision:block/disk_rack",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "fabricvision:block/disk_rack"
+    },
+    "facing=south": {
+      "model": "fabricvision:block/disk_rack",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "fabricvision:block/disk_rack",
+      "y": 270
+    }
+  }
+}

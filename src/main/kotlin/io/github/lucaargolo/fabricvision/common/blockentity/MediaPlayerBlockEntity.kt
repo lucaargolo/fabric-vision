@@ -6,20 +6,16 @@ import io.github.lucaargolo.fabricvision.player.*
 
 import io.github.lucaargolo.fabricvision.utils.ModConfig
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.network.listener.ClientPlayPacketListener
-import net.minecraft.network.packet.Packet
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import java.util.*
 
-abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlockEntity>, pos: BlockPos, state: BlockState) : BlockEntity(type, pos, state) {
+abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlockEntity>, pos: BlockPos, state: BlockState) : SyncableBlockEntity(type, pos, state) {
 
     private var uuid: UUID? = null
 
@@ -240,22 +236,7 @@ abstract class MediaPlayerBlockEntity(type: BlockEntityType<out MediaPlayerBlock
         playing = !playing
     }
 
-    override fun toInitialChunkDataNbt(): NbtCompound {
-        return NbtCompound().also(::writeNbt)
-    }
-
-    override fun toUpdatePacket(): Packet<ClientPlayPacketListener>? {
-        return BlockEntityUpdateS2CPacket.create(this) {
-            toInitialChunkDataNbt()
-        }
-    }
-
-    fun markDirtyAndSync() {
-        markDirty()
-        sync()
-    }
-
-    fun sync() {
+    override fun sync() {
         val world = world ?: return
         if (world.isClient) {
             updatePlayer()

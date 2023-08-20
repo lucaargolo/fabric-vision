@@ -85,6 +85,7 @@ class VideoDiskScreen(stackUUID: UUID, stack: ItemStack): DiskScreen(stackUUID, 
     private fun update(forceCheck: Boolean) {
         val validStack = getValidStack(client?.player) ?: return
         val hand = if(validStack == client?.player?.mainHandStack) Hand.MAIN_HAND else Hand.OFF_HAND
+        val name = nameField?.text ?: ""
         val mrl = mrlField?.text ?: ""
         val options = optionsField?.text ?: ModConfig.instance.defaultMediaOptions
         val stream = mrl.endsWith(".m3u8") || mrl.startsWith("rt") || mrl.startsWith("mms")
@@ -94,6 +95,7 @@ class VideoDiskScreen(stackUUID: UUID, stack: ItemStack): DiskScreen(stackUUID, 
         val buf = PacketByteBufs.create()
         buf.writeUuid(stackUUID)
         buf.writeEnumConstant(hand)
+        buf.writeString(name)
         buf.writeString(mrl)
         buf.writeString(options)
         buf.writeBoolean(streamCheckbox?.isChecked ?: stream)

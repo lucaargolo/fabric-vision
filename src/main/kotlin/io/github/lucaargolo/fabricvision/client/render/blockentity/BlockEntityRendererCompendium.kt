@@ -12,6 +12,7 @@ object BlockEntityRendererCompendium {
         BlockEntityRendererFactories.register(BlockEntityCompendium.PANEL, ::PanelBlockEntityRenderer)
         BlockEntityRendererFactories.register(BlockEntityCompendium.PROJECTOR, ::ProjectorBlockEntityRenderer)
         BlockEntityRendererFactories.register(BlockEntityCompendium.BOOKSHELF_SPEAKER, ::BookshelfSpeakerBlockEntityRenderer)
+        BlockEntityRendererFactories.register(BlockEntityCompendium.DISK_RACK, ::DiskRackBlockEntityRenderer)
     }
 
 }

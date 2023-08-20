@@ -22,6 +22,7 @@ object BlockCompendium: RegistryCompendium<Block>(Registries.BLOCK) {
     val BOOKSHELF_SPEAKER = register("bookshelf_speaker", BookshelfSpeakerBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
     val SPEAKER = register("speaker", SpeakerBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
     val LARGE_SPEAKER = register("large_speaker", LargeSpeakerBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
+    val DISK_RACK = register("disk_rack", DiskRackBlock(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK)))
 
     fun registerBlockItems(itemMap: MutableMap<Identifier, Item>) {
         map.mapValues { BlockItem(it.value, FabricItemSettings()) }.forEach(itemMap::put)

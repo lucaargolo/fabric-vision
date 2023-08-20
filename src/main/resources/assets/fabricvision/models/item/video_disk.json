@@ -1,15 +1,3 @@
 {
-  "parent": "fabricvision:item/blank_disk",
-  "textures": {
-    "texture": "fabricvision:item/video_disk",
-    "particle": "fabricvision:item/video_disk"
-  },
-  "overrides": [
-    {
-      "predicate": {
-        "fabricvision:stream": 1
-      },
-      "model": "fabricvision:item/stream_disk"
-    }
-  ]
+  "parent": "builtin/entity"
 }
