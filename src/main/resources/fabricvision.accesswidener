@@ -1,26 +1,28 @@
 accessWidener v1 named
 accessible field net/minecraft/client/texture/NativeImage pointer J
 accessible field net/minecraft/client/sound/SoundManager soundSystem Lnet/minecraft/client/sound/SoundSystem;
+accessible method net/minecraft/client/sound/SoundSystem getAdjustedVolume (Lnet/minecraft/client/sound/SoundInstance;)F
 accessible field net/minecraft/client/sound/SoundSystem soundEngine Lnet/minecraft/client/sound/SoundEngine;
 accessible field net/minecraft/client/sound/SoundSystem taskQueue Lnet/minecraft/client/sound/SoundExecutor;
 accessible field net/minecraft/client/sound/SoundSystem channel Lnet/minecraft/client/sound/Channel;
-accessible field net/minecraft/client/sound/Channel sources Ljava/util/Set;
-accessible field net/minecraft/client/sound/Source pointer I
-accessible method net/minecraft/client/sound/Source removeProcessedBuffers ()I
-accessible field net/minecraft/client/sound/Channel$SourceManager source Lnet/minecraft/client/sound/Source;
 accessible field net/minecraft/client/sound/SoundSystem sources Ljava/util/Map;
 accessible field net/minecraft/client/sound/SoundSystem started Z
+accessible field net/minecraft/client/sound/Channel sources Ljava/util/Set;
+accessible field net/minecraft/client/sound/Channel$SourceManager source Lnet/minecraft/client/sound/Source;
+accessible method net/minecraft/client/sound/Source removeProcessedBuffers ()I
+accessible field net/minecraft/client/sound/Source pointer I
 
-accessible field net/minecraft/client/render/WorldRenderer bufferBuilders Lnet/minecraft/client/render/BufferBuilderStorage;
 mutable field net/minecraft/client/render/WorldRenderer bufferBuilders Lnet/minecraft/client/render/BufferBuilderStorage;
+accessible field net/minecraft/client/render/WorldRenderer bufferBuilders Lnet/minecraft/client/render/BufferBuilderStorage;
 accessible field net/minecraft/client/render/GameRenderer renderHand Z
 accessible field net/minecraft/client/render/GameRenderer viewDistance F
 
 accessible field net/minecraft/client/render/Camera cameraY F
 accessible field net/minecraft/client/render/Camera lastCameraY F
-
 accessible method net/minecraft/client/render/Camera setPos (Lnet/minecraft/util/math/Vec3d;)V
 
-accessible method net/minecraft/client/sound/SoundSystem getAdjustedVolume (Lnet/minecraft/client/sound/SoundInstance;)F
-
 accessible field net/minecraft/client/option/KeyBinding boundKey Lnet/minecraft/client/util/InputUtil$Key;
+
+accessible field net/minecraft/client/render/BackgroundRenderer red F
+accessible field net/minecraft/client/render/BackgroundRenderer green F
+accessible field net/minecraft/client/render/BackgroundRenderer blue F

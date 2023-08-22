@@ -88,12 +88,16 @@ object FabricVisionClient: ClientModInitializer {
             MinecraftAudioPlayerHolder.close() //TODO: Shutdown manager
             MinecraftImagePlayerHolder.close()
         }
+        WorldRenderEvents.START.register {
+            HandHelper.startRender()
+        }
         PostWorldRenderCallbackV2.EVENT.register { _, camera, tickDelta, _ ->
             ProjectorProgram.renderProjectors(camera, tickDelta)
         }
         ShaderEffectRenderCallback.EVENT.register { tickDelta ->
             ProjectorProgram.renderShaders(tickDelta)
             CameraHelper.updateCameraFramebuffer()
+            HandHelper.finishRender(tickDelta)
         }
         ModelLoadingRegistry.INSTANCE.registerModelProvider { _, out ->
             out.accept(DigitalCameraDynamicItemRenderer.MODEL)
@@ -103,7 +107,6 @@ object FabricVisionClient: ClientModInitializer {
             out.accept(DiskItem.Type.STREAM.model)
         }
     }
-
 
 
 }

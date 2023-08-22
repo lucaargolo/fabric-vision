@@ -1,5 +1,7 @@
 package io.github.lucaargolo.fabricvision.client
 
+import com.mojang.blaze3d.platform.GlConst
+import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import io.github.lucaargolo.fabricvision.common.blockentity.ProjectorBlockEntity
 import io.github.lucaargolo.fabricvision.compat.IrisCompat
@@ -11,22 +13,20 @@ import ladysnake.satin.api.managed.ShaderEffectManager
 import ladysnake.satin.api.util.GlMatrices
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.SimpleFramebuffer
-import net.minecraft.client.render.BufferBuilderStorage
 import net.minecraft.client.render.Camera
 import net.minecraft.client.texture.AbstractTexture
 import net.minecraft.client.util.math.MatrixStack
 import org.joml.Matrix4f
 import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL30
 
 class ProjectorProgram {
 
     private var texture = TRANSPARENT.glId
 
     val framebuffer: SimpleFramebuffer by lazy {
-        SimpleFramebuffer(1280, 720, true, MinecraftClient.IS_SYSTEM_MAC)
+        SimpleFramebuffer(854, 480, true, MinecraftClient.IS_SYSTEM_MAC)
     }
-
-    var bufferBuilders = BufferBuilderStorage()
 
     val effect: ManagedShaderEffect by lazy {
         val client = MinecraftClient.getInstance()
@@ -126,6 +126,7 @@ class ProjectorProgram {
             val projectorProgram = entity.projectorProgram ?: return
             val client = MinecraftClient.getInstance()
             val gameRenderer = client.gameRenderer
+            val currentBuffer = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING)
             projectorProgram.framebuffer.beginWrite(true)
             FabricVisionClient.renderingProjector = projectorProgram
             if(FabricVisionClient.isRenderingProjector) {
@@ -151,7 +152,7 @@ class ProjectorProgram {
             }
             RENDER.add(projectorProgram)
             FabricVisionClient.renderingProjector = null
-            client.framebuffer.beginWrite(true)
+            GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER, currentBuffer)
         }
 
         fun renderShaders(tickDelta: Float) {

@@ -81,7 +81,7 @@ object CameraHelper {
         }
     }
 
-    private fun Framebuffer.copyColorFrom(framebuffer: Framebuffer) {
+    fun Framebuffer.copyColorFrom(framebuffer: Framebuffer) {
         RenderSystem.assertOnRenderThreadOrInit()
         GlStateManager._glBindFramebuffer(GlConst.GL_READ_FRAMEBUFFER, framebuffer.fbo)
         GlStateManager._glBindFramebuffer(GlConst.GL_DRAW_FRAMEBUFFER, fbo)

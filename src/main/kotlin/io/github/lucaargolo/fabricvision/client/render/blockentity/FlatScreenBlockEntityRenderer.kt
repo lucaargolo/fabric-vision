@@ -57,11 +57,9 @@ class FlatScreenBlockEntityRenderer(private val ctx: BlockEntityRendererFactory.
 
         if(identifier != MinecraftPlayer.TRANSPARENT) {
             texture.bindTexture()
-            val i = IntArray(1)
-            GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH, i)
-            val width = i[0] + 0f
-            GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT, i)
-            val height = i[0] + 0f
+
+            val width = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH) + 0f
+            val height = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT) + 0f
 
             val screenAspectRatio = x / y
             val textureAspectRatio = width / height

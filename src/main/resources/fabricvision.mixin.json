@@ -15,6 +15,7 @@
     "EntityRenderDispatcherMixin",
     "EntityRendererMixin",
     "GameRendererMixin",
+    "HeldItemRendererMixin",
     "InGameHudMixin",
     "LightingProviderMixin",
     "MinecraftClientMixin",

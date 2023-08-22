@@ -79,6 +79,10 @@ repositories {
         name = "dv8tion"
         url = uri("https://m2.dv8tion.net/releases")
     }
+    maven {
+        name = "Modrinth"
+        url = uri("https://api.modrinth.com/maven")
+    }
     mavenCentral()
     mavenLocal()
 }
@@ -104,8 +108,7 @@ dependencies {
 
     implementation("com.sedmelluq:lavaplayer:1.3.77")
 
-    modCompileOnly(files("libs/iris-mc1.20.1-1.6.8.jar"))
-
+    modCompileOnly("maven.modrinth:iris:1.6.8+1.20.1")
     modRuntimeOnly("com.terraformersmc:modmenu:${project["modmenu_version"]}")
     modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:${project["rei_version"]}")
 }

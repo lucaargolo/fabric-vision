@@ -1,6 +1,7 @@
 package io.github.lucaargolo.fabricvision.mixin;
 
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient;
+import io.github.lucaargolo.fabricvision.client.HandHelper;
 import io.github.lucaargolo.fabricvision.client.ProjectorProgram;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
@@ -61,6 +62,14 @@ public abstract class GameRendererMixin {
         }
     }
 
+    @Inject(at = @At("HEAD"), method = "renderHand")
+    public void fabricVision_renderHandToCustomBufferHead(MatrixStack matrices, Camera camera, float tickDelta, CallbackInfo ci) {
+        HandHelper.INSTANCE.setRenderingHand(true);
+    }
 
+    @Inject(at = @At("TAIL"), method = "renderHand")
+    public void fabricVision_renderHandToCustomBufferTail(MatrixStack matrices, Camera camera, float tickDelta, CallbackInfo ci) {
+        HandHelper.INSTANCE.setRenderingHand(false);
+    }
 
 }

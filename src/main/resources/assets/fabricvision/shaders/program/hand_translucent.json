@@ -1,0 +1,19 @@
+{
+    "blend": {
+        "func": "add",
+        "srcrgb": "srcalpha",
+        "dstrgb": "1-srcalpha"
+    },
+    "vertex": "fabricvision:hand_translucent",
+    "fragment": "fabricvision:hand_translucent",
+    "attributes": [
+        "Position"
+    ],
+    "samplers": [
+        { "name": "MainSampler" },
+        { "name": "HandSampler" }
+    ],
+    "uniforms": [
+        { "name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] }
+    ]
+}

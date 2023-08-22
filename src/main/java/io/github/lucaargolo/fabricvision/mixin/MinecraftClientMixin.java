@@ -2,12 +2,14 @@ package io.github.lucaargolo.fabricvision.mixin;
 
 
 import io.github.lucaargolo.fabricvision.client.FabricVisionClient;
+import io.github.lucaargolo.fabricvision.client.HandHelper;
 import io.github.lucaargolo.fabricvision.client.ProjectorProgram;
 import io.github.lucaargolo.fabricvision.client.CameraHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
+import net.minecraft.client.util.Window;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,8 +27,12 @@ public class MinecraftClientMixin {
 
     @Shadow @Final public GameOptions options;
 
+    @Shadow @Final private Window window;
+
+    @Shadow @Final public static boolean IS_SYSTEM_MAC;
+
     @Inject(at = @At("HEAD"), method = "getFramebuffer", cancellable = true)
-    public void getProjectorFramebuffer(CallbackInfoReturnable<Framebuffer> cir) {
+    public void fabricVision_injectProjectorFramebuffer(CallbackInfoReturnable<Framebuffer> cir) {
         if(FabricVisionClient.INSTANCE.isRenderingProjector()) {
             ProjectorProgram program = FabricVisionClient.INSTANCE.getRenderingProjector();
             if(program != null) {
@@ -44,6 +50,12 @@ public class MinecraftClientMixin {
                 CameraHelper.INSTANCE.setTakePicture(5);
             }
         }
+    }
+
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/Framebuffer;resize(IIZ)V"), method = "onResolutionChanged", locals = LocalCapture.CAPTURE_FAILSOFT)
+    public void fabricVision_changeHandFramebufferSize(CallbackInfo ci, int i, Framebuffer framebuffer) {
+        HandHelper.INSTANCE.getHandSolidFramebuffer().resize(this.window.getFramebufferWidth(), this.window.getFramebufferHeight(), IS_SYSTEM_MAC);
+        HandHelper.INSTANCE.getHandTranslucentFramebuffer().resize(this.window.getFramebufferWidth(), this.window.getFramebufferHeight(), IS_SYSTEM_MAC);
     }
 
 
